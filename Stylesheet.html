@@ -209,4 +209,317 @@
     background-color: var(--primary-dark);
     box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
   }
+
+  /* Creative Add Car Form Styles */
+  .form-view {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .view-header {
+    background: linear-gradient(135deg, var(--primary), #3b5bdb);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+  }
+
+  .view-header .view-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  .view-header .title-icon {
+    margin-right: 12px;
+    font-size: 2rem;
+    opacity: 0.9;
+  }
+
+  .view-header .view-subtitle {
+    opacity: 0.85;
+    font-size: 1rem;
+  }
+
+  .creative-form .form-section {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border: 1px solid #edf2f9;
+  }
+
+  .creative-form .shadow-sm {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    color: var(--dark);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f3f9;
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrap {
+    background: #e8f0fe;
+    color: var(--primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 0.9rem;
+  }
+
+  .grid-responsive {
+    display: display; /* Fallback */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  @media (min-width: 768px) {
+    .grid-responsive {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+  }
+
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  @media (min-width: 768px) {
+    .upload-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .input-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .required-label::after {
+    content: "*";
+    color: #e74a3b;
+    margin-left: 4px;
+    font-size: 1rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #d1d3e2;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #333;
+    transition: all 0.2s ease;
+    background-color: #fcfcfc;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
+  }
+
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23858796' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+  }
+
+  textarea.form-control {
+    resize: vertical;
+  }
+
+  /* Drag & Drop File Upload */
+  .file-upload-wrapper {
+    position: relative;
+    border: 2px dashed #b7c9f2;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    background: #f8faff;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .file-upload-wrapper:hover {
+    background: #eff4ff;
+    border-color: var(--primary);
+  }
+
+  .file-upload-wrapper .upload-icon {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  .file-upload-wrapper p {
+    margin: 0;
+    font-weight: 500;
+    color: #4a5568;
+  }
+
+  .file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* Tags Input */
+  .tags-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    border: 1px solid #d1d3e2;
+    border-radius: 6px;
+    padding: 5px;
+    background: #fcfcfc;
+    min-height: 48px;
+  }
+
+  .tags-input-container:focus-within {
+    border-color: var(--primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
+  }
+
+  .tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tags-list li {
+    background: #e1e7fa;
+    color: var(--primary-dark);
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin: 3px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+
+  .tags-list li i {
+    cursor: pointer;
+    margin-left: 8px;
+    color: #4a5568;
+  }
+
+  .tag-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 8px;
+    min-width: 150px;
+    background: transparent;
+    font-size: 0.95rem;
+  }
+
+  .mt-4 {
+    margin-top: 1.5rem;
+  }
+  .text-muted {
+    color: #858796;
+    font-weight: normal;
+    font-size: 0.8rem;
+    text-transform: none;
+  }
+
+  /* Creative Save Button */
+  .form-actions {
+    position: sticky;
+    bottom: 20px;
+    z-index: 100;
+    margin-top: 30px;
+    text-align: right;
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .btn-save-creative {
+    position: relative;
+    padding: 14px 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #1cc88a, #13855c);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+    box-shadow: 0 6px 15px rgba(28, 200, 138, 0.4);
+  }
+
+  .btn-save-creative:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(28, 200, 138, 0.5);
+  }
+
+  .btn-save-creative span {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-save-creative .btn-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+  }
+
+  .btn-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #13855c, #0e5e40);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .btn-save-creative:hover .btn-bg {
+    opacity: 1;
+  }
 </style>

@@ -48,11 +48,16 @@
 
           topBarTitle.textContent = viewTitle;
 
-          if (targetView === "dashboard") {
-            viewDashboard.classList.add("active");
-            viewPlaceholder.classList.remove("active");
+          // Hide all views
+          document
+            .querySelectorAll(".view")
+            .forEach((v) => v.classList.remove("active"));
+
+          const specificView = document.getElementById("view-" + targetView);
+
+          if (specificView) {
+            specificView.classList.add("active");
           } else {
-            viewDashboard.classList.remove("active");
             viewPlaceholder.classList.add("active");
             placeholderTitle.textContent = viewTitle + " Content Goes Here";
 
@@ -76,5 +81,98 @@
         }
       });
     });
+
+    // Populate Year Dropdown (1990 - 2050)
+    const yearSelect = document.getElementById("yearSelect");
+    if (yearSelect) {
+      for (let y = 1990; y <= 2050; y++) {
+        let opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+      }
+    }
+
+    // Handles the Interior Features tags input
+    const featureInput = document.getElementById("featureInput");
+    const featuresList = document.getElementById("featuresList");
+    const hiddenFeatures = document.getElementById("hiddenFeatures");
+    let features = [];
+
+    if (featureInput) {
+      featureInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === "," || e.key === " ") {
+          e.preventDefault();
+          const val = this.value.trim().replace(/,/g, "");
+          if (val && !features.includes(val)) {
+            features.push(val);
+            renderFeatures();
+          }
+          this.value = "";
+        }
+      });
+    }
+
+    function renderFeatures() {
+      featuresList.innerHTML = "";
+      features.forEach((feat, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${feat} <i class="fas fa-times" onclick="removeFeature(${index})"></i>`;
+        featuresList.appendChild(li);
+      });
+      hiddenFeatures.value = JSON.stringify(features);
+    }
+
+    window.removeFeature = function (index) {
+      features.splice(index, 1);
+      renderFeatures();
+    };
+
+    // File input UX changes
+    document.querySelectorAll(".file-input").forEach((input) => {
+      input.addEventListener("change", function (e) {
+        const wrapper = this.closest(".file-upload-wrapper");
+        const textElement = wrapper.querySelector("p");
+        if (this.files && this.files.length > 1) {
+          textElement.textContent = `${this.files.length} files selected`;
+          wrapper.style.borderColor = "var(--primary)";
+        } else if (this.files && this.files.length === 1) {
+          textElement.textContent = this.files[0].name;
+          wrapper.style.borderColor = "var(--primary)";
+        } else {
+          textElement.textContent = wrapper.classList.contains("main-img")
+            ? "Drag or Click to Upload"
+            : "Select Multiple Images";
+          wrapper.style.borderColor = "";
+        }
+      });
+    });
   });
+
+  // Handle Form Submission
+  function handleCarSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector(".btn-save-creative");
+    // UX loading state
+    const originalText = btn.innerHTML;
+    btn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> Saving to Google Sheet...';
+    btn.disabled = true;
+
+    // Simulate AppScript google.script.run
+    setTimeout(() => {
+      alert("Car Details Submitted Successfully!");
+      e.target.reset();
+      if (window.removeFeature) {
+        document.getElementById("featuresList").innerHTML = "";
+        document.getElementById("hiddenFeatures").value = "";
+        // Hack to reset array scoped in DOMContentLoaded
+      }
+      document
+        .querySelectorAll(".file-upload-wrapper p")
+        .forEach((p) => (p.textContent = "Upload complete!"));
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }, 1500);
+  }
 </script>
