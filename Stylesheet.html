@@ -1,0 +1,240 @@
+<style>
+  :root {
+    --primary: #4e73df;
+    --primary-dark: #2e59d9;
+    --secondary: #858796;
+    --dark: #2c3e50;
+    --light: #f8f9fc;
+    --sidebar-bg: #1a233a;
+    --sidebar-hover: #2c3954;
+    --text-menu: #c2c7d0;
+    --text-menu-active: #ffffff;
+    --transition: all 0.3s ease;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background-color: var(--light);
+    color: var(--dark);
+    overflow: hidden;
+  }
+
+  .app-container {
+    display: flex;
+    height: 100vh;
+  }
+
+  /* Sidebar Styles */
+  .sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-menu);
+    transition: var(--transition);
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.collapsed {
+    width: 70px;
+  }
+
+  .sidebar.collapsed .nav-text,
+  .sidebar.collapsed .submenu-toggle {
+    display: none;
+  }
+
+  .sidebar-header {
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .sidebar-header h3 {
+    color: var(--text-menu-active);
+    font-size: 1.2rem;
+  }
+
+  .sidebar-header i {
+    font-size: 1.5rem;
+    margin-right: 10px;
+    color: var(--primary);
+  }
+
+  .nav-menu {
+    list-style: none;
+    padding: 15px 0;
+  }
+
+  .nav-item {
+    margin-bottom: 5px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: var(--text-menu);
+    text-decoration: none;
+    transition: var(--transition);
+    border-left: 4px solid transparent;
+    cursor: pointer;
+  }
+
+  .nav-link:hover,
+  .nav-item.active > .nav-link {
+    background-color: var(--sidebar-hover);
+    color: var(--text-menu-active);
+    border-left-color: var(--primary);
+  }
+
+  .nav-link i:first-child {
+    width: 25px;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .nav-text {
+    margin-left: 10px;
+    flex-grow: 1;
+    white-space: nowrap;
+  }
+
+  .submenu-toggle {
+    font-size: 0.8rem;
+    transition: var(--transition);
+  }
+
+  .nav-item.open .submenu-toggle {
+    transform: rotate(180deg);
+  }
+
+  /* Submenu Styles */
+  .submenu {
+    list-style: none;
+    background-color: rgba(0, 0, 0, 0.15);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .nav-item.open .submenu {
+    max-height: 200px;
+  }
+
+  .sidebar.collapsed .submenu {
+    display: none; /* Hide submenus completely when collapsed */
+  }
+
+  .submenu li a {
+    display: block;
+    padding: 10px 20px 10px 55px;
+    color: var(--text-menu);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+
+  .submenu li a:hover,
+  .submenu li a.active {
+    color: var(--primary);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Main Content Styles */
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Prevents flex flex-grow overflowing */
+  }
+
+  .topbar {
+    background-color: #fff;
+    padding: 15px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .toggle-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--dark);
+    cursor: pointer;
+    margin-right: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 5px;
+    transition: var(--transition);
+  }
+
+  .toggle-btn:hover {
+    background-color: var(--light);
+    color: var(--primary);
+  }
+
+  .topbar h2 {
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+
+  .content-area {
+    padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  /* Views */
+  .view {
+    display: none;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    height: 100%;
+  }
+
+  .view.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* CTA Buttons */
+  .btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+    box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
+  }
+</style>

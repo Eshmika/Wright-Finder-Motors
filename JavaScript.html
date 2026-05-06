@@ -1,0 +1,119 @@
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Toggle Sidebar
+    const toggleBtn = document.getElementById("toggle-sidebar");
+    const sidebar = document.getElementById("sidebar");
+
+    toggleBtn.addEventListener("click", function () {
+      sidebar.classList.toggle("collapsed");
+
+      // If collapsing, close all open submenus
+      if (sidebar.classList.contains("collapsed")) {
+        document.querySelectorAll(".nav-item.open").forEach((item) => {
+          item.classList.remove("open");
+        });
+      }
+    });
+
+    // Toggle Submenus
+    const submenuItems = document.querySelectorAll(".has-submenu > .nav-link");
+
+    submenuItems.forEach((item) => {
+      item.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        // Don't open if sidebar is collapsed
+        if (sidebar.classList.contains("collapsed")) {
+          sidebar.classList.remove("collapsed");
+        }
+
+        const parentLi = this.parentElement;
+
+        // Close other open submenus (Accordion style)
+        document.querySelectorAll(".nav-item.has-submenu").forEach((li) => {
+          if (li !== parentLi) li.classList.remove("open");
+        });
+
+        // Toggle current submenu
+        parentLi.classList.toggle("open");
+      });
+    });
+
+    // Navigation logic
+    const allNavLinks = document.querySelectorAll(
+      ".nav-link[data-view], .submenu a[data-view]",
+    );
+    const topBarTitle = document.querySelector(".topbar h2");
+    const viewDashboard = document.getElementById("view-dashboard");
+    const viewPlaceholder = document.getElementById("view-placeholder");
+    const placeholderTitle = document.getElementById("placeholder-title");
+
+    allNavLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        // Only prevent default if it's not a submenu parent
+        if (
+          !this.classList.contains("nav-link") ||
+          !this.parentElement.classList.contains("has-submenu")
+        ) {
+          e.preventDefault();
+
+          // Remove active class from all links
+          document
+            .querySelectorAll(".nav-menu a")
+            .forEach((a) => a.classList.remove("active"));
+          document
+            .querySelectorAll(".nav-item")
+            .forEach((li) => li.classList.remove("active"));
+
+          // Add active class to clicked link
+          this.classList.add("active");
+          if (this.closest(".submenu")) {
+            this.closest(".has-submenu").classList.add("active");
+          } else {
+            this.parentElement.classList.add("active");
+          }
+
+          // Handle view switching
+          const targetView = this.getAttribute("data-view");
+          let viewTitle = this.textContent.trim();
+
+          // Prefix parent title if in submenu
+          if (this.closest(".submenu")) {
+            const parentTitle = this.closest(".has-submenu")
+              .querySelector(".nav-text")
+              .textContent.trim();
+            viewTitle = parentTitle + " / " + viewTitle;
+          }
+
+          topBarTitle.textContent = viewTitle;
+
+          if (targetView === "dashboard") {
+            viewDashboard.classList.add("active");
+            viewPlaceholder.classList.remove("active");
+          } else {
+            viewDashboard.classList.remove("active");
+            viewPlaceholder.classList.add("active");
+            placeholderTitle.textContent = viewTitle + " Content Goes Here";
+
+            // Generate some creative CTA based on the section
+            let ctaAction = "Process";
+            if (targetView.includes("add")) ctaAction = "Add Car";
+            if (targetView.includes("view")) ctaAction = "Refresh List";
+            if (targetView.includes("booking")) ctaAction = "New Booking";
+
+            // Re-render placeholder content
+            viewPlaceholder.innerHTML = `
+              <h1>${viewTitle}</h1>
+              <p style="margin-top: 15px; color: #555;">This section is currently under construction. Here you will manage ${viewTitle.toLowerCase()}.</p>
+              <div style="margin-top: 30px;">
+                 <button class="btn-primary" onclick="alert('${ctaAction} initiated!')">
+                   <i class="fas fa-location-arrow"></i> ${ctaAction}
+                 </button>
+              </div>
+            `;
+          }
+        }
+      });
+    });
+  });
+</script>

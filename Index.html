@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <?!= include('Stylesheet'); ?>
+    <!-- Import Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Sidebar Component -->
+      <?!= include('Sidebar'); ?>
+
+      <!-- Main Content Area -->
+      <div class="main-content" id="main-content">
+        <header class="topbar">
+          <button id="toggle-sidebar" class="toggle-btn">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h2>Dashboard</h2>
+        </header>
+
+        <main class="content-area">
+          <div id="view-dashboard" class="view active">
+            <h1>Welcome to Wright Finder Motors</h1>
+            <p>Select an option from the menu to get started.</p>
+          </div>
+          <!-- Additional views would go here -->
+          <div id="view-placeholder" class="view">
+            <h1 id="placeholder-title">Content</h1>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <?!= include('JavaScript'); ?>
+  </body>
+</html>
