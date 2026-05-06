@@ -40,15 +40,6 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   }
 
-  .sidebar.collapsed {
-    width: 70px;
-  }
-
-  .sidebar.collapsed .nav-text,
-  .sidebar.collapsed .submenu-toggle {
-    display: none;
-  }
-
   .sidebar-header {
     padding: 20px;
     background-color: rgba(0, 0, 0, 0.2);
@@ -108,30 +99,11 @@
     white-space: nowrap;
   }
 
-  .submenu-toggle {
-    font-size: 0.8rem;
-    transition: var(--transition);
-  }
-
-  .nav-item.open .submenu-toggle {
-    transform: rotate(180deg);
-  }
-
-  /* Submenu Styles */
-  .submenu {
+  /* Main Content Styles */
+  .main-content .submenu {
     list-style: none;
     background-color: rgba(0, 0, 0, 0.15);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-  }
-
-  .nav-item.open .submenu {
-    max-height: 200px;
-  }
-
-  .sidebar.collapsed .submenu {
-    display: none; /* Hide submenus completely when collapsed */
+    display: block;
   }
 
   .submenu li a {

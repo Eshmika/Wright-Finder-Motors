@@ -4,7 +4,13 @@ function onOpen() {
     .addItem("Open App", "openApp")
     .addToUi();
 }
-
+function doGet(e) {
+  return HtmlService.createTemplateFromFile("Index")
+    .evaluate()
+    .setTitle("Wright Finder Motors App")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag("viewport", "width=device-width, initial-scale=1");
+}
 function openApp() {
   var html = HtmlService.createTemplateFromFile("Index")
     .evaluate()

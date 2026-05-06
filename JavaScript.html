@@ -1,44 +1,5 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Toggle Sidebar
-    const toggleBtn = document.getElementById("toggle-sidebar");
-    const sidebar = document.getElementById("sidebar");
-
-    toggleBtn.addEventListener("click", function () {
-      sidebar.classList.toggle("collapsed");
-
-      // If collapsing, close all open submenus
-      if (sidebar.classList.contains("collapsed")) {
-        document.querySelectorAll(".nav-item.open").forEach((item) => {
-          item.classList.remove("open");
-        });
-      }
-    });
-
-    // Toggle Submenus
-    const submenuItems = document.querySelectorAll(".has-submenu > .nav-link");
-
-    submenuItems.forEach((item) => {
-      item.addEventListener("click", function (e) {
-        e.preventDefault();
-
-        // Don't open if sidebar is collapsed
-        if (sidebar.classList.contains("collapsed")) {
-          sidebar.classList.remove("collapsed");
-        }
-
-        const parentLi = this.parentElement;
-
-        // Close other open submenus (Accordion style)
-        document.querySelectorAll(".nav-item.has-submenu").forEach((li) => {
-          if (li !== parentLi) li.classList.remove("open");
-        });
-
-        // Toggle current submenu
-        parentLi.classList.toggle("open");
-      });
-    });
-
     // Navigation logic
     const allNavLinks = document.querySelectorAll(
       ".nav-link[data-view], .submenu a[data-view]",
