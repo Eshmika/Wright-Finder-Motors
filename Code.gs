@@ -4,6 +4,20 @@ function onOpen() {
     .addItem("Open App", "openApp")
     .addToUi();
 }
+
+/**
+ * RUN THIS FUNCTION ONCE MANUALLY FROM THE APPS SCRIPT EDITOR.
+ * This will trigger the Google authorization prompt so you can grant Drive and Spreadsheet permissions.
+ */
+function setupAuthorization() {
+  // Creating a dummy file forces Apps Script to request full Drive write permissions
+  try {
+    var dummy = DriveApp.createFile("auth_test.txt", "test");
+    dummy.setTrashed(true); // cleanup
+  } catch (e) {}
+  SpreadsheetApp.getActiveSpreadsheet();
+}
+
 function doGet(e) {
   return HtmlService.createTemplateFromFile("Index")
     .evaluate()
