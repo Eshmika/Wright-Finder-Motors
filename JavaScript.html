@@ -149,8 +149,22 @@
     });
   });
 
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () =>
+        resolve({
+          name: file.name,
+          mimeType: file.type,
+          data: reader.result.split(",")[1],
+        });
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
   // Handle Form Submission
-  function handleCarSubmit(e) {
+  async function handleCarSubmit(e) {
     e.preventDefault();
     const btn = e.target.querySelector(".btn-save-creative");
     // UX loading state
@@ -159,20 +173,81 @@
       '<i class="fas fa-spinner fa-spin"></i> Saving to Google Sheet...';
     btn.disabled = true;
 
-    // Simulate AppScript google.script.run
-    setTimeout(() => {
-      alert("Car Details Submitted Successfully!");
-      e.target.reset();
-      if (window.removeFeature) {
-        document.getElementById("featuresList").innerHTML = "";
-        document.getElementById("hiddenFeatures").value = "";
-        // Hack to reset array scoped in DOMContentLoaded
+    try {
+      const form = e.target;
+      const formDataObj = {};
+
+      // Get standard text/select elements
+      const elements = form.querySelectorAll(
+        'input:not([type="file"]), select, textarea',
+      );
+      elements.forEach((el) => {
+        if (el.name) {
+          formDataObj[el.name] = el.value;
+        }
+      });
+
+      // Handle Main Image
+      const mainImageBase64 = [];
+      const mainImageInput = form.querySelector('input[name="mainImage"]');
+      if (mainImageInput && mainImageInput.files.length > 0) {
+        for (let i = 0; i < mainImageInput.files.length; i++) {
+          mainImageBase64.push(await fileToBase64(mainImageInput.files[i]));
+        }
       }
-      document
-        .querySelectorAll(".file-upload-wrapper p")
-        .forEach((p) => (p.textContent = "Upload complete!"));
+      formDataObj.mainImages = mainImageBase64;
+
+      // Handle Sub Images
+      const subImagesBase64 = [];
+      const subImagesInput = form.querySelector('input[name="subImages"]');
+      if (subImagesInput && subImagesInput.files.length > 0) {
+        for (let i = 0; i < subImagesInput.files.length; i++) {
+          subImagesBase64.push(await fileToBase64(subImagesInput.files[i]));
+        }
+      }
+      formDataObj.subImages = subImagesBase64;
+
+      // Process Array structure logic if needed:
+      let interiorFeatures = formDataObj.interiorFeatures
+        ? JSON.parse(formDataObj.interiorFeatures)
+        : [];
+      formDataObj.interiorFeaturesStr = interiorFeatures.join(", ");
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          alert("Car Details Saved Successfully!");
+          e.target.reset();
+          if (window.removeFeature) {
+            document.getElementById("featuresList").innerHTML = "";
+            document.getElementById("hiddenFeatures").value = "[]";
+            // We simulate emptying the internal array since it's shadowed, by reloading the view or relying on users not reusing session.
+          }
+          document.querySelectorAll(".file-upload-wrapper p").forEach((p) => {
+            if (
+              p.closest(".input-group").querySelector('input[name="mainImage"]')
+            ) {
+              p.textContent = "Drag or Click to Upload";
+            } else {
+              p.textContent = "Select Multiple Images";
+            }
+          });
+          document
+            .querySelectorAll(".file-upload-wrapper")
+            .forEach((w) => (w.style.borderColor = ""));
+
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .withFailureHandler(function (error) {
+          alert("Error: " + error.message);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .saveNewVehicle(formDataObj);
+    } catch (error) {
+      alert("Error processing form files: " + error);
       btn.innerHTML = originalText;
       btn.disabled = false;
-    }, 1500);
+    }
   }
 </script>

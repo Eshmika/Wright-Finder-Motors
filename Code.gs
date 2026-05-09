@@ -23,3 +23,110 @@ function openApp() {
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
+function saveNewVehicle(data) {
+  var folderId = "1EUPGHZPwovNhVOsIc-AEEJqUinAqEZKK";
+  var folder = DriveApp.getFolderById(folderId);
+
+  var mainImageUrls = [];
+  if (data.mainImages && data.mainImages.length > 0) {
+    for (var i = 0; i < data.mainImages.length; i++) {
+      var img = data.mainImages[i];
+      var blob = Utilities.newBlob(
+        Utilities.base64Decode(img.data),
+        img.mimeType,
+        img.name,
+      );
+      var file = folder.createFile(blob);
+      mainImageUrls.push(file.getUrl());
+    }
+  }
+
+  var subImageUrls = [];
+  if (data.subImages && data.subImages.length > 0) {
+    for (var j = 0; j < data.subImages.length; j++) {
+      var imgSub = data.subImages[j];
+      var blobSub = Utilities.newBlob(
+        Utilities.base64Decode(imgSub.data),
+        imgSub.mimeType,
+        imgSub.name,
+      );
+      var fileSub = folder.createFile(blobSub);
+      subImageUrls.push(fileSub.getUrl());
+    }
+  }
+
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+
+  var carId = "WFM-" + Utilities.getUuid().substring(0, 8).toUpperCase();
+
+  if (!sheet) {
+    sheet =
+      SpreadsheetApp.getActiveSpreadsheet().insertSheet("Vehicle details");
+    sheet.appendRow([
+      "Timestamp",
+      "Car ID",
+      "Car Name",
+      "Model",
+      "Year",
+      "Mileage",
+      "Price",
+      "Discount",
+      "VIN",
+      "Status",
+      "Title",
+      "Style of Car",
+      "Body Style",
+      "Rent or Sell",
+      "Engine",
+      "Engine Type/Size",
+      "Transmission",
+      "Driveline",
+      "Fuel Type",
+      "Power Options",
+      "Drive Condition",
+      "Condition",
+      "Seat Material",
+      "Interior Color",
+      "Exterior Color",
+      "Interior Features",
+      "Description",
+      "Main Image URLs",
+      "Sub Image URLs",
+    ]);
+  }
+
+  sheet.appendRow([
+    new Date(),
+    carId,
+    data.carName || "",
+    data.model || "",
+    data.year || "",
+    data.mileage || "",
+    data.price || "",
+    data.discount || "",
+    data.vin || "",
+    data.status || "",
+    data.title || "",
+    data.styleOfCar || "",
+    data.bodyStyle || "",
+    data.rentOrSell || "",
+    data.engine || "",
+    data.engineType || "",
+    data.transmission || "",
+    data.driveline || "",
+    data.fuelType || "",
+    data.power || "",
+    data.driveCondition || "",
+    data.condition || "",
+    data.seatMaterial || "",
+    data.interiorColor || "",
+    data.exteriorColor || "",
+    data.interiorFeaturesStr || "",
+    data.description || "",
+    mainImageUrls.join(", "),
+    subImageUrls.join(", "),
+  ]);
+
+  return "Success";
+}
