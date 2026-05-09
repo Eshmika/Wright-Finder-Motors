@@ -1,3 +1,7 @@
+/**
+ * @NotOnlyCurrentDoc
+ */
+
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu("Wright Finder Motors")
@@ -16,6 +20,12 @@ function setupAuthorization() {
     dummy.setTrashed(true); // cleanup
   } catch (e) {}
   SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function testCreate() {
+  var folderId = "1EUPGHZPwovNhVOsIc-AEEJqUinAqEZKK";
+  var folder = DriveApp.getFolderById(folderId);
+  folder.createFile("test_direct.txt", "It works!");
 }
 
 function doGet(e) {
@@ -50,7 +60,8 @@ function saveNewVehicle(data) {
         img.mimeType,
         img.name,
       );
-      var file = folder.createFile(blob);
+      var file = DriveApp.createFile(blob);
+      file.moveTo(folder);
       mainImageUrls.push(file.getUrl());
     }
   }
@@ -64,7 +75,8 @@ function saveNewVehicle(data) {
         imgSub.mimeType,
         imgSub.name,
       );
-      var fileSub = folder.createFile(blobSub);
+      var fileSub = DriveApp.createFile(blobSub);
+      fileSub.moveTo(folder);
       subImageUrls.push(fileSub.getUrl());
     }
   }
