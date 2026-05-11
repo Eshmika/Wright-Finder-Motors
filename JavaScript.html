@@ -57,6 +57,11 @@
 
           if (specificView) {
             specificView.classList.add("active");
+
+            // If View All Cars is opened, load the data
+            if (targetView === "buy-view-all") {
+              loadCars();
+            }
           } else {
             viewPlaceholder.classList.add("active");
             placeholderTitle.textContent = viewTitle + " Content Goes Here";
@@ -147,6 +152,250 @@
         }
       });
     });
+
+    // View Cars Logic
+    let allCars = [];
+
+    function loadCars() {
+      const tbody = document.getElementById("carsTableBody");
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading vehicles...</td></tr>';
+
+      google.script.run
+        .withSuccessHandler(function (vehicles) {
+          allCars = vehicles;
+          renderCars(vehicles);
+        })
+        .withFailureHandler(function (error) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center text-danger">Error loading vehicles: ' +
+            error.message +
+            "</td></tr>";
+        })
+        .getVehicles();
+    }
+
+    function renderCars(vehicles) {
+      const tbody = document.getElementById("carsTableBody");
+      tbody.innerHTML = "";
+
+      if (!vehicles || vehicles.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" class="text-center">No vehicles found.</td></tr>';
+        return;
+      }
+
+      vehicles.reverse().forEach((car, index) => {
+        const tr = document.createElement("tr");
+        tr.onclick = () => openCarModal(car);
+
+        let firstMainImage = "";
+        if (car["Main Image URLs"]) {
+          let urls = car["Main Image URLs"].split(",");
+          if (urls.length > 0 && urls[0].trim() !== "") {
+            firstMainImage = urls[0].trim();
+          }
+        }
+
+        const imgHtml = firstMainImage
+          ? `<img src="${firstMainImage}" class="car-thumbnail">`
+          : `<div class="car-thumbnail d-flex align-items-center justify-content-center"><i class="fas fa-car text-muted"></i></div>`;
+
+        let statusClass = "status-available";
+        let status = car["Status"] || "Available";
+        if (status.toLowerCase().includes("sold")) statusClass = "status-sold";
+        if (status.toLowerCase().includes("pending"))
+          statusClass = "status-pending";
+
+        tr.innerHTML = `
+          <td>${imgHtml}</td>
+          <td><strong>${car["Car ID"] || "-"}</strong></td>
+          <td>${car["Car Name"] || "-"}</td>
+          <td>${car["Model"] || "-"} (${car["Year"] || "-"})</td>
+          <td class="text-success fw-bold">$${car["Price"] || "0"}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Modal Logic
+    const modal = document.getElementById("carDetailsModal");
+    const closeBtn = document.querySelector(".close-modal");
+
+    if (closeBtn) {
+      closeBtn.onclick = function () {
+        modal.style.display = "none";
+      };
+    }
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+
+    function openCarModal(car) {
+      document.getElementById("modalCarTitle").textContent =
+        (car["Car Name"] || "Car Details") + " - " + (car["Car ID"] || "");
+
+      // Images
+      const mainImageContainer = document.getElementById(
+        "modalMainImageContainer",
+      );
+      const subImagesContainer = document.getElementById(
+        "modalSubImagesContainer",
+      );
+
+      mainImageContainer.innerHTML = "";
+      subImagesContainer.innerHTML = "";
+
+      let allImages = [];
+      if (car["Main Image URLs"]) {
+        allImages = allImages.concat(
+          car["Main Image URLs"]
+            .split(",")
+            .map((u) => u.trim())
+            .filter((u) => u !== ""),
+        );
+      }
+      if (car["Sub Image URLs"]) {
+        allImages = allImages.concat(
+          car["Sub Image URLs"]
+            .split(",")
+            .map((u) => u.trim())
+            .filter((u) => u !== ""),
+        );
+      }
+
+      if (allImages.length > 0) {
+        mainImageContainer.innerHTML = `<img src="${allImages[0]}" id="modalMainImgDisplay">`;
+
+        allImages.forEach((url, i) => {
+          const thumb = document.createElement("img");
+          thumb.src = url;
+          if (i === 0) thumb.classList.add("active-thumb");
+
+          thumb.onclick = function () {
+            document.getElementById("modalMainImgDisplay").src = this.src;
+            document
+              .querySelectorAll(".sub-images-display img")
+              .forEach((img) => img.classList.remove("active-thumb"));
+            this.classList.add("active-thumb");
+          };
+
+          subImagesContainer.appendChild(thumb);
+        });
+      } else {
+        mainImageContainer.innerHTML = `<div style="height:300px; display:flex; align-items:center; justify-content:center; background:#f8f9fc; border-radius:10px;"><i class="fas fa-car fa-5x text-muted"></i></div>`;
+      }
+
+      // Details Info
+      const infoContainer = document.getElementById("modalCarInfo");
+      infoContainer.innerHTML = "";
+
+      const createDetailGroup = (label, value) => {
+        if (!value || value.toString().trim() === "") return "";
+        return `
+          <div class="detail-group">
+            <div class="detail-label">${label}</div>
+            <div class="${label === "Price" ? "detail-price" : "detail-value"}">${label === "Price" ? "$" : ""}${value}</div>
+          </div>
+        `;
+      };
+
+      let infoHtml = "";
+      infoHtml += createDetailGroup("Price", car["Price"]);
+      infoHtml += createDetailGroup("Status", car["Status"]);
+      infoHtml += createDetailGroup("Discount", car["Discount"]);
+      infoHtml += createDetailGroup("VIN", car["VIN"]);
+      infoHtml += createDetailGroup(
+        "Model & Year",
+        `${car["Model"] || ""} ${car["Year"] || ""}`,
+      );
+      infoHtml += createDetailGroup("Mileage", car["Mileage"]);
+      infoHtml += createDetailGroup(
+        "Style / Body",
+        `${car["Style of Car"] || ""} / ${car["Body Style"] || ""}`,
+      );
+      infoHtml += createDetailGroup(
+        "Engine",
+        `${car["Engine"] || ""} ${car["Engine Type/Size"] ? "(" + car["Engine Type/Size"] + ")" : ""}`,
+      );
+      infoHtml += createDetailGroup("Transmission", car["Transmission"]);
+      infoHtml += createDetailGroup("Driveline", car["Driveline"]);
+      infoHtml += createDetailGroup("Fuel Type", car["Fuel Type"]);
+      infoHtml += createDetailGroup(
+        "Condition / Drive",
+        `${car["Condition"] || ""} / ${car["Drive Condition"] || ""}`,
+      );
+      infoHtml += createDetailGroup(
+        "Exterior / Interior Color",
+        `${car["Exterior Color"] || ""} / ${car["Interior Color"] || ""}`,
+      );
+      infoHtml += createDetailGroup("Seat Material", car["Seat Material"]);
+      infoHtml += createDetailGroup(
+        "Interior Features",
+        car["Interior Features"],
+      );
+
+      if (car["Description"]) {
+        infoHtml += `
+          <div class="detail-group">
+            <div class="detail-label">Description</div>
+            <div class="detail-description">${String(car["Description"]).replace(/\n/g, "<br>")}</div>
+          </div>
+        `;
+      }
+
+      infoContainer.innerHTML = infoHtml;
+
+      modal.style.display = "block";
+    }
+
+    // Search Logic
+    const searchInput = document.getElementById("carSearchInput");
+    const btnSearch = document.getElementById("btnSearchCars");
+    const btnReset = document.getElementById("btnResetSearch");
+
+    if (btnSearch) {
+      btnSearch.addEventListener("click", function () {
+        const query = searchInput.value.toLowerCase();
+        if (!query) {
+          renderCars(allCars);
+          return;
+        }
+
+        const filtered = allCars.filter((car) => {
+          return (
+            (car["Car ID"] && car["Car ID"].toLowerCase().includes(query)) ||
+            (car["Car Name"] &&
+              car["Car Name"].toLowerCase().includes(query)) ||
+            (car["Model"] && car["Model"].toLowerCase().includes(query)) ||
+            (car["Year"] &&
+              car["Year"].toString().toLowerCase().includes(query)) ||
+            (car["Status"] && car["Status"].toLowerCase().includes(query))
+          );
+        });
+
+        renderCars(filtered);
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener("click", function () {
+        searchInput.value = "";
+        renderCars(allCars);
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("keyup", function (e) {
+        if (e.key === "Enter") {
+          btnSearch.click();
+        }
+      });
+    }
   });
 
   function fileToBase64(file) {

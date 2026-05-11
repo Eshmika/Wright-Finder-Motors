@@ -156,3 +156,27 @@ function saveNewVehicle(data) {
 
   return "Success";
 }
+
+function getVehicles() {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return []; // Only headers or empty
+
+  var headers = data[0];
+  var vehicles = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var vehicle = {};
+    for (var j = 0; j < headers.length; j++) {
+      var header = headers[j];
+      vehicle[header] = row[j];
+    }
+    vehicles.push(vehicle);
+  }
+
+  return vehicles;
+}

@@ -1,0 +1,71 @@
+<div id="view-buy-view-all" class="view">
+  <div class="view-header">
+    <div class="view-title">
+      <i class="fas fa-car-side title-icon"></i>
+      View All Cars
+    </div>
+    <div class="view-subtitle">
+      Browse and manage all vehicles in the inventory.
+    </div>
+  </div>
+
+  <div class="search-bar-container">
+    <input
+      type="text"
+      id="carSearchInput"
+      class="form-control"
+      placeholder="Search by Car ID, Name, Model, Year, or Status..."
+    />
+    <button id="btnSearchCars" class="btn-primary">
+      <i class="fas fa-search"></i> Search
+    </button>
+    <button id="btnResetSearch" class="btn-secondary">
+      <i class="fas fa-sync-alt"></i> Reset
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="cars-table" id="carsTable">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Car ID</th>
+          <th>Car Name</th>
+          <th>Model & Year</th>
+          <th>Price</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="carsTableBody">
+        <tr>
+          <td colspan="6" class="text-center">Loading vehicles...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal for Car Details -->
+<div id="carDetailsModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalCarTitle">Car Details</h2>
+      <span class="close-modal">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="car-details-grid">
+        <div class="car-images-section">
+          <div class="main-image-display" id="modalMainImageContainer">
+            <!-- Main image will be loaded here -->
+          </div>
+          <div class="sub-images-display" id="modalSubImagesContainer">
+            <!-- Sub images will be loaded here -->
+          </div>
+        </div>
+        <div class="car-info-section" id="modalCarInfo">
+          <!-- Details will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
