@@ -53,29 +53,46 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid var(--light);
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary), #3b5bdb);
+      padding: 25px 30px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
     "
   >
     <div>
       <div
         class="view-title"
         id="pageCarTitle"
-        style="font-size: 2rem; font-weight: 700; color: var(--dark)"
+        style="font-size: 2rem; font-weight: 700; color: white"
       >
         <i class="fas fa-car title-icon"></i> Car Details
       </div>
       <div
         class="view-subtitle"
         id="pageCarSubtitle"
-        style="color: var(--secondary); font-size: 1.1rem; margin-top: 5px"
+        style="
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 1.1rem;
+          margin-top: 5px;
+        "
       ></div>
     </div>
     <button
       class="btn-secondary"
       id="btnBackToCars"
-      style="padding: 10px 20px; font-weight: bold; border-radius: 8px"
+      style="
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+      "
+      onmouseover="this.style.background = 'rgba(255, 255, 255, 0.3)'"
+      onmouseout="this.style.background = 'rgba(255, 255, 255, 0.2)'"
     >
       <i class="fas fa-arrow-left"></i> Back to Cars
     </button>
@@ -96,11 +113,15 @@
 
     <div class="car-specs-section">
       <div class="spec-card price-card">
-        <h3 id="pageCarPrice" class="display-price"></h3>
+        <div class="price-info-container">
+          <h3 id="pageCarPrice" class="display-price"></h3>
+          <div
+            id="pageCarDiscount"
+            class="discount-badge"
+            style="display: none"
+          ></div>
+        </div>
         <p class="status-badge-lg" id="pageCarStatus"></p>
-        <button class="btn-primary cta-btn">
-          <i class="fas fa-calendar-check"></i> Book a Test Drive
-        </button>
       </div>
 
       <div class="spec-card info-card">

@@ -328,45 +328,114 @@
       const infoContainer = document.getElementById("pageCarInfo");
       infoContainer.innerHTML = "";
 
-      const createSpecItem = (label, value) => {
+      const createSpecItem = (label, value, icon, color) => {
         if (!value || value.toString().trim() === "") return "";
         return `
-          <div class="spec-item">
-            <div class="spec-label">${label}</div>
+          <div class="spec-item" style="border-left-color: ${color || "var(--primary)"}">
+            <div class="spec-label"><i class="fas ${icon || "fa-check"}"></i> ${label}</div>
             <div class="spec-value">${value}</div>
           </div>
         `;
       };
 
+      const discountEl = document.getElementById("pageCarDiscount");
+      if (
+        car["Discount"] &&
+        car["Discount"] !== "0" &&
+        car["Discount"].toString().trim() !== ""
+      ) {
+        discountEl.innerHTML = `<i class="fas fa-tags"></i> Discount: ${car["Discount"]}`;
+        discountEl.style.display = "inline-block";
+      } else {
+        discountEl.style.display = "none";
+      }
+
       let infoHtml = "";
-      infoHtml += createSpecItem("Discount", car["Discount"]);
-      infoHtml += createSpecItem("VIN", car["VIN"]);
+      infoHtml += createSpecItem(
+        "Title",
+        car["Title"],
+        "fa-file-signature",
+        "#f6c23e",
+      );
+      infoHtml += createSpecItem(
+        "Rent or Sell",
+        car["Rent or Sell"],
+        "fa-hand-holding-usd",
+        "#1cc88a",
+      );
+      infoHtml += createSpecItem("VIN", car["VIN"], "fa-barcode", "#4e73df");
       infoHtml += createSpecItem(
         "Model & Year",
         `${car["Model"] || ""} ${car["Year"] || ""}`,
+        "fa-calendar-alt",
+        "#36b9cc",
       );
-      infoHtml += createSpecItem("Mileage", car["Mileage"]);
+      infoHtml += createSpecItem(
+        "Mileage",
+        car["Mileage"],
+        "fa-tachometer-alt",
+        "#e74a3b",
+      );
       infoHtml += createSpecItem(
         "Style / Body",
         `${car["Style of Car"] || ""} ${car["Body Style"] ? "/ " + car["Body Style"] : ""}`,
+        "fa-car",
+        "#f6c23e",
       );
       infoHtml += createSpecItem(
         "Engine",
         `${car["Engine"] || ""} ${car["Engine Type/Size"] ? "(" + car["Engine Type/Size"] + ")" : ""}`,
+        "fa-cogs",
+        "#1cc88a",
       );
-      infoHtml += createSpecItem("Transmission", car["Transmission"]);
-      infoHtml += createSpecItem("Driveline", car["Driveline"]);
-      infoHtml += createSpecItem("Fuel Type", car["Fuel Type"]);
+      infoHtml += createSpecItem(
+        "Transmission",
+        car["Transmission"],
+        "fa-cog",
+        "#4e73df",
+      );
+      infoHtml += createSpecItem(
+        "Driveline",
+        car["Driveline"],
+        "fa-road",
+        "#36b9cc",
+      );
+      infoHtml += createSpecItem(
+        "Fuel Type",
+        car["Fuel Type"],
+        "fa-gas-pump",
+        "#e74a3b",
+      );
+      infoHtml += createSpecItem(
+        "Power Options",
+        car["Power Options"],
+        "fa-bolt",
+        "#f6c23e",
+      );
       infoHtml += createSpecItem(
         "Condition / Drive",
         `${car["Condition"] || ""} ${car["Drive Condition"] ? "/ " + car["Drive Condition"] : ""}`,
+        "fa-clipboard-check",
+        "#1cc88a",
       );
       infoHtml += createSpecItem(
         "Colors (Ext / Int)",
         `${car["Exterior Color"] || ""} ${car["Interior Color"] ? "/ " + car["Interior Color"] : ""}`,
+        "fa-palette",
+        "#4e73df",
       );
-      infoHtml += createSpecItem("Seat Material", car["Seat Material"]);
-      infoHtml += createSpecItem("Features", car["Interior Features"]);
+      infoHtml += createSpecItem(
+        "Seat Material",
+        car["Seat Material"],
+        "fa-chair",
+        "#36b9cc",
+      );
+      infoHtml += createSpecItem(
+        "Features",
+        car["Interior Features"],
+        "fa-star",
+        "#e74a3b",
+      );
 
       infoContainer.innerHTML = infoHtml;
 
