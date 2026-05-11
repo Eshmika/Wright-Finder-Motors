@@ -156,6 +156,20 @@
     // View Cars Logic
     let allCars = [];
 
+    function getDirectImageUrl(url) {
+      if (!url) return "";
+      if (url.includes("drive.google.com/file/d/")) {
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+          // Use thumbnail endpoint for displaying Drive images in img tags
+          return (
+            "https://drive.google.com/thumbnail?id=" + match[1] + "&sz=w1000"
+          );
+        }
+      }
+      return url.trim();
+    }
+
     function loadCars() {
       const tbody = document.getElementById("carsTableBody");
       tbody.innerHTML =
@@ -193,7 +207,7 @@
         if (car["Main Image URLs"]) {
           let urls = car["Main Image URLs"].split(",");
           if (urls.length > 0 && urls[0].trim() !== "") {
-            firstMainImage = urls[0].trim();
+            firstMainImage = getDirectImageUrl(urls[0].trim());
           }
         }
 
@@ -219,32 +233,46 @@
       });
     }
 
-    // Modal Logic
-    const modal = document.getElementById("carDetailsModal");
-    const closeBtn = document.querySelector(".close-modal");
+    // Car Details Page View Logic
+    const viewCarDetails = document.getElementById("view-car-details");
+    const btnBackToCars = document.getElementById("btnBackToCars");
 
-    if (closeBtn) {
-      closeBtn.onclick = function () {
-        modal.style.display = "none";
+    if (btnBackToCars) {
+      btnBackToCars.onclick = function () {
+        document
+          .querySelectorAll(".view")
+          .forEach((v) => v.classList.remove("active"));
+        document.getElementById("view-buy-view-all").classList.add("active");
+
+        // Restore title to "View All Cars"
+        const topBarTitle = document.querySelector(".topbar h2");
+        if (topBarTitle) topBarTitle.textContent = "Buy / View All Cars";
       };
     }
 
-    window.onclick = function (event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    };
-
     function openCarModal(car) {
-      document.getElementById("modalCarTitle").textContent =
-        (car["Car Name"] || "Car Details") + " - " + (car["Car ID"] || "");
+      // Hide all views and show the details view
+      document
+        .querySelectorAll(".view")
+        .forEach((v) => v.classList.remove("active"));
+      viewCarDetails.classList.add("active");
+
+      // Update Topbar Title
+      const topBarTitle = document.querySelector(".topbar h2");
+      if (topBarTitle) topBarTitle.textContent = "Car Details";
+
+      // Set Header and Subtitle
+      document.getElementById("pageCarTitle").innerHTML =
+        `<i class="fas fa-car title-icon"></i> ${car["Car Name"] || "Car Details"}`;
+      document.getElementById("pageCarSubtitle").textContent =
+        `ID: ${car["Car ID"] || "N/A"}`;
 
       // Images
       const mainImageContainer = document.getElementById(
-        "modalMainImageContainer",
+        "pageMainImageContainer",
       );
       const subImagesContainer = document.getElementById(
-        "modalSubImagesContainer",
+        "pageSubImagesContainer",
       );
 
       mainImageContainer.innerHTML = "";
@@ -255,7 +283,7 @@
         allImages = allImages.concat(
           car["Main Image URLs"]
             .split(",")
-            .map((u) => u.trim())
+            .map((u) => getDirectImageUrl(u.trim()))
             .filter((u) => u !== ""),
         );
       }
@@ -263,13 +291,13 @@
         allImages = allImages.concat(
           car["Sub Image URLs"]
             .split(",")
-            .map((u) => u.trim())
+            .map((u) => getDirectImageUrl(u.trim()))
             .filter((u) => u !== ""),
         );
       }
 
       if (allImages.length > 0) {
-        mainImageContainer.innerHTML = `<img src="${allImages[0]}" id="modalMainImgDisplay">`;
+        mainImageContainer.innerHTML = `<img src="${allImages[0]}" id="pageMainImgDisplay">`;
 
         allImages.forEach((url, i) => {
           const thumb = document.createElement("img");
@@ -277,9 +305,9 @@
           if (i === 0) thumb.classList.add("active-thumb");
 
           thumb.onclick = function () {
-            document.getElementById("modalMainImgDisplay").src = this.src;
+            document.getElementById("pageMainImgDisplay").src = this.src;
             document
-              .querySelectorAll(".sub-images-display img")
+              .querySelectorAll(".image-strip img")
               .forEach((img) => img.classList.remove("active-thumb"));
             this.classList.add("active-thumb");
           };
@@ -287,70 +315,71 @@
           subImagesContainer.appendChild(thumb);
         });
       } else {
-        mainImageContainer.innerHTML = `<div style="height:300px; display:flex; align-items:center; justify-content:center; background:#f8f9fc; border-radius:10px;"><i class="fas fa-car fa-5x text-muted"></i></div>`;
+        mainImageContainer.innerHTML = `<div style="height:400px; display:flex; align-items:center; justify-content:center; background:#f8f9fc; border-radius:10px;"><i class="fas fa-car fa-5x text-muted"></i></div>`;
       }
 
-      // Details Info
-      const infoContainer = document.getElementById("modalCarInfo");
+      // Price & Status Card
+      document.getElementById("pageCarPrice").textContent =
+        `$${car["Price"] || "0"}`;
+      document.getElementById("pageCarStatus").textContent =
+        car["Status"] || "Available";
+
+      // Details Info Grid
+      const infoContainer = document.getElementById("pageCarInfo");
       infoContainer.innerHTML = "";
 
-      const createDetailGroup = (label, value) => {
+      const createSpecItem = (label, value) => {
         if (!value || value.toString().trim() === "") return "";
         return `
-          <div class="detail-group">
-            <div class="detail-label">${label}</div>
-            <div class="${label === "Price" ? "detail-price" : "detail-value"}">${label === "Price" ? "$" : ""}${value}</div>
+          <div class="spec-item">
+            <div class="spec-label">${label}</div>
+            <div class="spec-value">${value}</div>
           </div>
         `;
       };
 
       let infoHtml = "";
-      infoHtml += createDetailGroup("Price", car["Price"]);
-      infoHtml += createDetailGroup("Status", car["Status"]);
-      infoHtml += createDetailGroup("Discount", car["Discount"]);
-      infoHtml += createDetailGroup("VIN", car["VIN"]);
-      infoHtml += createDetailGroup(
+      infoHtml += createSpecItem("Discount", car["Discount"]);
+      infoHtml += createSpecItem("VIN", car["VIN"]);
+      infoHtml += createSpecItem(
         "Model & Year",
         `${car["Model"] || ""} ${car["Year"] || ""}`,
       );
-      infoHtml += createDetailGroup("Mileage", car["Mileage"]);
-      infoHtml += createDetailGroup(
+      infoHtml += createSpecItem("Mileage", car["Mileage"]);
+      infoHtml += createSpecItem(
         "Style / Body",
-        `${car["Style of Car"] || ""} / ${car["Body Style"] || ""}`,
+        `${car["Style of Car"] || ""} ${car["Body Style"] ? "/ " + car["Body Style"] : ""}`,
       );
-      infoHtml += createDetailGroup(
+      infoHtml += createSpecItem(
         "Engine",
         `${car["Engine"] || ""} ${car["Engine Type/Size"] ? "(" + car["Engine Type/Size"] + ")" : ""}`,
       );
-      infoHtml += createDetailGroup("Transmission", car["Transmission"]);
-      infoHtml += createDetailGroup("Driveline", car["Driveline"]);
-      infoHtml += createDetailGroup("Fuel Type", car["Fuel Type"]);
-      infoHtml += createDetailGroup(
+      infoHtml += createSpecItem("Transmission", car["Transmission"]);
+      infoHtml += createSpecItem("Driveline", car["Driveline"]);
+      infoHtml += createSpecItem("Fuel Type", car["Fuel Type"]);
+      infoHtml += createSpecItem(
         "Condition / Drive",
-        `${car["Condition"] || ""} / ${car["Drive Condition"] || ""}`,
+        `${car["Condition"] || ""} ${car["Drive Condition"] ? "/ " + car["Drive Condition"] : ""}`,
       );
-      infoHtml += createDetailGroup(
-        "Exterior / Interior Color",
-        `${car["Exterior Color"] || ""} / ${car["Interior Color"] || ""}`,
+      infoHtml += createSpecItem(
+        "Colors (Ext / Int)",
+        `${car["Exterior Color"] || ""} ${car["Interior Color"] ? "/ " + car["Interior Color"] : ""}`,
       );
-      infoHtml += createDetailGroup("Seat Material", car["Seat Material"]);
-      infoHtml += createDetailGroup(
-        "Interior Features",
-        car["Interior Features"],
-      );
-
-      if (car["Description"]) {
-        infoHtml += `
-          <div class="detail-group">
-            <div class="detail-label">Description</div>
-            <div class="detail-description">${String(car["Description"]).replace(/\n/g, "<br>")}</div>
-          </div>
-        `;
-      }
+      infoHtml += createSpecItem("Seat Material", car["Seat Material"]);
+      infoHtml += createSpecItem("Features", car["Interior Features"]);
 
       infoContainer.innerHTML = infoHtml;
 
-      modal.style.display = "block";
+      // Description Card
+      const descCard = document.getElementById("pageCarDescCard");
+      if (car["Description"] && car["Description"].trim() !== "") {
+        document.getElementById("pageCarDescription").innerHTML = String(
+          car["Description"],
+        ).replace(/\n/g, "<br>");
+        descCard.style.display = "block";
+      } else {
+        descCard.style.display = "none";
+      }
     }
 
     // Search Logic

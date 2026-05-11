@@ -45,26 +45,78 @@
   </div>
 </div>
 
-<!-- Modal for Car Details -->
-<div id="carDetailsModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="modalCarTitle">Car Details</h2>
-      <span class="close-modal">&times;</span>
+<!-- Detailed Car Page View -->
+<div id="view-car-details" class="view">
+  <div
+    class="view-header"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--light);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    "
+  >
+    <div>
+      <div
+        class="view-title"
+        id="pageCarTitle"
+        style="font-size: 2rem; font-weight: 700; color: var(--dark)"
+      >
+        <i class="fas fa-car title-icon"></i> Car Details
+      </div>
+      <div
+        class="view-subtitle"
+        id="pageCarSubtitle"
+        style="color: var(--secondary); font-size: 1.1rem; margin-top: 5px"
+      ></div>
     </div>
-    <div class="modal-body">
-      <div class="car-details-grid">
-        <div class="car-images-section">
-          <div class="main-image-display" id="modalMainImageContainer">
-            <!-- Main image will be loaded here -->
-          </div>
-          <div class="sub-images-display" id="modalSubImagesContainer">
-            <!-- Sub images will be loaded here -->
-          </div>
-        </div>
-        <div class="car-info-section" id="modalCarInfo">
+    <button
+      class="btn-secondary"
+      id="btnBackToCars"
+      style="padding: 10px 20px; font-weight: bold; border-radius: 8px"
+    >
+      <i class="fas fa-arrow-left"></i> Back to Cars
+    </button>
+  </div>
+
+  <div class="creative-car-grid">
+    <div class="car-gallery-section banner-card">
+      <div
+        class="main-image-display hero-image-container"
+        id="pageMainImageContainer"
+      >
+        <!-- Main image will be loaded here -->
+      </div>
+      <div class="sub-images-display image-strip" id="pageSubImagesContainer">
+        <!-- Sub images will be loaded here -->
+      </div>
+    </div>
+
+    <div class="car-specs-section">
+      <div class="spec-card price-card">
+        <h3 id="pageCarPrice" class="display-price"></h3>
+        <p class="status-badge-lg" id="pageCarStatus"></p>
+        <button class="btn-primary cta-btn">
+          <i class="fas fa-calendar-check"></i> Book a Test Drive
+        </button>
+      </div>
+
+      <div class="spec-card info-card">
+        <h4><i class="fas fa-clipboard-list"></i> Key Specifications</h4>
+        <div class="spec-grid" id="pageCarInfo">
           <!-- Details will be loaded here -->
         </div>
+      </div>
+
+      <div
+        class="spec-card desc-card"
+        id="pageCarDescCard"
+        style="display: none"
+      >
+        <h4><i class="fas fa-align-left"></i> Description</h4>
+        <div id="pageCarDescription" class="desc-content"></div>
       </div>
     </div>
   </div>
