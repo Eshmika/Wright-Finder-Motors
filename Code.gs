@@ -162,7 +162,7 @@ function getVehicles() {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
   if (!sheet) return [];
 
-  var data = sheet.getDataRange().getValues();
+  var data = sheet.getDataRange().getDisplayValues();
   if (data.length <= 1) return []; // Only headers or empty
 
   var headers = data[0];
