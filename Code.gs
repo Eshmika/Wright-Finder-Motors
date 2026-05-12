@@ -119,6 +119,9 @@ function saveNewVehicle(data) {
       "Description",
       "Main Image URLs",
       "Sub Image URLs",
+      "CLIENT NAME",
+      "PURCHASE DATE",
+      "SOLD DATE",
     ]);
   }
 
@@ -152,6 +155,9 @@ function saveNewVehicle(data) {
     data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
+    "",
+    "",
+    "",
   ]);
 
   return "Success";

@@ -358,6 +358,15 @@
           // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
           // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" required>`;
+        } else if (key === "PURCHASE DATE" || key === "SOLD DATE") {
+          // Format date string if it includes time component to yyyy-mm-dd for input display
+          if (val) {
+            try {
+              let d = new Date(val);
+              if (!isNaN(d.getTime())) val = d.toISOString().split("T")[0];
+            } catch (e) {}
+          }
+          inputHtml = `<input type="date" name="${key}" value="${val}" class="form-control">`;
         } else {
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
         }
@@ -599,6 +608,24 @@
         car["Interior Features"],
         "fa-star",
         "#e74a3b",
+      );
+      infoHtml += createSpecItem(
+        "Client Name",
+        car["CLIENT NAME"],
+        "fa-user",
+        "#4e73df",
+      );
+      infoHtml += createSpecItem(
+        "Purchase Date",
+        car["PURCHASE DATE"],
+        "fa-calendar-plus",
+        "#1cc88a",
+      );
+      infoHtml += createSpecItem(
+        "Sold Date",
+        car["SOLD DATE"],
+        "fa-calendar-check",
+        "#f6c23e",
       );
 
       infoContainer.innerHTML = infoHtml;
