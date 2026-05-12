@@ -122,6 +122,10 @@ function saveNewVehicle(data) {
       "CLIENT NAME",
       "PURCHASE DATE",
       "SOLD DATE",
+      "IAAI TOTAL PRICE W/ FEES",
+      "PAPE PRICE",
+      "DISP-PRICE",
+      "TRANSPORT FEES",
     ]);
   }
 
@@ -155,6 +159,10 @@ function saveNewVehicle(data) {
     data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
+    "",
+    "",
+    "",
+    "",
     "",
     "",
     "",

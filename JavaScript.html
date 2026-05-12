@@ -627,6 +627,30 @@
         "fa-calendar-check",
         "#f6c23e",
       );
+      infoHtml += createSpecItem(
+        "IAAI Total Price",
+        car["IAAI TOTAL PRICE W/ FEES"],
+        "fa-dollar-sign",
+        "#e74a3b",
+      );
+      infoHtml += createSpecItem(
+        "PAPE Price",
+        car["PAPE PRICE"],
+        "fa-money-bill-wave",
+        "#1cc88a",
+      );
+      infoHtml += createSpecItem(
+        "Disp-Price",
+        car["DISP-PRICE"],
+        "fa-tag",
+        "#36b9cc",
+      );
+      infoHtml += createSpecItem(
+        "Transport Fees",
+        car["TRANSPORT FEES"],
+        "fa-truck",
+        "#f6c23e",
+      );
 
       infoContainer.innerHTML = infoHtml;
 
