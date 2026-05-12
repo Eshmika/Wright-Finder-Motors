@@ -288,16 +288,76 @@
 
       const skippedKeys = ["Timestamp", "Main Image URLs", "Sub Image URLs"];
 
+      const dropdownOptions = {
+        Status: ["Available", "Sold", "Pending"],
+        Title: ["Clean", "Rebuilt", "Lien", "Salvage"],
+        "Style of Car": ["4 Door", "2 Door"],
+        "Body Style": ["Sedan", "SUV", "Sport", "Hatchback", "N/a"],
+        "Rent or Sell": ["Sell", "Rent", "Both"],
+        Engine: ["Non sport", "Sport"],
+        "Engine Type/Size": ["2.5L 4 cylinder", "V6", "V8", "hybrid"],
+        Transmission: ["Automatic", "Manual", "CVT(continuously variable)"],
+        Driveline: ["FWD", "RWD", "AWD", "4WD"],
+        "Fuel Type": ["Gasoline", "Diesel", "Hybrid", "Electric"],
+        "Power Options": ["Keyless", "Remote", "Key entry"],
+        "Drive Condition": ["Runs/drives", "Run, stationed", "n/a"],
+        Condition: ["New", "Pre-owned", "Used", "Salvage"],
+        "Seat Material": ["Leather", "Clothes"],
+        "Interior Color": [
+          "Black",
+          "White",
+          "Gray",
+          "Beige",
+          "Brown",
+          "Tan",
+          "Ivory/Cream",
+          "Charcoal",
+          "Multi-color",
+          "Other(Name)",
+        ],
+        "Exterior Color": [
+          "White",
+          "Black",
+          "Silver",
+          "Gray",
+          "Beige",
+          "Blue",
+          "Red",
+          "Green",
+          "Brown",
+          "Yellow",
+          "Gold",
+          "Multi-color",
+          "Other(Name)",
+        ],
+      };
+
       for (const key in currentEditableCar) {
         if (skippedKeys.includes(key)) continue;
 
-        let val = currentEditableCar[key];
+        let val = currentEditableCar[key] || "";
         let inputHtml = "";
 
         if (key === "Car ID") {
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
         } else if (key === "Description" || key === "Interior Features") {
           inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
+        } else if (key === "Year") {
+          let options = '<option value="">Select Year...</option>';
+          for (let y = 1990; y <= 2050; y++) {
+            options += `<option value="${y}" ${val == y ? "selected" : ""}>${y}</option>`;
+          }
+          inputHtml = `<select name="${key}" class="form-control" required>${options}</select>`;
+        } else if (dropdownOptions[key]) {
+          let options = `<option value="">Select ${key}...</option>`;
+          dropdownOptions[key].forEach((opt) => {
+            options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
+          });
+          inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
+        } else if (key === "Price" || key === "Discount") {
+          // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
+          // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
+          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" required>`;
         } else {
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
         }
