@@ -236,6 +236,7 @@
     // Car Details Page View Logic
     const viewCarDetails = document.getElementById("view-car-details");
     const btnBackToCars = document.getElementById("btnBackToCars");
+    let currentEditableCar = null;
 
     if (btnBackToCars) {
       btnBackToCars.onclick = function () {
@@ -247,10 +248,113 @@
         // Restore title to "View All Cars"
         const topBarTitle = document.querySelector(".topbar h2");
         if (topBarTitle) topBarTitle.textContent = "Buy / View All Cars";
+
+        // Reset Edit mode if active
+        setEditMode(false);
+      };
+    }
+
+    function setEditMode(isEdit) {
+      const viewMode = document.getElementById("pageCarViewMode");
+      const editMode = document.getElementById("pageCarEditMode");
+      const editBtn = document.getElementById("btnEditCarDetails");
+
+      if (isEdit) {
+        viewMode.style.display = "none";
+        editMode.style.display = "block";
+        editBtn.style.display = "none"; // Hide edit button while editing
+        populateEditForm();
+      } else {
+        viewMode.style.display = "block";
+        editMode.style.display = "none";
+        editBtn.style.display = "flex";
+      }
+    }
+
+    const btnEditCarDetails = document.getElementById("btnEditCarDetails");
+    if (btnEditCarDetails) {
+      btnEditCarDetails.onclick = () => setEditMode(true);
+    }
+
+    const btnCancelEdit = document.getElementById("btnCancelEdit");
+    if (btnCancelEdit) {
+      btnCancelEdit.onclick = () => setEditMode(false);
+    }
+
+    function populateEditForm() {
+      if (!currentEditableCar) return;
+      const grid = document.getElementById("editFormFieldsGrid");
+      grid.innerHTML = "";
+
+      const skippedKeys = ["Timestamp", "Main Image URLs", "Sub Image URLs"];
+
+      for (const key in currentEditableCar) {
+        if (skippedKeys.includes(key)) continue;
+
+        let val = currentEditableCar[key];
+        let inputHtml = "";
+
+        if (key === "Car ID") {
+          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
+        } else if (key === "Description" || key === "Interior Features") {
+          inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
+        } else {
+          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
+        }
+
+        grid.innerHTML += `
+            <div class="input-group">
+               <label>${key}</label>
+               ${inputHtml}
+            </div>
+          `;
+      }
+    }
+
+    const carEditForm = document.getElementById("carEditForm");
+    if (carEditForm) {
+      carEditForm.onsubmit = function (e) {
+        e.preventDefault();
+        const btn = carEditForm.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+
+        const formData = new FormData(carEditForm);
+        const updatedData = {};
+        formData.forEach((value, key) => {
+          updatedData[key] = value;
+        });
+
+        google.script.run
+          .withSuccessHandler(function (response) {
+            alert("Details updated successfully!");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+
+            // Update locally so we don't have to fully reload immediately
+            Object.assign(currentEditableCar, updatedData);
+
+            // Re-render the details in view mode
+            openCarModal(currentEditableCar);
+            setEditMode(false);
+
+            // Optionally refresh the whole list in background
+            // loadCars();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error saving: " + error.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          })
+          .updateVehicleData(updatedData);
       };
     }
 
     function openCarModal(car) {
+      currentEditableCar = car;
+      setEditMode(false);
+
       // Hide all views and show the details view
       document
         .querySelectorAll(".view")

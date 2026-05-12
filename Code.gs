@@ -157,6 +157,35 @@ function saveNewVehicle(data) {
   return "Success";
 }
 
+function updateVehicleData(updatedData) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return "Error: Sheet not found";
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return "Error: No data";
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  if (carIdIndex === -1) return "Error: Car ID column not found";
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][carIdIndex] === updatedData["Car ID"]) {
+      // Found the row, update it
+      for (var key in updatedData) {
+        if (updatedData.hasOwnProperty(key) && key !== "Car ID") {
+          var colIndex = headers.indexOf(key);
+          if (colIndex !== -1) {
+            sheet.getRange(i + 1, colIndex + 1).setValue(updatedData[key]);
+          }
+        }
+      }
+      return "Success";
+    }
+  }
+  return "Error: Car ID not found";
+}
+
 function getVehicles() {
   var sheet =
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
