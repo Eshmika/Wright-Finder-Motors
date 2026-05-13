@@ -839,7 +839,27 @@
         "#f6c23e",
       );
 
+      // Async fetch for materials expenses
+      infoHtml += `
+          <div class="spec-item" style="border-left-color: #8e44ad; background: rgba(142, 68, 173, 0.05);">
+            <div class="spec-label" style="color: #8e44ad;"><i class="fas fa-file-invoice-dollar"></i> All Materials Expenses</div>
+            <div class="spec-value" id="pageCarTotalExpenses"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+          </div>
+      `;
+
       infoContainer.innerHTML = infoHtml;
+
+      // Request total expenses for this car specifically from the backend
+      google.script.run
+        .withSuccessHandler(function (total) {
+          let badge = `<span style="background: #e0c8f6; color: #6f42c1; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; display: inline-block;">$${parseFloat(total).toFixed(2)}</span>`;
+          document.getElementById("pageCarTotalExpenses").innerHTML = badge;
+        })
+        .withFailureHandler(function (e) {
+          document.getElementById("pageCarTotalExpenses").innerHTML =
+            `<span class="text-danger">Error loading</span>`;
+        })
+        .getTotalExpenseForCar(car["Car ID"]);
 
       // Description Card
       const descCard = document.getElementById("pageCarDescCard");

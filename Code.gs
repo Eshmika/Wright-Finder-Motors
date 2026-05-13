@@ -277,3 +277,29 @@ function getExpenses() {
 
   return expenses;
 }
+
+function getTotalExpenseForCar(carId) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
+  if (!sheet) return 0;
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return 0;
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("CAR ID");
+  var amountIndex = headers.indexOf("AMOUNT");
+
+  if (carIdIndex === -1 || amountIndex === -1) return 0;
+
+  var total = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][carIdIndex] === carId) {
+      var amt = parseFloat(data[i][amountIndex]);
+      if (!isNaN(amt)) {
+        total += amt;
+      }
+    }
+  }
+  return total;
+}
