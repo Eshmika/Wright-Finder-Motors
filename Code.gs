@@ -126,6 +126,7 @@ function saveNewVehicle(data) {
       "PAPE PRICE",
       "DISP-PRICE",
       "TRANSPORT FEES",
+      "SOLD PRICE",
     ]);
   }
 
@@ -159,6 +160,7 @@ function saveNewVehicle(data) {
     data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
+    "",
     "",
     "",
     "",

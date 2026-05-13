@@ -545,6 +545,8 @@
           // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
           // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" required>`;
+        } else if (key === "SOLD PRICE") {
+          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" placeholder="$0.00">`;
         } else if (key === "PURCHASE DATE" || key === "SOLD DATE") {
           // Format date string if it includes time component to yyyy-mm-dd for input display
           if (val) {
@@ -813,6 +815,12 @@
         car["SOLD DATE"],
         "fa-calendar-check",
         "#f6c23e",
+      );
+      infoHtml += createSpecItem(
+        "Sold Price",
+        car["SOLD PRICE"],
+        "fa-hand-holding-usd",
+        "#1cc88a",
       );
       infoHtml += createSpecItem(
         "IAAI Total Price",
