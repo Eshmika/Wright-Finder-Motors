@@ -549,6 +549,7 @@
         "PURCHASE DATE",
         "SOLD DATE",
         "SOLD PRICE",
+        "DOWN PAYMENT",
         "IAAI TOTAL PRICE W/ FEES",
         "PAPE PRICE",
         "DISP-PRICE",
@@ -590,7 +591,7 @@
           // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
           // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" required>`;
-        } else if (key === "SOLD PRICE") {
+        } else if (key === "SOLD PRICE" || key === "DOWN PAYMENT") {
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" placeholder="$0.00">`;
         } else if (key === "PURCHASE DATE" || key === "SOLD DATE") {
           // Format date string if it includes time component to yyyy-mm-dd for input display
@@ -919,6 +920,39 @@
             <div class="spec-value" style="color: #1cc88a; font-size: 1.3em; font-weight: 800;">${displaySoldPrice}</div>
           </div>
         `;
+      }
+
+      // Emphasized Down Payment Row
+      if (car["DOWN PAYMENT"] && car["DOWN PAYMENT"].toString().trim() !== "") {
+        let displayDownPayment = car["DOWN PAYMENT"].toString().trim();
+        let downPaymentVal =
+          parseFloat(displayDownPayment.replace(/[^0-9.-]+/g, "")) || 0;
+
+        if (!displayDownPayment.startsWith("$") && !isNaN(downPaymentVal)) {
+          displayDownPayment = "$" + downPaymentVal.toFixed(2);
+        }
+        infoHtml += `
+          <div class="spec-item" style="border-left-color: #f6c23e; background: rgba(246, 194, 62, 0.08); padding: 15px;">
+            <div class="spec-label" style="color: #f6c23e; font-size: 1.1em;"><i class="fas fa-money-check-alt"></i> DOWN PAYMENT</div>
+            <div class="spec-value" style="color: #f6c23e; font-size: 1.3em; font-weight: 800;">${displayDownPayment}</div>
+          </div>
+        `;
+
+        // Computed Loan Amount Row
+        if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
+          let soldPriceVal =
+            parseFloat(
+              car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, ""),
+            ) || 0;
+          let loanAmount = soldPriceVal - downPaymentVal;
+
+          infoHtml += `
+          <div class="spec-item" style="border-left-color: #4e73df; background: rgba(78, 115, 223, 0.08); padding: 15px;">
+            <div class="spec-label" style="color: #4e73df; font-size: 1.1em;"><i class="fas fa-handshake"></i> LOAN AMOUNT</div>
+            <div class="spec-value" style="color: #4e73df; font-size: 1.3em; font-weight: 800;">$${loanAmount.toFixed(2)}</div>
+          </div>
+        `;
+        }
       }
 
       infoContainer.innerHTML = infoHtml;

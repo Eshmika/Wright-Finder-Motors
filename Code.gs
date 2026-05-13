@@ -127,6 +127,7 @@ function saveNewVehicle(data) {
       "DISP-PRICE",
       "TRANSPORT FEES",
       "SOLD PRICE",
+      "DOWN PAYMENT",
     ]);
   }
 
@@ -160,6 +161,7 @@ function saveNewVehicle(data) {
     data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
+    "",
     "",
     "",
     "",
