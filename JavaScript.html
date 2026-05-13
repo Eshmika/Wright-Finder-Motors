@@ -62,6 +62,10 @@
             if (targetView === "buy-view-all") {
               loadCars();
             }
+            // If All Expenses is opened, load expenses data
+            else if (targetView === "all-expenses") {
+              initExpensesView();
+            }
           } else {
             viewPlaceholder.classList.add("active");
             placeholderTitle.textContent = viewTitle + " Content Goes Here";
@@ -131,6 +135,186 @@
     window.removeFeature = function (index) {
       features.splice(index, 1);
       renderFeatures();
+    };
+
+    // =============================================
+    // All Expenses Logic
+    // =============================================
+    window.initExpensesView = function () {
+      // Set default expense date to today
+      const today = new Date().toISOString().split("T")[0];
+      const expenseDateInput = document.getElementById("expenseDate");
+      if (expenseDateInput && !expenseDateInput.value) {
+        expenseDateInput.value = today;
+      }
+
+      // Load cars if not loaded yet
+      if (allCars.length === 0) {
+        google.script.run
+          .withSuccessHandler(function (vehicles) {
+            allCars = vehicles;
+            populateExpenseDropdowns();
+            window.loadExpenses();
+          })
+          .getVehicles();
+      } else {
+        populateExpenseDropdowns();
+        window.loadExpenses();
+      }
+    };
+
+    function populateExpenseDropdowns() {
+      const carIdSelect = document.getElementById("expenseCarId");
+      const modelSelect = document.getElementById("expenseCarModel");
+      const clientSelect = document.getElementById("expenseClientName");
+
+      carIdSelect.innerHTML = '<option value="">Select Car ID...</option>';
+      modelSelect.innerHTML = '<option value="">Select Model...</option>';
+      clientSelect.innerHTML = '<option value="">Select Client...</option>';
+
+      // Use Sets to keep unique values for model and client
+      let uniqueModels = new Set();
+      let uniqueClients = new Set();
+
+      allCars.forEach((car) => {
+        if (car["Car ID"]) {
+          carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
+        }
+        if (car["Model"]) uniqueModels.add(car["Model"]);
+        if (car["CLIENT NAME"]) uniqueClients.add(car["CLIENT NAME"]);
+      });
+
+      uniqueModels.forEach((model) => {
+        modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
+      });
+      uniqueClients.forEach((client) => {
+        clientSelect.innerHTML += `<option value="${client}">${client}</option>`;
+      });
+    }
+
+    window.syncExpenseDropdowns = function (changedField) {
+      const carIdInput = document.getElementById("expenseCarId").value;
+      const modelInput = document.getElementById("expenseCarModel").value;
+      const clientInput = document.getElementById("expenseClientName").value;
+
+      let matchedCar = null;
+
+      if (changedField === "carId" && carIdInput) {
+        matchedCar = allCars.find((c) => c["Car ID"] === carIdInput);
+      } else if (changedField === "carModel" && modelInput) {
+        matchedCar = allCars.find((c) => c["Model"] === modelInput);
+      } else if (changedField === "clientName" && clientInput) {
+        matchedCar = allCars.find((c) => c["CLIENT NAME"] === clientInput);
+      }
+
+      if (matchedCar) {
+        if (changedField !== "carId" && matchedCar["Car ID"]) {
+          document.getElementById("expenseCarId").value = matchedCar["Car ID"];
+        }
+        if (changedField !== "carModel" && matchedCar["Model"]) {
+          document.getElementById("expenseCarModel").value =
+            matchedCar["Model"];
+        }
+        if (changedField !== "clientName" && matchedCar["CLIENT NAME"]) {
+          document.getElementById("expenseClientName").value =
+            matchedCar["CLIENT NAME"];
+        }
+      }
+    };
+
+    window.handleExpenseSubmit = function (e) {
+      e.preventDefault();
+
+      const form = document.getElementById("addExpenseForm");
+      const btn = document.getElementById("btnSubmitExpense");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      const formData = new FormData(form);
+      const data = {
+        carId: formData.get("carId"),
+        carModel: formData.get("carModel"),
+        clientName: formData.get("clientName"),
+        description: formData.get("description"),
+        amount: formData.get("amount"),
+        expenseDate: formData.get("expenseDate"),
+      };
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          showCreativeSuccessModal("Expense added successfully!");
+          form.reset();
+          // Keep today's date
+          document.getElementById("expenseDate").value = new Date()
+            .toISOString()
+            .split("T")[0];
+
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+
+          // Reload expenses table
+          window.loadExpenses();
+        })
+        .withFailureHandler(function (error) {
+          alert("Error: " + error.message);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .saveExpense(data);
+    };
+
+    window.loadExpenses = function () {
+      const tbody = document.getElementById("expensesTableBody");
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading expenses...</td></tr>';
+
+      google.script.run
+        .withSuccessHandler(function (expenses) {
+          tbody.innerHTML = "";
+          if (!expenses || expenses.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
+            return;
+          }
+
+          // Reverse to show latest first
+          expenses.reverse().forEach((exp) => {
+            const tr = document.createElement("tr");
+
+            // Format amounts gracefully
+            let amt = parseFloat(exp["AMOUNT"]);
+            let formattedAmt = isNaN(amt)
+              ? exp["AMOUNT"]
+              : "$" + amt.toFixed(2);
+
+            // Format dates well
+            let dateStr = exp["EXPENSE DATE"];
+            if (dateStr) {
+              try {
+                let d = new Date(dateStr);
+                if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+              } catch (e) {}
+            }
+
+            tr.innerHTML = `
+              <td><strong>${exp["CAR MODEL"] || "-"}</strong></td>
+              <td><span style="background: #e9ecef; padding: 3px 8px; border-radius: 4px; font-family: monospace; color: #2c3e50; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
+              <td>${exp["Client Name"] || "-"}</td>
+              <td>${exp["DESCRIPTION"] || "-"}</td>
+              <td class="text-success" style="font-weight: 600;">${formattedAmt}</td>
+              <td style="color: #7f8c8d;">${dateStr || "-"}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .withFailureHandler(function (error) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading expenses: ' +
+            error.message +
+            "</td></tr>";
+        })
+        .getExpenses();
     };
 
     // File input UX changes

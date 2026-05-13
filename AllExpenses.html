@@ -1,0 +1,349 @@
+<!-- All Expenses View -->
+<div id="view-all-expenses" class="view form-view">
+  <div
+    class="view-header"
+    style="
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <!-- Decorative background elements -->
+    <div
+      style="
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+      "
+    ></div>
+    <div
+      style="
+        position: absolute;
+        bottom: -30px;
+        right: 40px;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+      "
+    ></div>
+
+    <h1
+      class="view-title"
+      style="color: white; margin-bottom: 5px; position: relative; z-index: 1"
+    >
+      <i
+        class="fas fa-file-invoice-dollar title-icon"
+        style="color: #4facfe"
+      ></i>
+      Manage Expenses
+    </h1>
+    <p
+      class="view-subtitle"
+      style="color: rgba(255, 255, 255, 0.8); position: relative; z-index: 1"
+    >
+      Track and monitor all vehicle-related expenditures efficiently.
+    </p>
+  </div>
+
+  <!-- Add Expenses Section -->
+  <div class="form-section shadow-sm" style="border-top: 4px solid #4facfe">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      "
+    >
+      <h3 class="section-title" style="margin: 0">
+        <span class="icon-wrap" style="background: #e1f0ff; color: #4facfe"
+          ><i class="fas fa-plus-circle"></i
+        ></span>
+        Add New Expense
+      </h3>
+      <span style="font-size: 0.85rem; color: #7f8c8d; font-style: italic"
+        ><i class="fas fa-info-circle"></i> Auto-fills associated details</span
+      >
+    </div>
+
+    <form
+      id="addExpenseForm"
+      class="creative-form"
+      onsubmit="handleExpenseSubmit(event)"
+    >
+      <div class="grid-responsive" style="gap: 20px">
+        <div class="input-group">
+          <label class="required-label">Car ID</label>
+          <div style="position: relative">
+            <i
+              class="fas fa-barcode"
+              style="position: absolute; left: 12px; top: 13px; color: #a0aec0"
+            ></i>
+            <select
+              name="carId"
+              id="expenseCarId"
+              class="form-control"
+              onchange="syncExpenseDropdowns('carId')"
+              style="padding-left: 35px"
+              required
+            >
+              <option value="">Select Car ID...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Car Model</label>
+          <div style="position: relative">
+            <i
+              class="fas fa-car"
+              style="position: absolute; left: 12px; top: 13px; color: #a0aec0"
+            ></i>
+            <select
+              name="carModel"
+              id="expenseCarModel"
+              class="form-control"
+              onchange="syncExpenseDropdowns('carModel')"
+              style="padding-left: 35px"
+              required
+            >
+              <option value="">Select Model...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Client Name</label>
+          <div style="position: relative">
+            <i
+              class="fas fa-user-circle"
+              style="position: absolute; left: 12px; top: 13px; color: #a0aec0"
+            ></i>
+            <select
+              name="clientName"
+              id="expenseClientName"
+              class="form-control"
+              onchange="syncExpenseDropdowns('clientName')"
+              style="padding-left: 35px"
+            >
+              <option value="">Select Client...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group" style="grid-column: 1 / -1">
+          <label class="required-label">Description</label>
+          <div style="position: relative">
+            <i
+              class="fas fa-align-left"
+              style="position: absolute; left: 12px; top: 13px; color: #a0aec0"
+            ></i>
+            <input
+              type="text"
+              name="description"
+              class="form-control"
+              placeholder="E.g., Engine repair, new tires, detailing, transport fees..."
+              style="padding-left: 35px"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Amount ($)</label>
+          <div style="position: relative">
+            <i
+              class="fas fa-dollar-sign"
+              style="position: absolute; left: 12px; top: 13px; color: #27ae60"
+            ></i>
+            <input
+              type="number"
+              step="0.01"
+              name="amount"
+              class="form-control"
+              placeholder="0.00"
+              style="padding-left: 35px; border-color: rgba(39, 174, 96, 0.4)"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Expense Date</label>
+          <div style="position: relative">
+            <i
+              class="fas fa-calendar-alt"
+              style="position: absolute; left: 12px; top: 13px; color: #a0aec0"
+            ></i>
+            <input
+              type="date"
+              name="expenseDate"
+              id="expenseDate"
+              class="form-control"
+              style="padding-left: 35px"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="form-actions mt-3"
+        style="
+          display: flex;
+          justify-content: flex-end;
+          gap: 15px;
+          border-top: 1px solid #eee;
+          padding-top: 20px;
+          margin-top: 25px;
+        "
+      >
+        <button
+          type="reset"
+          class="btn-secondary"
+          style="padding: 12px 25px; font-weight: 600; border-radius: 8px"
+        >
+          <i class="fas fa-undo" style="margin-right: 8px"></i> Reset
+        </button>
+        <button
+          type="submit"
+          class="btn-primary"
+          id="btnSubmitExpense"
+          style="
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border-radius: 8px;
+            background: linear-gradient(to right, #27ae60, #2ecc71);
+            border: none;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            transition: all 0.3s ease;
+          "
+        >
+          <i class="fas fa-check-circle" style="margin-right: 8px"></i> Save
+          Expense
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- View Expenses Section -->
+  <div
+    class="form-section shadow-sm"
+    style="margin-top: 30px; border-top: 4px solid #8e44ad"
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      "
+    >
+      <h3 class="section-title" style="margin: 0">
+        <span class="icon-wrap" style="background: #f4e8f9; color: #8e44ad"
+          ><i class="fas fa-table"></i
+        ></span>
+        Recent Expense Records
+      </h3>
+      <button
+        onclick="loadExpenses()"
+        class="btn-secondary"
+        style="padding: 8px 15px; font-size: 0.9rem"
+      >
+        <i class="fas fa-sync-alt"></i> Refresh Data
+      </button>
+    </div>
+
+    <div
+      class="table-responsive"
+      style="
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      "
+    >
+      <table class="inventory-table" style="margin: 0">
+        <thead style="background: #f8f9fa">
+          <tr>
+            <th style="color: #2c3e50">
+              <i
+                class="fas fa-car"
+                style="margin-right: 5px; color: #7f8c8d"
+              ></i>
+              CAR MODEL
+            </th>
+            <th style="color: #2c3e50">
+              <i
+                class="fas fa-hashtag"
+                style="margin-right: 5px; color: #7f8c8d"
+              ></i>
+              CAR ID
+            </th>
+            <th style="color: #2c3e50">
+              <i
+                class="fas fa-user-circle"
+                style="margin-right: 5px; color: #7f8c8d"
+              ></i>
+              CLIENT NAME
+            </th>
+            <th style="color: #2c3e50">
+              <i
+                class="fas fa-align-left"
+                style="margin-right: 5px; color: #7f8c8d"
+              ></i>
+              DESCRIPTION
+            </th>
+            <th style="color: #2c3e50">
+              <i
+                class="fas fa-dollar-sign"
+                style="margin-right: 5px; color: #27ae60"
+              ></i>
+              AMOUNT
+            </th>
+            <th style="color: #2c3e50">
+              <i
+                class="fas fa-calendar-day"
+                style="margin-right: 5px; color: #7f8c8d"
+              ></i>
+              EXPENSE DATE
+            </th>
+          </tr>
+        </thead>
+        <tbody id="expensesTableBody">
+          <tr>
+            <td colspan="6" class="text-center" style="padding: 30px">
+              <i
+                class="fas fa-spinner fa-spin"
+                style="
+                  font-size: 24px;
+                  color: #3498db;
+                  margin-bottom: 10px;
+                  display: block;
+                "
+              ></i>
+              Loading expenses...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+  #btnSubmitExpense:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important;
+  }
+</style>

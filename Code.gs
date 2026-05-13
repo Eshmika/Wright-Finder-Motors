@@ -223,3 +223,57 @@ function getVehicles() {
 
   return vehicles;
 }
+
+function saveExpense(data) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
+
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("All expenses");
+    sheet.appendRow([
+      "Timestamp",
+      "CAR MODEL",
+      "CAR ID",
+      "Client Name",
+      "DESCRIPTION",
+      "AMOUNT",
+      "EXPENSE DATE",
+    ]);
+  }
+
+  sheet.appendRow([
+    new Date(),
+    data.carModel || "",
+    data.carId || "",
+    data.clientName || "",
+    data.description || "",
+    data.amount || "",
+    data.expenseDate || "",
+  ]);
+
+  return "Success";
+}
+
+function getExpenses() {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return []; // Only headers or empty
+
+  var headers = data[0];
+  var expenses = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var expense = {};
+    for (var j = 0; j < headers.length; j++) {
+      var header = headers[j];
+      expense[header] = row[j];
+    }
+    expenses.push(expense);
+  }
+
+  return expenses;
+}
