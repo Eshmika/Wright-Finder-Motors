@@ -519,7 +519,52 @@
         ],
       };
 
+      const fieldOrder = [
+        "Car ID",
+        "Car Name",
+        "Price",
+        "Discount",
+        "Status",
+        "Title",
+        "Rent or Sell",
+        "VIN",
+        "Model",
+        "Year",
+        "Mileage",
+        "Style of Car",
+        "Body Style",
+        "Engine",
+        "Engine Type/Size",
+        "Transmission",
+        "Driveline",
+        "Fuel Type",
+        "Power Options",
+        "Condition",
+        "Drive Condition",
+        "Exterior Color",
+        "Interior Color",
+        "Seat Material",
+        "Interior Features",
+        "CLIENT NAME",
+        "PURCHASE DATE",
+        "SOLD DATE",
+        "SOLD PRICE",
+        "IAAI TOTAL PRICE W/ FEES",
+        "PAPE PRICE",
+        "DISP-PRICE",
+        "TRANSPORT FEES",
+        "Description",
+      ];
+
+      // Gather keys according to preferred fieldOrder, then any remaining keys
+      let keysToRender = fieldOrder.filter((key) => key in currentEditableCar);
       for (const key in currentEditableCar) {
+        if (!keysToRender.includes(key) && !skippedKeys.includes(key)) {
+          keysToRender.push(key);
+        }
+      }
+
+      for (const key of keysToRender) {
         if (skippedKeys.includes(key)) continue;
 
         let val = currentEditableCar[key] || "";
@@ -817,12 +862,6 @@
         "#f6c23e",
       );
       infoHtml += createSpecItem(
-        "Sold Price",
-        car["SOLD PRICE"],
-        "fa-hand-holding-usd",
-        "#1cc88a",
-      );
-      infoHtml += createSpecItem(
         "IAAI Total Price",
         car["IAAI TOTAL PRICE W/ FEES"],
         "fa-dollar-sign",
@@ -862,6 +901,25 @@
             <div class="spec-value" id="pageCarTotalCost"><i class="fas fa-spinner fa-spin text-muted"></i></div>
           </div>
       `;
+
+      // Big Emphasized Sold Price Row
+      if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
+        let displaySoldPrice = car["SOLD PRICE"].toString().trim();
+        if (
+          !displaySoldPrice.startsWith("$") &&
+          !isNaN(parseFloat(displaySoldPrice.replace(/[^0-9.-]+/g, "")))
+        ) {
+          displaySoldPrice =
+            "$" +
+            parseFloat(displaySoldPrice.replace(/[^0-9.-]+/g, "")).toFixed(2);
+        }
+        infoHtml += `
+          <div class="spec-item" style="border-left-color: #1cc88a; background: rgba(28, 200, 138, 0.08); padding: 15px;">
+            <div class="spec-label" style="color: #1cc88a; font-size: 1.1em;"><i class="fas fa-hand-holding-usd"></i> SOLD PRICE</div>
+            <div class="spec-value" style="color: #1cc88a; font-size: 1.3em; font-weight: 800;">${displaySoldPrice}</div>
+          </div>
+        `;
+      }
 
       infoContainer.innerHTML = infoHtml;
 
