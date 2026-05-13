@@ -287,6 +287,9 @@
             let formattedAmt = isNaN(amt)
               ? exp["AMOUNT"]
               : "$" + amt.toFixed(2);
+            let badgeHtml = isNaN(amt)
+              ? formattedAmt
+              : `<span class="amount-badge">${formattedAmt}</span>`;
 
             // Format dates well
             let dateStr = exp["EXPENSE DATE"];
@@ -299,11 +302,11 @@
 
             tr.innerHTML = `
               <td><strong>${exp["CAR MODEL"] || "-"}</strong></td>
-              <td><span style="background: #e9ecef; padding: 3px 8px; border-radius: 4px; font-family: monospace; color: #2c3e50; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
+              <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
               <td>${exp["Client Name"] || "-"}</td>
               <td>${exp["DESCRIPTION"] || "-"}</td>
-              <td class="text-success" style="font-weight: 600;">${formattedAmt}</td>
-              <td style="color: #7f8c8d;">${dateStr || "-"}</td>
+              <td>${badgeHtml}</td>
+              <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
             `;
             tbody.appendChild(tr);
           });
