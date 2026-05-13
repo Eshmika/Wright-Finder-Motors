@@ -847,16 +847,43 @@
           </div>
       `;
 
+      // Total Cost Row
+      infoHtml += `
+          <div class="spec-item" style="border-left-color: #e74a3b; background: rgba(231, 74, 59, 0.05);">
+            <div class="spec-label" style="color: #e74a3b;"><i class="fas fa-calculator"></i> TOTAL COST</div>
+            <div class="spec-value" id="pageCarTotalCost"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+          </div>
+      `;
+
       infoContainer.innerHTML = infoHtml;
+
+      function parseMoney(val) {
+        if (!val) return 0;
+        let p = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
+        return isNaN(p) ? 0 : p;
+      }
+
+      let partialTotalCost =
+        parseMoney(car["IAAI TOTAL PRICE W/ FEES"]) +
+        parseMoney(car["PAPE PRICE"]) +
+        parseMoney(car["DISP-PRICE"]) +
+        parseMoney(car["TRANSPORT FEES"]);
 
       // Request total expenses for this car specifically from the backend
       google.script.run
         .withSuccessHandler(function (total) {
-          let badge = `<span style="background: #e0c8f6; color: #6f42c1; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; display: inline-block;">$${parseFloat(total).toFixed(2)}</span>`;
+          let materialsTotal = parseFloat(total) || 0;
+          let badge = `<span style="background: #e0c8f6; color: #6f42c1; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; display: inline-block;">$${materialsTotal.toFixed(2)}</span>`;
           document.getElementById("pageCarTotalExpenses").innerHTML = badge;
+
+          let finalTotalCost = partialTotalCost + materialsTotal;
+          let costBadge = `<span style="background: #ffdce0; color: #e74a3b; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; display: inline-block;">$${finalTotalCost.toFixed(2)}</span>`;
+          document.getElementById("pageCarTotalCost").innerHTML = costBadge;
         })
         .withFailureHandler(function (e) {
           document.getElementById("pageCarTotalExpenses").innerHTML =
+            `<span class="text-danger">Error loading</span>`;
+          document.getElementById("pageCarTotalCost").innerHTML =
             `<span class="text-danger">Error loading</span>`;
         })
         .getTotalExpenseForCar(car["Car ID"]);
