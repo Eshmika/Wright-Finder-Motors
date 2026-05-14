@@ -1,0 +1,108 @@
+<!-- Payment View -->
+<div id="view-payment" class="view">
+  <div class="header-actions">
+    <h1>Payment Management</h1>
+  </div>
+
+  <div class="payment-sections-container">
+    <!-- Add Payment Section -->
+    <div class="payment-section add-payment-section">
+      <div class="card add-payment-card">
+        <h3><i class="fas fa-plus-circle"></i> Add Payment</h3>
+        <form id="add-payment-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="pay-car-id">Car ID</label>
+              <select id="pay-car-id" name="payCarId" required>
+                <option value="">Select Car ID</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pay-car-model">Car Model</label>
+              <select id="pay-car-model" name="payCarModel" required>
+                <option value="">Select Car Model</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pay-client-name">Client Name</label>
+              <select id="pay-client-name" name="payClientName" required>
+                <option value="">Select Client Name</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="pay-option">Payment Option / Notes</label>
+              <textarea
+                id="pay-option"
+                name="payOption"
+                rows="3"
+                placeholder="Enter payment option (e.g. Cash, Card, Bank Transfer) or additional notes"
+                required
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label for="pay-amount">Amount ($)</label>
+              <input
+                type="number"
+                id="pay-amount"
+                name="payAmount"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="pay-date">Payment Date</label>
+              <input type="date" id="pay-date" name="payDate" required />
+            </div>
+          </div>
+
+          <div class="form-actions payment-actions">
+            <button type="submit" class="btn btn-primary cta-btn">
+              <span class="btn-text">Submit Payment</span>
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <button type="reset" class="btn btn-secondary">
+              <span class="btn-text">Reset</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- View Payment Table Section -->
+    <div class="payment-section view-payment-section">
+      <div class="card view-payment-card">
+        <h3><i class="fas fa-table"></i> Recent Payments</h3>
+        <div class="table-actions">
+          <button id="refresh-payments" class="btn btn-secondary cta-btn-small">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="payments-table">
+            <thead>
+              <tr>
+                <th>CAR MODEL</th>
+                <th>CAR ID</th>
+                <th>CLIENT NAME</th>
+                <th>PAYMENT OPTION / NOTES</th>
+                <th>AMOUNT</th>
+                <th>PAYMENT DATE</th>
+              </tr>
+            </thead>
+            <tbody id="payments-tbody">
+              <!-- Payment rows will be populated here -->
+              <tr>
+                <td colspan="6" class="text-center">Loading payments...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

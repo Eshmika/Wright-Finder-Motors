@@ -307,3 +307,55 @@ function getTotalExpenseForCar(carId) {
   }
   return total;
 }
+
+function savePayment(data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
+
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Payment");
+    sheet.appendRow([
+      "Timestamp",
+      "CAR MODEL",
+      "CAR ID",
+      "Client Name",
+      "PAYMENT OPTION / NOTES",
+      "AMOUNT",
+      "PAYMENT DATE",
+    ]);
+  }
+
+  sheet.appendRow([
+    new Date(),
+    data.carModel || "",
+    data.carId || "",
+    data.clientName || "",
+    data.paymentOption || "",
+    data.amount || "",
+    data.paymentDate || "",
+  ]);
+
+  return "Success";
+}
+
+function getPayments() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return []; // Only headers or empty
+
+  var headers = data[0];
+  var payments = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var payment = {};
+    for (var j = 0; j < headers.length; j++) {
+      var header = headers[j];
+      payment[header] = row[j];
+    }
+    payments.push(payment);
+  }
+
+  return payments;
+}
