@@ -1,108 +1,204 @@
 <!-- Payment View -->
-<div id="view-payment" class="view">
-  <div class="header-actions">
-    <h1>Payment Management</h1>
+<div id="view-payment" class="view form-view">
+  <!-- Modern Payment Header -->
+  <div
+    class="creative-expenses-header"
+    style="
+      background: linear-gradient(
+        135deg,
+        #1cc88a 0%,
+        rgba(28, 200, 138, 0.8) 100%
+      );
+    "
+  >
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
+    <div class="expenses-header-content">
+      <h1>
+        <i
+          class="fas fa-money-check-alt"
+          style="
+            color: #fff;
+            filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.4));
+          "
+        ></i>
+        Payment Management
+      </h1>
+      <p>Seamlessly log, track, and monitor incoming client payments.</p>
+    </div>
   </div>
 
-  <div class="payment-sections-container">
-    <!-- Add Payment Section -->
-    <div class="payment-section add-payment-section">
-      <div class="card add-payment-card">
-        <h3><i class="fas fa-plus-circle"></i> Add Payment</h3>
-        <form id="add-payment-form">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="pay-car-id">Car ID</label>
-              <select id="pay-car-id" name="payCarId" required>
-                <option value="">Select Car ID</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="pay-car-model">Car Model</label>
-              <select id="pay-car-model" name="payCarModel" required>
-                <option value="">Select Car Model</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="pay-client-name">Client Name</label>
-              <select id="pay-client-name" name="payClientName" required>
-                <option value="">Select Client Name</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="pay-option">Payment Option / Notes</label>
-              <textarea
-                id="pay-option"
-                name="payOption"
-                rows="3"
-                placeholder="Enter payment option (e.g. Cash, Card, Bank Transfer) or additional notes"
-                required
-              ></textarea>
-            </div>
-            <div class="form-group">
-              <label for="pay-amount">Amount ($)</label>
-              <input
-                type="number"
-                id="pay-amount"
-                name="payAmount"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="pay-date">Payment Date</label>
-              <input type="date" id="pay-date" name="payDate" required />
-            </div>
-          </div>
-
-          <div class="form-actions payment-actions">
-            <button type="submit" class="btn btn-primary cta-btn">
-              <span class="btn-text">Submit Payment</span>
-              <i class="fas fa-paper-plane"></i>
-            </button>
-            <button type="reset" class="btn btn-secondary">
-              <span class="btn-text">Reset</span>
-            </button>
-          </div>
-        </form>
+  <!-- Add Payment Card -->
+  <div class="expenses-card">
+    <div class="expenses-card-header">
+      <h3>
+        <span class="icon-square bg-emerald-light"
+          ><i class="fas fa-plus"></i
+        ></span>
+        Log New Payment
+      </h3>
+      <div class="expense-info-badge">
+        <i class="fas fa-magic"></i> Auto-matching enabled
       </div>
     </div>
 
-    <!-- View Payment Table Section -->
-    <div class="payment-section view-payment-section">
-      <div class="card view-payment-card">
-        <h3><i class="fas fa-table"></i> Recent Payments</h3>
-        <div class="table-actions">
-          <button id="refresh-payments" class="btn btn-secondary cta-btn-small">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
+    <form id="add-payment-form" class="creative-form">
+      <div class="grid-responsive" style="gap: 25px">
+        <div class="input-group">
+          <label class="required-label">Car ID</label>
+          <div class="modern-input-wrapper">
+            <select
+              name="payCarId"
+              id="pay-car-id"
+              class="form-control"
+              required
+            >
+              <option value="">Select Car ID...</option>
+            </select>
+            <i class="fas fa-fingerprint"></i>
+          </div>
         </div>
-        <div class="table-container">
-          <table class="data-table" id="payments-table">
-            <thead>
-              <tr>
-                <th>CAR MODEL</th>
-                <th>CAR ID</th>
-                <th>CLIENT NAME</th>
-                <th>PAYMENT OPTION / NOTES</th>
-                <th>AMOUNT</th>
-                <th>PAYMENT DATE</th>
-              </tr>
-            </thead>
-            <tbody id="payments-tbody">
-              <!-- Payment rows will be populated here -->
-              <tr>
-                <td colspan="6" class="text-center">Loading payments...</td>
-              </tr>
-            </tbody>
-          </table>
+
+        <div class="input-group">
+          <label class="required-label">Car Model</label>
+          <div class="modern-input-wrapper">
+            <select
+              name="payCarModel"
+              id="pay-car-model"
+              class="form-control"
+              required
+            >
+              <option value="">Select Model...</option>
+            </select>
+            <i class="fas fa-car-side"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Client Name</label>
+          <div class="modern-input-wrapper">
+            <select
+              name="payClientName"
+              id="pay-client-name"
+              class="form-control"
+              required
+            >
+              <option value="">Select Client...</option>
+            </select>
+            <i class="fas fa-user-tie"></i>
+          </div>
+        </div>
+
+        <div class="input-group" style="grid-column: 1 / -1">
+          <label class="required-label">Payment Option / Notes</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="payOption"
+              id="pay-option"
+              class="form-control"
+              placeholder="E.g., Cash, Credit Card, Bank Transfer, Check, etc."
+              required
+            />
+            <i class="fas fa-credit-card"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Amount ($)</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="number"
+              name="payAmount"
+              id="pay-amount"
+              step="0.01"
+              min="0"
+              class="form-control"
+              placeholder="0.00"
+              required
+            />
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Payment Date</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="date"
+              name="payDate"
+              id="pay-date"
+              class="form-control"
+              required
+            />
+            <i class="fas fa-calendar-alt"></i>
+          </div>
         </div>
       </div>
+
+      <div style="margin-top: 30px; text-align: right">
+        <button
+          type="submit"
+          class="btn-gradient-submit"
+          style="
+            background: linear-gradient(to right, #4e73df, #2e59d9);
+            box-shadow: 0 4px 15px rgba(78, 115, 223, 0.4);
+            display: inline-flex;
+          "
+        >
+          <i class="fas fa-check-circle"></i> Save Payment
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Recent Payments History Card -->
+  <div class="expenses-card">
+    <div class="expenses-card-header">
+      <h3>
+        <span class="icon-square bg-indigo-light"
+          ><i class="fas fa-history"></i
+        ></span>
+        Recent Payments History
+      </h3>
+      <button
+        id="refresh-payments"
+        class="btn btn-secondary"
+        style="padding: 6px 15px; border-radius: 8px"
+      >
+        <i class="fas fa-sync-alt"></i> Refresh Data
+      </button>
+    </div>
+
+    <div class="expenses-table-wrapper">
+      <table class="creative-table">
+        <thead>
+          <tr>
+            <th>CAR MODEL</th>
+            <th>CAR ID</th>
+            <th>CLIENT NAME</th>
+            <th>PAYMENT OPTION / NOTES</th>
+            <th>AMOUNT</th>
+            <th>PAYMENT DATE</th>
+          </tr>
+        </thead>
+        <tbody id="payments-tbody">
+          <tr>
+            <td colspan="6" class="text-center" style="padding: 30px">
+              <i
+                class="fas fa-spinner fa-spin"
+                style="
+                  font-size: 24px;
+                  color: #3498db;
+                  margin-bottom: 10px;
+                  display: block;
+                "
+              ></i>
+              Loading records...
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
