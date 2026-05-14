@@ -967,6 +967,16 @@
         }
       }
 
+      // Profit Row Placeholder (Only shows if there's a SOLD PRICE)
+      if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
+        infoHtml += `
+          <div class="spec-item" style="border-left-color: #1cc88a; background: rgba(28, 200, 138, 0.1); padding: 15px;">
+            <div class="spec-label" style="color: #1cc88a; font-size: 1.1em;"><i class="fas fa-chart-line"></i> PROFIT</div>
+            <div class="spec-value" id="pageCarProfit" style="color: #1cc88a; font-size: 1.4em; font-weight: 800;"><i class="fas fa-spinner fa-spin"></i></div>
+          </div>
+        `;
+      }
+
       infoContainer.innerHTML = infoHtml;
 
       function parseMoney(val) {
@@ -991,12 +1001,39 @@
           let finalTotalCost = partialTotalCost + materialsTotal;
           let costBadge = `<span style="background: #ffdce0; color: #e74a3b; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 1.1em; display: inline-block;">$${finalTotalCost.toFixed(2)}</span>`;
           document.getElementById("pageCarTotalCost").innerHTML = costBadge;
+
+          // Calculate and inject Profit once Total Cost is known
+          const profitEl = document.getElementById("pageCarProfit");
+          if (profitEl) {
+            let soldPriceVal =
+              parseFloat(
+                car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, ""),
+              ) || 0;
+            let profit = soldPriceVal - finalTotalCost;
+            let formattedProfit =
+              (profit >= 0 ? "+$" : "-$") + Math.abs(profit).toFixed(2);
+            profitEl.innerHTML = formattedProfit;
+
+            // Dynamic styling if profit is negative (Loss)
+            if (profit < 0) {
+              profitEl.style.color = "#e74a3b";
+              const parent = profitEl.parentElement;
+              parent.style.borderLeftColor = "#e74a3b";
+              parent.style.background = "rgba(231, 74, 59, 0.08)";
+              parent.querySelector(".spec-label").style.color = "#e74a3b";
+              parent.querySelector(".spec-label").innerHTML =
+                `<i class="fas fa-chart-line" style="transform: scaleY(-1);"></i> LOSS`;
+            }
+          }
         })
         .withFailureHandler(function (e) {
           document.getElementById("pageCarTotalExpenses").innerHTML =
             `<span class="text-danger">Error loading</span>`;
           document.getElementById("pageCarTotalCost").innerHTML =
             `<span class="text-danger">Error loading</span>`;
+          let profitEl = document.getElementById("pageCarProfit");
+          if (profitEl)
+            profitEl.innerHTML = `<span class="text-danger">Error</span>`;
         })
         .getTotalExpenseForCar(car["Car ID"]);
 
