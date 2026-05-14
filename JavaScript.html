@@ -558,6 +558,10 @@
         "PAPE PRICE",
         "DISP-PRICE",
         "TRANSPORT FEES",
+        "CAR PICKUP LOCATION",
+        "DRIVER NAME",
+        "DRIVER INFORMATION",
+        "NOTES",
         "Description",
       ];
 
@@ -577,7 +581,12 @@
 
         if (key === "Car ID") {
           inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
-        } else if (key === "Description" || key === "Interior Features") {
+        } else if (
+          key === "Description" ||
+          key === "Interior Features" ||
+          key === "NOTES" ||
+          key === "DRIVER INFORMATION"
+        ) {
           inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
         } else if (key === "Year") {
           let options = '<option value="">Select Year...</option>';
@@ -976,6 +985,32 @@
           </div>
         `;
       }
+
+      // Logistics & Additional Information
+      infoHtml += createSpecItem(
+        "Pickup Location",
+        car["CAR PICKUP LOCATION"],
+        "fa-map-marker-alt",
+        "#f6c23e",
+      );
+      infoHtml += createSpecItem(
+        "Driver Name",
+        car["DRIVER NAME"],
+        "fa-id-badge",
+        "#4e73df",
+      );
+      infoHtml += createSpecItem(
+        "Driver Info",
+        car["DRIVER INFORMATION"],
+        "fa-info-circle",
+        "#36b9cc",
+      );
+      infoHtml += createSpecItem(
+        "Notes",
+        car["NOTES"],
+        "fa-sticky-note",
+        "#8e44ad",
+      );
 
       infoContainer.innerHTML = infoHtml;
 

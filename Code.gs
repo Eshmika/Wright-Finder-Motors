@@ -128,6 +128,10 @@ function saveNewVehicle(data) {
       "TRANSPORT FEES",
       "SOLD PRICE",
       "DOWN PAYMENT",
+      "CAR PICKUP LOCATION",
+      "DRIVER NAME",
+      "DRIVER INFORMATION",
+      "NOTES",
     ]);
   }
 
@@ -161,6 +165,10 @@ function saveNewVehicle(data) {
     data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
+    "",
+    "",
+    "",
+    "",
     "",
     "",
     "",
