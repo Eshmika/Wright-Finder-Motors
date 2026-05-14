@@ -956,6 +956,14 @@
             <div class="spec-value" style="color: #4e73df; font-size: 1.3em; font-weight: 800;">$${loanAmount.toFixed(2)}</div>
           </div>
         `;
+
+          // Remain Loan Row Placeholder
+          infoHtml += `
+          <div class="spec-item" style="border-left-color: #e74a3b; background: rgba(231, 74, 59, 0.08); padding: 15px;">
+            <div class="spec-label" style="color: #e74a3b; font-size: 1.1em;"><i class="fas fa-balance-scale-right"></i> REMAIN LOAN</div>
+            <div class="spec-value" id="pageCarRemainLoan" style="color: #e74a3b; font-size: 1.3em; font-weight: 800;" data-loan-amount="${loanAmount}"><i class="fas fa-spinner fa-spin"></i></div>
+          </div>
+        `;
         }
       }
 
@@ -991,6 +999,24 @@
             `<span class="text-danger">Error loading</span>`;
         })
         .getTotalExpenseForCar(car["Car ID"]);
+
+      // Request total payments for this car specifically from the backend
+      google.script.run
+        .withSuccessHandler(function (totalPayments) {
+          const remainEl = document.getElementById("pageCarRemainLoan");
+          if (remainEl) {
+            const loan =
+              parseFloat(remainEl.getAttribute("data-loan-amount")) || 0;
+            const remain = loan - parseFloat(totalPayments || 0);
+            remainEl.innerHTML = `$${remain.toFixed(2)}`;
+          }
+        })
+        .withFailureHandler(function (e) {
+          const remainEl = document.getElementById("pageCarRemainLoan");
+          if (remainEl)
+            remainEl.innerHTML = `<span class="text-danger">Error</span>`;
+        })
+        .getTotalPaymentForCar(car["Car ID"]);
 
       // Description Card
       const descCard = document.getElementById("pageCarDescCard");

@@ -308,6 +308,37 @@ function getTotalExpenseForCar(carId) {
   return total;
 }
 
+function getTotalPaymentForCar(carId) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
+  if (!sheet) return 0;
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return 0;
+
+  var headers = data[0];
+  var carIdIndex = headers.findIndex(
+    (h) => String(h).toUpperCase() === "CAR ID",
+  );
+  var amountIndex = headers.findIndex(
+    (h) => String(h).toUpperCase() === "AMOUNT",
+  );
+
+  if (carIdIndex === -1 || amountIndex === -1) return 0;
+
+  var total = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][carIdIndex] === carId) {
+      var amt = parseFloat(
+        String(data[i][amountIndex]).replace(/[^0-9.-]+/g, ""),
+      );
+      if (!isNaN(amt)) {
+        total += amt;
+      }
+    }
+  }
+  return total;
+}
+
 function savePayment(data) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
 
