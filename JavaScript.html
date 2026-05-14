@@ -1047,226 +1047,236 @@
         }
       });
     }
-  });
 
-  // =============================================
-  // Payment Logic
-  // =============================================
-  window.initPaymentView = function () {
-    // Set default payment date to today
-    const today = new Date().toISOString().split("T")[0];
-    const paymentDateInput = document.getElementById("pay-date");
-    if (paymentDateInput && !paymentDateInput.value) {
-      paymentDateInput.value = today;
-    }
-
-    // Load cars if not loaded yet
-    if (allCars && allCars.length === 0) {
-      google.script.run
-        .withSuccessHandler(function (vehicles) {
-          allCars = vehicles;
-          populatePaymentDropdowns();
-          window.loadPayments();
-        })
-        .getVehicles();
-    } else {
-      populatePaymentDropdowns();
-      window.loadPayments();
-    }
-
-    // Bind event listeners for Payment view
-    const refreshBtn = document.getElementById("refresh-payments");
-    if (refreshBtn) {
-      // Remove existing listener to avoid duplicates
-      const newRefreshBtn = refreshBtn.cloneNode(true);
-      refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
-      newRefreshBtn.addEventListener("click", window.loadPayments);
-    }
-
-    const paymentForm = document.getElementById("add-payment-form");
-    if (paymentForm) {
-      // Remove any existing event listeners by cloning
-      const newPaymentForm = paymentForm.cloneNode(true);
-      paymentForm.parentNode.replaceChild(newPaymentForm, paymentForm);
-      newPaymentForm.addEventListener("submit", submitPayment);
-    }
-
-    // Sync dropdowns
-    const carIdSelect = document.getElementById("pay-car-id");
-    const modelSelect = document.getElementById("pay-car-model");
-    const clientSelect = document.getElementById("pay-client-name");
-
-    if (carIdSelect) {
-      carIdSelect.addEventListener("change", () =>
-        syncPaymentDropdowns("carId"),
-      );
-    }
-    if (modelSelect) {
-      modelSelect.addEventListener("change", () =>
-        syncPaymentDropdowns("carModel"),
-      );
-    }
-    if (clientSelect) {
-      clientSelect.addEventListener("change", () =>
-        syncPaymentDropdowns("clientName"),
-      );
-    }
-  };
-
-  function populatePaymentDropdowns() {
-    const carIdSelect = document.getElementById("pay-car-id");
-    const modelSelect = document.getElementById("pay-car-model");
-    const clientSelect = document.getElementById("pay-client-name");
-
-    if (!carIdSelect || !modelSelect || !clientSelect) return;
-
-    carIdSelect.innerHTML = '<option value="">Select Car ID...</option>';
-    modelSelect.innerHTML = '<option value="">Select Model...</option>';
-    clientSelect.innerHTML = '<option value="">Select Client...</option>';
-
-    if (!allCars) return;
-
-    // Use Sets to keep unique values for model and client
-    let uniqueModels = new Set();
-    let uniqueClients = new Set();
-
-    allCars.forEach((car) => {
-      if (car["Car ID"]) {
-        carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
+    // =============================================
+    // Payment Logic
+    // =============================================
+    window.initPaymentView = function () {
+      // Set default payment date to today
+      const today = new Date().toISOString().split("T")[0];
+      const paymentDateInput = document.getElementById("pay-date");
+      if (paymentDateInput && !paymentDateInput.value) {
+        paymentDateInput.value = today;
       }
-      if (car["Model"]) uniqueModels.add(car["Model"]);
-      if (car["CLIENT NAME"]) uniqueClients.add(car["CLIENT NAME"]);
-    });
 
-    Array.from(uniqueModels)
-      .sort()
-      .forEach((model) => {
-        modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
-      });
-    Array.from(uniqueClients)
-      .sort()
-      .forEach((client) => {
-        clientSelect.innerHTML += `<option value="${client}">${client}</option>`;
-      });
-  }
-
-  function syncPaymentDropdowns(changedField) {
-    const carIdSelect = document.getElementById("pay-car-id");
-    const modelSelect = document.getElementById("pay-car-model");
-    const clientSelect = document.getElementById("pay-client-name");
-
-    if (!allCars || !carIdSelect || !modelSelect || !clientSelect) return;
-
-    let matchedCar = null;
-
-    if (changedField === "carId" && carIdSelect.value) {
-      matchedCar = allCars.find((c) => c["Car ID"] === carIdSelect.value);
-    } else if (changedField === "carModel" && modelSelect.value) {
-      matchedCar = allCars.find((c) => c["Model"] === modelSelect.value);
-    } else if (changedField === "clientName" && clientSelect.value) {
-      matchedCar = allCars.find((c) => c["CLIENT NAME"] === clientSelect.value);
-    }
-
-    if (matchedCar) {
-      if (changedField !== "carId" && matchedCar["Car ID"]) {
-        carIdSelect.value = matchedCar["Car ID"];
+      // Load cars if not loaded yet
+      if (allCars.length === 0) {
+        google.script.run
+          .withSuccessHandler(function (vehicles) {
+            allCars = vehicles;
+            populatePaymentDropdowns();
+            window.loadPayments();
+          })
+          .getVehicles();
+      } else {
+        populatePaymentDropdowns();
+        window.loadPayments();
       }
-      if (changedField !== "carModel" && matchedCar["Model"]) {
-        modelSelect.value = matchedCar["Model"];
+
+      // Bind event listeners for Payment view
+      const refreshBtn = document.getElementById("refresh-payments");
+      if (refreshBtn) {
+        // Remove existing listener to avoid duplicates
+        const newRefreshBtn = refreshBtn.cloneNode(true);
+        refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+        newRefreshBtn.addEventListener("click", window.loadPayments);
       }
-      if (changedField !== "clientName" && matchedCar["CLIENT NAME"]) {
-        // ensure the clientname exists in dropdown
-        let optExists = Array.from(clientSelect.options).some(
-          (opt) => opt.value === matchedCar["CLIENT NAME"],
+
+      const paymentForm = document.getElementById("add-payment-form");
+      if (paymentForm) {
+        // Remove any existing event listeners by cloning
+        const newPaymentForm = paymentForm.cloneNode(true);
+        paymentForm.parentNode.replaceChild(newPaymentForm, paymentForm);
+        newPaymentForm.addEventListener("submit", submitPayment);
+      }
+
+      // Sync dropdowns
+      const carIdSelect = document.getElementById("pay-car-id");
+      const modelSelect = document.getElementById("pay-car-model");
+      const clientSelect = document.getElementById("pay-client-name");
+
+      if (carIdSelect) {
+        // use event delegation or replace nodes since clones don't keep listeners
+        const newCarIdSelect = carIdSelect.cloneNode(true);
+        carIdSelect.parentNode.replaceChild(newCarIdSelect, carIdSelect);
+        newCarIdSelect.addEventListener("change", () =>
+          syncPaymentDropdowns("carId"),
         );
-        if (!optExists) {
-          clientSelect.innerHTML += `<option value="${matchedCar["CLIENT NAME"]}">${matchedCar["CLIENT NAME"]}</option>`;
-        }
-        clientSelect.value = matchedCar["CLIENT NAME"];
       }
-    }
-  }
-
-  function submitPayment(e) {
-    e.preventDefault();
-    const form = e.target;
-    const btn = form.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-
-    btn.innerHTML =
-      '<span class="btn-text">Submitting...</span> <i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-
-    const formData = new FormData(form);
-    const data = {
-      carId: formData.get("payCarId"),
-      carModel: formData.get("payCarModel"),
-      clientName: formData.get("payClientName"),
-      paymentOption: formData.get("payOption"),
-      amount: formData.get("payAmount"),
-      paymentDate: formData.get("payDate"),
+      if (modelSelect) {
+        const newModelSelect = modelSelect.cloneNode(true);
+        modelSelect.parentNode.replaceChild(newModelSelect, modelSelect);
+        newModelSelect.addEventListener("change", () =>
+          syncPaymentDropdowns("carModel"),
+        );
+      }
+      if (clientSelect) {
+        const newClientSelect = clientSelect.cloneNode(true);
+        clientSelect.parentNode.replaceChild(newClientSelect, clientSelect);
+        newClientSelect.addEventListener("change", () =>
+          syncPaymentDropdowns("clientName"),
+        );
+      }
     };
 
-    google.script.run
-      .withSuccessHandler(function (response) {
-        showCreativeSuccessModal("Payment added successfully!");
-        form.reset();
-        // Keep today's date
-        document.getElementById("pay-date").value = new Date()
-          .toISOString()
-          .split("T")[0];
+    function populatePaymentDropdowns() {
+      const carIdSelect = document.getElementById("pay-car-id");
+      const modelSelect = document.getElementById("pay-car-model");
+      const clientSelect = document.getElementById("pay-client-name");
 
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+      if (!carIdSelect || !modelSelect || !clientSelect) return;
 
-        // Reload payments table
-        window.loadPayments();
-      })
-      .withFailureHandler(function (error) {
-        alert("Error: " + error.message);
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      })
-      .savePayment(data);
-  }
+      carIdSelect.innerHTML = '<option value="">Select Car ID...</option>';
+      modelSelect.innerHTML = '<option value="">Select Model...</option>';
+      clientSelect.innerHTML = '<option value="">Select Client...</option>';
 
-  window.loadPayments = function () {
-    const tbody = document.getElementById("payments-tbody");
-    if (!tbody) return;
+      if (!allCars) return;
 
-    tbody.innerHTML =
-      '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading payments...</td></tr>';
+      // Use Sets to keep unique values for model and client
+      let uniqueModels = new Set();
+      let uniqueClients = new Set();
 
-    google.script.run
-      .withSuccessHandler(function (payments) {
-        tbody.innerHTML = "";
-        if (!payments || payments.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
-          return;
+      allCars.forEach((car) => {
+        if (car["Car ID"]) {
+          carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
         }
+        if (car["Model"]) uniqueModels.add(car["Model"]);
+        if (car["CLIENT NAME"]) uniqueClients.add(car["CLIENT NAME"]);
+      });
 
-        // Reverse to show latest first
-        payments.reverse().forEach((pay) => {
-          const tr = document.createElement("tr");
+      Array.from(uniqueModels)
+        .sort()
+        .forEach((model) => {
+          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
+        });
+      Array.from(uniqueClients)
+        .sort()
+        .forEach((client) => {
+          clientSelect.innerHTML += `<option value="${client}">${client}</option>`;
+        });
+    }
 
-          // Format amounts gracefully
-          let amt = parseFloat(pay["AMOUNT"]);
-          let formattedAmt = isNaN(amt) ? pay["AMOUNT"] : "$" + amt.toFixed(2);
-          let badgeHtml = isNaN(amt)
-            ? formattedAmt
-            : `<span class="amount-badge" style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 6px; font-weight: 700; display: inline-block;">${formattedAmt}</span>`;
+    function syncPaymentDropdowns(changedField) {
+      const carIdSelect = document.getElementById("pay-car-id");
+      const modelSelect = document.getElementById("pay-car-model");
+      const clientSelect = document.getElementById("pay-client-name");
 
-          // Format dates well
-          let dateStr = pay["PAYMENT DATE"];
-          if (dateStr) {
-            try {
-              let d = new Date(dateStr);
-              if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-            } catch (e) {}
+      if (!allCars || !carIdSelect || !modelSelect || !clientSelect) return;
+
+      let matchedCar = null;
+
+      if (changedField === "carId" && carIdSelect.value) {
+        matchedCar = allCars.find((c) => c["Car ID"] === carIdSelect.value);
+      } else if (changedField === "carModel" && modelSelect.value) {
+        matchedCar = allCars.find((c) => c["Model"] === modelSelect.value);
+      } else if (changedField === "clientName" && clientSelect.value) {
+        matchedCar = allCars.find(
+          (c) => c["CLIENT NAME"] === clientSelect.value,
+        );
+      }
+
+      if (matchedCar) {
+        if (changedField !== "carId" && matchedCar["Car ID"]) {
+          carIdSelect.value = matchedCar["Car ID"];
+        }
+        if (changedField !== "carModel" && matchedCar["Model"]) {
+          modelSelect.value = matchedCar["Model"];
+        }
+        if (changedField !== "clientName" && matchedCar["CLIENT NAME"]) {
+          // ensure the clientname exists in dropdown
+          let optExists = Array.from(clientSelect.options).some(
+            (opt) => opt.value === matchedCar["CLIENT NAME"],
+          );
+          if (!optExists) {
+            clientSelect.innerHTML += `<option value="${matchedCar["CLIENT NAME"]}">${matchedCar["CLIENT NAME"]}</option>`;
+          }
+          clientSelect.value = matchedCar["CLIENT NAME"];
+        }
+      }
+    }
+
+    function submitPayment(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+
+      btn.innerHTML =
+        '<span class="btn-text">Submitting...</span> <i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
+
+      const formData = new FormData(form);
+      const data = {
+        carId: formData.get("payCarId"),
+        carModel: formData.get("payCarModel"),
+        clientName: formData.get("payClientName"),
+        paymentOption: formData.get("payOption"),
+        amount: formData.get("payAmount"),
+        paymentDate: formData.get("payDate"),
+      };
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          showCreativeSuccessModal("Payment added successfully!");
+          form.reset();
+          // Keep today's date
+          document.getElementById("pay-date").value = new Date()
+            .toISOString()
+            .split("T")[0];
+
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+
+          // Reload payments table
+          window.loadPayments();
+        })
+        .withFailureHandler(function (error) {
+          alert("Error: " + error.message);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .savePayment(data);
+    }
+
+    window.loadPayments = function () {
+      const tbody = document.getElementById("payments-tbody");
+      if (!tbody) return;
+
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading payments...</td></tr>';
+
+      google.script.run
+        .withSuccessHandler(function (payments) {
+          tbody.innerHTML = "";
+          if (!payments || payments.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
+            return;
           }
 
-          tr.innerHTML = `
+          // Reverse to show latest first
+          payments.reverse().forEach((pay) => {
+            const tr = document.createElement("tr");
+
+            // Format amounts gracefully
+            let amt = parseFloat(pay["AMOUNT"]);
+            let formattedAmt = isNaN(amt)
+              ? pay["AMOUNT"]
+              : "$" + amt.toFixed(2);
+            let badgeHtml = isNaN(amt)
+              ? formattedAmt
+              : `<span class="amount-badge" style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 6px; font-weight: 700; display: inline-block;">${formattedAmt}</span>`;
+
+            // Format dates well
+            let dateStr = pay["PAYMENT DATE"];
+            if (dateStr) {
+              try {
+                let d = new Date(dateStr);
+                if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+              } catch (e) {}
+            }
+
+            tr.innerHTML = `
             <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
             <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
             <td>${pay["Client Name"] || "-"}</td>
@@ -1274,17 +1284,18 @@
             <td>${badgeHtml}</td>
             <td style="color: #6c757d;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
           `;
-          tbody.appendChild(tr);
-        });
-      })
-      .withFailureHandler(function (error) {
-        tbody.innerHTML =
-          '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading payments: ' +
-          error.message +
-          "</td></tr>";
-      })
-      .getPayments();
-  };
+            tbody.appendChild(tr);
+          });
+        })
+        .withFailureHandler(function (error) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading payments: ' +
+            error.message +
+            "</td></tr>";
+        })
+        .getPayments();
+    };
+  });
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
