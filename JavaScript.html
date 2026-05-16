@@ -771,129 +771,166 @@
         discountEl.style.display = "none";
       }
 
-      let infoHtml = "";
-      infoHtml += createSpecItem(
+      let overviewHtml = "";
+      overviewHtml += createSpecItem(
         "Title",
         car["Title"],
         "fa-file-signature",
         "#f6c23e",
       );
-      infoHtml += createSpecItem(
+      overviewHtml += createSpecItem(
         "Rent or Sell",
         car["Rent or Sell"],
         "fa-hand-holding-usd",
         "#1cc88a",
       );
-      infoHtml += createSpecItem("VIN", car["VIN"], "fa-barcode", "#4e73df");
-      infoHtml += createSpecItem(
+      overviewHtml += createSpecItem(
+        "VIN",
+        car["VIN"],
+        "fa-barcode",
+        "#4e73df",
+      );
+      overviewHtml += createSpecItem(
         "Model & Year",
         `${car["Model"] || ""} ${car["Year"] || ""}`,
         "fa-calendar-alt",
         "#36b9cc",
       );
-      infoHtml += createSpecItem(
-        "Mileage",
-        car["Mileage"],
-        "fa-tachometer-alt",
-        "#e74a3b",
-      );
-      infoHtml += createSpecItem(
+      overviewHtml += createSpecItem(
         "Style / Body",
         `${car["Style of Car"] || ""} ${car["Body Style"] ? "/ " + car["Body Style"] : ""}`,
         "fa-car",
         "#f6c23e",
       );
-      infoHtml += createSpecItem(
-        "Engine",
-        `${car["Engine"] || ""} ${car["Engine Type/Size"] ? "(" + car["Engine Type/Size"] + ")" : ""}`,
-        "fa-cogs",
-        "#1cc88a",
-      );
-      infoHtml += createSpecItem(
-        "Transmission",
-        car["Transmission"],
-        "fa-cog",
-        "#4e73df",
-      );
-      infoHtml += createSpecItem(
-        "Driveline",
-        car["Driveline"],
-        "fa-road",
-        "#36b9cc",
-      );
-      infoHtml += createSpecItem(
-        "Fuel Type",
-        car["Fuel Type"],
-        "fa-gas-pump",
+      overviewHtml += createSpecItem(
+        "Mileage",
+        car["Mileage"],
+        "fa-tachometer-alt",
         "#e74a3b",
       );
-      infoHtml += createSpecItem(
-        "Power Options",
-        car["Power Options"],
-        "fa-bolt",
-        "#f6c23e",
-      );
-      infoHtml += createSpecItem(
-        "Condition / Drive",
-        `${car["Condition"] || ""} ${car["Drive Condition"] ? "/ " + car["Drive Condition"] : ""}`,
-        "fa-clipboard-check",
-        "#1cc88a",
-      );
-      infoHtml += createSpecItem(
+      overviewHtml += createSpecItem(
         "Colors (Ext / Int)",
         `${car["Exterior Color"] || ""} ${car["Interior Color"] ? "/ " + car["Interior Color"] : ""}`,
         "fa-palette",
         "#4e73df",
       );
-      infoHtml += createSpecItem(
+
+      let performanceHtml = "";
+      performanceHtml += createSpecItem(
+        "Engine",
+        `${car["Engine"] || ""} ${car["Engine Type/Size"] ? "(" + car["Engine Type/Size"] + ")" : ""}`,
+        "fa-cogs",
+        "#1cc88a",
+      );
+      performanceHtml += createSpecItem(
+        "Transmission",
+        car["Transmission"],
+        "fa-cog",
+        "#4e73df",
+      );
+      performanceHtml += createSpecItem(
+        "Driveline",
+        car["Driveline"],
+        "fa-road",
+        "#36b9cc",
+      );
+      performanceHtml += createSpecItem(
+        "Fuel Type",
+        car["Fuel Type"],
+        "fa-gas-pump",
+        "#e74a3b",
+      );
+      performanceHtml += createSpecItem(
+        "Power Options",
+        car["Power Options"],
+        "fa-bolt",
+        "#f6c23e",
+      );
+      performanceHtml += createSpecItem(
+        "Condition / Drive",
+        `${car["Condition"] || ""} ${car["Drive Condition"] ? "/ " + car["Drive Condition"] : ""}`,
+        "fa-clipboard-check",
+        "#1cc88a",
+      );
+
+      let featuresHtml = "";
+      featuresHtml += createSpecItem(
         "Seat Material",
         car["Seat Material"],
         "fa-chair",
         "#36b9cc",
       );
-      infoHtml += createSpecItem(
+      featuresHtml += createSpecItem(
         "Features",
         car["Interior Features"],
         "fa-star",
         "#e74a3b",
       );
-      infoHtml += createSpecItem(
+
+      let logisticsHtml = "";
+      logisticsHtml += createSpecItem(
         "Client Name",
         car["CLIENT NAME"],
         "fa-user",
         "#4e73df",
       );
-      infoHtml += createSpecItem(
+      logisticsHtml += createSpecItem(
+        "Pickup Location",
+        car["CAR PICKUP LOCATION"],
+        "fa-map-marker-alt",
+        "#f6c23e",
+      );
+      logisticsHtml += createSpecItem(
+        "Driver Name",
+        car["DRIVER NAME"],
+        "fa-id-badge",
+        "#4e73df",
+      );
+      logisticsHtml += createSpecItem(
+        "Driver Info",
+        car["DRIVER INFORMATION"],
+        "fa-info-circle",
+        "#36b9cc",
+      );
+      logisticsHtml += createSpecItem(
         "Purchase Date",
         car["PURCHASE DATE"],
         "fa-calendar-plus",
         "#1cc88a",
       );
-      infoHtml += createSpecItem(
+      logisticsHtml += createSpecItem(
         "Sold Date",
         car["SOLD DATE"],
         "fa-calendar-check",
         "#f6c23e",
       );
-      infoHtml += createSpecItem(
+      logisticsHtml += createSpecItem(
+        "Notes",
+        car["NOTES"],
+        "fa-sticky-note",
+        "#8e44ad",
+      );
+
+      let financialsHtml = "";
+      financialsHtml += createSpecItem(
         "IAAI Total Price",
         car["IAAI TOTAL PRICE W/ FEES"],
         "fa-dollar-sign",
         "#e74a3b",
       );
-      infoHtml += createSpecItem(
+      financialsHtml += createSpecItem(
         "PAPE Price",
         car["PAPE PRICE"],
         "fa-money-bill-wave",
         "#1cc88a",
       );
-      infoHtml += createSpecItem(
+      financialsHtml += createSpecItem(
         "Disp-Price",
         car["DISP-PRICE"],
         "fa-tag",
         "#36b9cc",
       );
-      infoHtml += createSpecItem(
+      financialsHtml += createSpecItem(
         "Transport Fees",
         car["TRANSPORT FEES"],
         "fa-truck",
@@ -901,7 +938,7 @@
       );
 
       // Async fetch for materials expenses
-      infoHtml += `
+      financialsHtml += `
           <div class="spec-item" style="border-left-color: #8e44ad; background: rgba(142, 68, 173, 0.05);">
             <div class="spec-label" style="color: #8e44ad;"><i class="fas fa-file-invoice-dollar"></i> All Materials Expenses</div>
             <div class="spec-value" id="pageCarTotalExpenses"><i class="fas fa-spinner fa-spin text-muted"></i></div>
@@ -909,7 +946,7 @@
       `;
 
       // Total Cost Row
-      infoHtml += `
+      financialsHtml += `
           <div class="spec-item" style="border-left-color: #e74a3b; background: rgba(231, 74, 59, 0.05);">
             <div class="spec-label" style="color: #e74a3b;"><i class="fas fa-calculator"></i> TOTAL COST</div>
             <div class="spec-value" id="pageCarTotalCost"><i class="fas fa-spinner fa-spin text-muted"></i></div>
@@ -927,7 +964,7 @@
             "$" +
             parseFloat(displaySoldPrice.replace(/[^0-9.-]+/g, "")).toFixed(2);
         }
-        infoHtml += `
+        financialsHtml += `
           <div class="spec-item" style="border-left-color: #1cc88a; background: rgba(28, 200, 138, 0.08); padding: 15px;">
             <div class="spec-label" style="color: #1cc88a; font-size: 1.1em;"><i class="fas fa-hand-holding-usd"></i> SOLD PRICE</div>
             <div class="spec-value" style="color: #1cc88a; font-size: 1.3em; font-weight: 800;">${displaySoldPrice}</div>
@@ -944,7 +981,7 @@
         if (!displayDownPayment.startsWith("$") && !isNaN(downPaymentVal)) {
           displayDownPayment = "$" + downPaymentVal.toFixed(2);
         }
-        infoHtml += `
+        financialsHtml += `
           <div class="spec-item" style="border-left-color: #f6c23e; background: rgba(246, 194, 62, 0.08); padding: 15px;">
             <div class="spec-label" style="color: #f6c23e; font-size: 1.1em;"><i class="fas fa-money-check-alt"></i> DOWN PAYMENT</div>
             <div class="spec-value" style="color: #f6c23e; font-size: 1.3em; font-weight: 800;">${displayDownPayment}</div>
@@ -959,7 +996,7 @@
             ) || 0;
           let loanAmount = soldPriceVal - downPaymentVal;
 
-          infoHtml += `
+          financialsHtml += `
           <div class="spec-item" style="border-left-color: #4e73df; background: rgba(78, 115, 223, 0.08); padding: 15px;">
             <div class="spec-label" style="color: #4e73df; font-size: 1.1em;"><i class="fas fa-handshake"></i> LOAN AMOUNT</div>
             <div class="spec-value" style="color: #4e73df; font-size: 1.3em; font-weight: 800;">$${loanAmount.toFixed(2)}</div>
@@ -967,7 +1004,7 @@
         `;
 
           // Remain Loan Row Placeholder
-          infoHtml += `
+          financialsHtml += `
           <div class="spec-item" style="border-left-color: #e74a3b; background: rgba(231, 74, 59, 0.08); padding: 15px;">
             <div class="spec-label" style="color: #e74a3b; font-size: 1.1em;"><i class="fas fa-balance-scale-right"></i> REMAIN LOAN</div>
             <div class="spec-value" id="pageCarRemainLoan" style="color: #e74a3b; font-size: 1.3em; font-weight: 800;" data-loan-amount="${loanAmount}"><i class="fas fa-spinner fa-spin"></i></div>
@@ -976,9 +1013,9 @@
         }
       }
 
-      // Profit Row Placeholder (Only shows if there's a SOLD PRICE)
+      // Profit Row Placeholder
       if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
-        infoHtml += `
+        financialsHtml += `
           <div class="spec-item" style="border-left-color: #1cc88a; background: rgba(28, 200, 138, 0.1); padding: 15px;">
             <div class="spec-label" style="color: #1cc88a; font-size: 1.1em;"><i class="fas fa-chart-line"></i> PROFIT</div>
             <div class="spec-value" id="pageCarProfit" style="color: #1cc88a; font-size: 1.4em; font-weight: 800;"><i class="fas fa-spinner fa-spin"></i></div>
@@ -986,30 +1023,39 @@
         `;
       }
 
-      // Logistics & Additional Information
-      infoHtml += createSpecItem(
-        "Pickup Location",
-        car["CAR PICKUP LOCATION"],
+      const buildCategory = (title, icon, items) => {
+        if (!items || items.trim() === "") return "";
+        return `
+          <div class="spec-category" style="border-bottom: 2px solid #eef4ff; margin-bottom: 10px;">
+            <h5 style="color: var(--primary); padding-bottom: 5px;"><i class="fas ${icon}" style="width: 25px;"></i> ${title}</h5>
+            <div style="display: flex; flex-direction: column; gap: 0;">
+              ${items}
+            </div>
+          </div>
+        `;
+      };
+
+      let infoHtml = "";
+      infoHtml += buildCategory("Vehicle Overview", "fa-car", overviewHtml);
+      infoHtml += buildCategory(
+        "Power & Performance",
+        "fa-bolt",
+        performanceHtml,
+      );
+      infoHtml += buildCategory(
+        "Features & Condition",
+        "fa-star",
+        featuresHtml,
+      );
+      infoHtml += buildCategory(
+        "Logistics & Information",
         "fa-map-marker-alt",
-        "#f6c23e",
+        logisticsHtml,
       );
-      infoHtml += createSpecItem(
-        "Driver Name",
-        car["DRIVER NAME"],
-        "fa-id-badge",
-        "#4e73df",
-      );
-      infoHtml += createSpecItem(
-        "Driver Info",
-        car["DRIVER INFORMATION"],
-        "fa-info-circle",
-        "#36b9cc",
-      );
-      infoHtml += createSpecItem(
-        "Notes",
-        car["NOTES"],
-        "fa-sticky-note",
-        "#8e44ad",
+      infoHtml += buildCategory(
+        "Financials & Sales",
+        "fa-dollar-sign",
+        financialsHtml,
       );
 
       infoContainer.innerHTML = infoHtml;

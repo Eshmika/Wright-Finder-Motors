@@ -923,4 +923,62 @@
   .full-width {
     grid-column: 1 / -1;
   }
+
+  /* Categorized Spec Sections */
+  .spec-category {
+    padding: 16px;
+    background: linear-gradient(180deg, #ffffff, #fbfdff);
+    border-bottom: 1px solid #eef4ff;
+  }
+
+  .spec-category h5 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--dark);
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+
+  .spec-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px 12px;
+  }
+
+  .spec-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: transparent;
+    transition:
+      background 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .spec-list li:hover {
+    background: #f8fbff;
+    transform: translateY(-2px);
+  }
+
+  .spec-list .spec-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: var(--secondary);
+    font-weight: 800;
+    letter-spacing: 0.6px;
+  }
+
+  .spec-list .spec-value {
+    font-size: 0.98rem;
+    color: var(--dark);
+    font-weight: 600;
+    text-align: right;
+    margin-left: 12px;
+  }
 </style>
