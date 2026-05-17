@@ -554,109 +554,175 @@
         ],
       };
 
-      const fieldOrder = [
-        "Car ID",
-        "Car Name",
-        "Price",
-        "Discount",
-        "Status",
-        "Title",
-        "Rent or Sell",
-        "VIN",
-        "Model",
-        "Year",
-        "Mileage",
-        "Style of Car",
-        "Body Style",
-        "Engine",
-        "Engine Type/Size",
-        "Transmission",
-        "Driveline",
-        "Fuel Type",
-        "Power Options",
-        "Condition",
-        "Drive Condition",
-        "Exterior Color",
-        "Interior Color",
-        "Seat Material",
-        "Interior Features",
-        "CLIENT NAME",
-        "PURCHASE DATE",
-        "SOLD DATE",
-        "SOLD PRICE",
-        "DOWN PAYMENT",
-        "IAAI TOTAL PRICE W/ FEES",
-        "PAPE PRICE",
-        "DISP-PRICE",
-        "TRANSPORT FEES",
-        "CAR PICKUP LOCATION",
-        "DRIVER NAME",
-        "DRIVER INFORMATION",
-        "NOTES",
-        "Description",
+      const categoriesDef = [
+        {
+          title: "Vehicle Overview",
+          icon: "fa-car",
+          keys: [
+            "Car ID",
+            "Car Name",
+            "VIN",
+            "Title",
+            "Rent or Sell",
+            "Model",
+            "Year",
+            "Style of Car",
+            "Body Style",
+            "Mileage",
+            "Exterior Color",
+            "Interior Color",
+          ],
+        },
+        {
+          title: "Power & Performance",
+          icon: "fa-bolt",
+          keys: [
+            "Engine",
+            "Engine Type/Size",
+            "Transmission",
+            "Driveline",
+            "Fuel Type",
+            "Power Options",
+            "Condition",
+            "Drive Condition",
+          ],
+        },
+        {
+          title: "Features & Condition",
+          icon: "fa-star",
+          keys: ["Seat Material", "Interior Features"],
+        },
+        {
+          title: "Logistics & Information",
+          icon: "fa-map-marker-alt",
+          keys: [
+            "CLIENT NAME",
+            "CAR PICKUP LOCATION",
+            "DRIVER NAME",
+            "DRIVER INFORMATION",
+            "PURCHASE DATE",
+            "SOLD DATE",
+            "NOTES",
+            "Description",
+          ],
+        },
+        {
+          title: "Financials & Sales",
+          icon: "fa-dollar-sign",
+          keys: [
+            "Price",
+            "Discount",
+            "Status",
+            "IAAI TOTAL PRICE W/ FEES",
+            "PAPE PRICE",
+            "DISP-PRICE",
+            "TRANSPORT FEES",
+            "SOLD PRICE",
+            "DOWN PAYMENT",
+          ],
+        },
       ];
 
-      // Gather keys according to preferred fieldOrder, then any remaining keys
-      let keysToRender = fieldOrder.filter((key) => key in currentEditableCar);
-      for (const key in currentEditableCar) {
-        if (!keysToRender.includes(key) && !skippedKeys.includes(key)) {
-          keysToRender.push(key);
-        }
-      }
+      let mappedKeys = [];
+      categoriesDef.forEach((cat) => mappedKeys.push(...cat.keys));
+      let categoriesHtml = "";
 
-      for (const key of keysToRender) {
-        if (skippedKeys.includes(key)) continue;
+      const renderCategory = (title, icon, keys) => {
+        let itemsHtml = "";
+        for (const key of keys) {
+          if (skippedKeys.includes(key)) continue;
 
-        let val = currentEditableCar[key] || "";
-        let inputHtml = "";
+          let val = currentEditableCar[key] || "";
+          let inputHtml = "";
 
-        if (key === "Car ID") {
-          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
-        } else if (
-          key === "Description" ||
-          key === "Interior Features" ||
-          key === "NOTES" ||
-          key === "DRIVER INFORMATION"
-        ) {
-          inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
-        } else if (key === "Year") {
-          let options = '<option value="">Select Year...</option>';
-          for (let y = 1990; y <= 2050; y++) {
-            options += `<option value="${y}" ${val == y ? "selected" : ""}>${y}</option>`;
+          if (key === "Car ID") {
+            inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
+          } else if (
+            key === "Description" ||
+            key === "Interior Features" ||
+            key === "NOTES" ||
+            key === "DRIVER INFORMATION"
+          ) {
+            inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
+          } else if (key === "Year") {
+            let options = '<option value="">Select Year...</option>';
+            for (let y = 1990; y <= 2050; y++) {
+              options += `<option value="${y}" ${val == y ? "selected" : ""}>${y}</option>`;
+            }
+            inputHtml = `<select name="${key}" class="form-control" required>${options}</select>`;
+          } else if (dropdownOptions[key]) {
+            let options = `<option value="">Select ${key}...</option>`;
+            dropdownOptions[key].forEach((opt) => {
+              options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
+            });
+            inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
+          } else if (key === "Price" || key === "Discount") {
+            // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
+            // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
+            inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" required>`;
+          } else if (key === "SOLD PRICE" || key === "DOWN PAYMENT") {
+            inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" placeholder="$0.00">`;
+          } else if (key === "PURCHASE DATE" || key === "SOLD DATE") {
+            // Format date string if it includes time component to yyyy-mm-dd for input display
+            if (val) {
+              try {
+                let d = new Date(val);
+                if (!isNaN(d.getTime())) val = d.toISOString().split("T")[0];
+              } catch (e) {}
+            }
+            inputHtml = `<input type="date" name="${key}" value="${val}" class="form-control">`;
+          } else {
+            inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
           }
-          inputHtml = `<select name="${key}" class="form-control" required>${options}</select>`;
-        } else if (dropdownOptions[key]) {
-          let options = `<option value="">Select ${key}...</option>`;
-          dropdownOptions[key].forEach((opt) => {
-            options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
-          });
-          inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
-        } else if (key === "Price" || key === "Discount") {
-          // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
-          // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
-          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" required>`;
-        } else if (key === "SOLD PRICE" || key === "DOWN PAYMENT") {
-          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" placeholder="$0.00">`;
-        } else if (key === "PURCHASE DATE" || key === "SOLD DATE") {
-          // Format date string if it includes time component to yyyy-mm-dd for input display
-          if (val) {
-            try {
-              let d = new Date(val);
-              if (!isNaN(d.getTime())) val = d.toISOString().split("T")[0];
-            } catch (e) {}
-          }
-          inputHtml = `<input type="date" name="${key}" value="${val}" class="form-control">`;
-        } else {
-          inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
-        }
 
-        grid.innerHTML += `
-            <div class="input-group">
+          let gridColumnStyle =
+            key === "Description" ||
+            key === "Interior Features" ||
+            key === "NOTES" ||
+            key === "DRIVER INFORMATION"
+              ? "grid-column: 1 / -1;"
+              : "";
+
+          itemsHtml += `
+            <div class="input-group" style="${gridColumnStyle}">
                <label>${key}</label>
                ${inputHtml}
             </div>
           `;
+        }
+
+        if (itemsHtml.trim() === "") return "";
+
+        return `
+          <div class="spec-category" style="background:#fff; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,0.05); padding:25px; margin-bottom: 30px; border-top: 5px solid var(--primary); width: 100%;">
+            <h5 style="color: var(--primary); padding-bottom: 15px; border-bottom: 2px solid #eef4ff; margin-bottom: 20px; font-weight:700;"><i class="fas ${icon}" style="width: 25px;"></i> ${title}</h5>
+            <div class="grid-responsive">
+              ${itemsHtml}
+            </div>
+          </div>
+        `;
+      };
+
+      categoriesDef.forEach((cat) => {
+        let keysToRender = cat.keys.filter((k) => k in currentEditableCar);
+        categoriesHtml += renderCategory(cat.title, cat.icon, keysToRender);
+      });
+
+      let otherKeys = [];
+      for (const key in currentEditableCar) {
+        if (!mappedKeys.includes(key) && !skippedKeys.includes(key)) {
+          otherKeys.push(key);
+        }
       }
+      if (otherKeys.length > 0) {
+        categoriesHtml += renderCategory(
+          "Additional Information",
+          "fa-plus-circle",
+          otherKeys,
+        );
+      }
+
+      grid.innerHTML = categoriesHtml;
     }
 
     const carEditForm = document.getElementById("carEditForm");
