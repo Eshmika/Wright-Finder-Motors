@@ -33,10 +33,12 @@
   /* Sidebar Styles */
   .sidebar {
     width: 250px;
+    flex-shrink: 0;
     background-color: var(--sidebar-bg);
     color: var(--text-menu);
     transition: var(--transition);
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   }
 
@@ -165,6 +167,7 @@
     padding: 20px;
     flex-grow: 1;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   /* Views */
