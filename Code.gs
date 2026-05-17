@@ -84,7 +84,19 @@ function saveNewVehicle(data) {
   var sheet =
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
 
-  var carId = "WFM-" + Utilities.getUuid().substring(0, 8).toUpperCase();
+  var cName = data.carName ? data.carName.toString().trim() : "";
+  var firstLetter = cName.length > 0 ? cName.charAt(0).toUpperCase() : "X";
+
+  var cModel = data.model ? data.model.toString().trim() : "";
+  var secondLetter = cModel.length > 0 ? cModel.charAt(0).toUpperCase() : "X";
+
+  var cYear = data.year ? data.year.toString().trim() : "";
+  var yearStr = cYear.length >= 2 ? cYear.slice(-2) : "00";
+
+  var randomNum = Math.floor(Math.random() * 100);
+  var randomStr = randomNum < 10 ? "0" + randomNum : randomNum.toString();
+
+  var carId = firstLetter + secondLetter + yearStr + "-" + randomStr;
 
   if (!sheet) {
     sheet =
