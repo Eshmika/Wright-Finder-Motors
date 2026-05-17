@@ -364,7 +364,7 @@
     function loadCars() {
       const tbody = document.getElementById("carsTableBody");
       tbody.innerHTML =
-        '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading vehicles...</td></tr>';
+        '<tr><td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading vehicles...</td></tr>';
 
       google.script.run
         .withSuccessHandler(function (vehicles) {
@@ -373,7 +373,7 @@
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
-            '<tr><td colspan="6" class="text-center text-danger">Error loading vehicles: ' +
+            '<tr><td colspan="8" class="text-center text-danger">Error loading vehicles: ' +
             error.message +
             "</td></tr>";
         })
@@ -386,13 +386,12 @@
 
       if (!vehicles || vehicles.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="6" class="text-center">No vehicles found.</td></tr>';
+          '<tr><td colspan="8" class="text-center">No vehicles found.</td></tr>';
         return;
       }
 
       vehicles.reverse().forEach((car, index) => {
         const tr = document.createElement("tr");
-        tr.onclick = () => openCarModal(car);
 
         let firstMainImage = "";
         if (car["Main Image URLs"]) {
@@ -412,14 +411,46 @@
         if (status.toLowerCase().includes("pending"))
           statusClass = "status-pending";
 
+        let financing = "Cash";
+        if (
+          car["DOWN PAYMENT"] &&
+          car["DOWN PAYMENT"].toString().trim() !== "" &&
+          car["DOWN PAYMENT"].toString().trim() !== "0"
+        ) {
+          financing = "Loan";
+        }
+
         tr.innerHTML = `
           <td>${imgHtml}</td>
           <td><strong>${car["Car ID"] || "-"}</strong></td>
-          <td>${car["Car Name"] || "-"}</td>
-          <td>${car["Model"] || "-"} (${car["Year"] || "-"})</td>
-          <td class="text-success fw-bold">$${car["Price"] || "0"}</td>
+          <td>
+            <div style="color: black; font-weight: bold;">${car["Car Name"] || "-"} ${car["Year"] || ""}</div>
+            <div style="color: gray; font-size: 0.9em;">${car["Model"] || "-"}</div>
+          </td>
+          <td>${car["CLIENT NAME"] || "-"}</td>
+          <td>${car["Title"] || "-"}</td>
+          <td>${financing}</td>
           <td><span class="status-badge ${statusClass}">${status}</span></td>
+          <td>
+            <button class="btn-view-action" style="background:#3b5bdb; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; margin-right:5px;"><i class="fas fa-eye"></i> View</button>
+            <button class="btn-edit-action" style="background:#f6c23e; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;"><i class="fas fa-edit"></i> Edit</button>
+          </td>
         `;
+
+        const btnView = tr.querySelector(".btn-view-action");
+        const btnEdit = tr.querySelector(".btn-edit-action");
+
+        btnView.onclick = (e) => {
+          e.stopPropagation();
+          openCarModal(car);
+        };
+
+        btnEdit.onclick = (e) => {
+          e.stopPropagation();
+          openCarModal(car);
+          setEditMode(true);
+        };
+
         tbody.appendChild(tr);
       });
     }
