@@ -272,6 +272,8 @@
         .saveExpense(data);
     };
 
+    let cachedExpenses = [];
+
     window.loadExpenses = function () {
       const tbody = document.getElementById("expensesTableBody");
       tbody.innerHTML =
@@ -279,45 +281,8 @@
 
       google.script.run
         .withSuccessHandler(function (expenses) {
-          tbody.innerHTML = "";
-          if (!expenses || expenses.length === 0) {
-            tbody.innerHTML =
-              '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
-            return;
-          }
-
-          // Reverse to show latest first
-          expenses.reverse().forEach((exp) => {
-            const tr = document.createElement("tr");
-
-            // Format amounts gracefully
-            let amt = parseFloat(exp["AMOUNT"]);
-            let formattedAmt = isNaN(amt)
-              ? exp["AMOUNT"]
-              : "$" + amt.toFixed(2);
-            let badgeHtml = isNaN(amt)
-              ? formattedAmt
-              : `<span class="amount-badge">${formattedAmt}</span>`;
-
-            // Format dates well
-            let dateStr = exp["EXPENSE DATE"];
-            if (dateStr) {
-              try {
-                let d = new Date(dateStr);
-                if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-              } catch (e) {}
-            }
-
-            tr.innerHTML = `
-              <td><strong>${exp["CAR MODEL"] || "-"}</strong></td>
-              <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
-              <td>${exp["Client Name"] || "-"}</td>
-              <td>${exp["DESCRIPTION"] || "-"}</td>
-              <td>${badgeHtml}</td>
-              <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
-            `;
-            tbody.appendChild(tr);
-          });
+          cachedExpenses = expenses || [];
+          renderExpensesTable(cachedExpenses);
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
@@ -326,6 +291,63 @@
             "</td></tr>";
         })
         .getExpenses();
+    };
+
+    function renderExpensesTable(expensesToRender) {
+      const tbody = document.getElementById("expensesTableBody");
+      tbody.innerHTML = "";
+      if (!expensesToRender || expensesToRender.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
+        return;
+      }
+
+      // We clone and reverse to show latest first
+      [...expensesToRender].reverse().forEach((exp) => {
+        const tr = document.createElement("tr");
+
+        // Format amounts gracefully
+        let amt = parseFloat(exp["AMOUNT"]);
+        let formattedAmt = isNaN(amt) ? exp["AMOUNT"] : "$" + amt.toFixed(2);
+        let badgeHtml = isNaN(amt)
+          ? formattedAmt
+          : `<span class="amount-badge">${formattedAmt}</span>`;
+
+        // Format dates well
+        let dateStr = exp["EXPENSE DATE"];
+        if (dateStr) {
+          try {
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+          } catch (e) {}
+        }
+
+        tr.innerHTML = `
+          <td><strong>${exp["CAR MODEL"] || "-"}</strong></td>
+          <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
+          <td>${exp["Client Name"] || exp["CLIENT NAME"] || "-"}</td>
+          <td>${exp["DESCRIPTION"] || "-"}</td>
+          <td>${badgeHtml}</td>
+          <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.filterExpensesByClient = function () {
+      const filterInput = document.getElementById("expenseClientFilter");
+      if (!filterInput) return;
+      const term = filterInput.value.toLowerCase().trim();
+
+      if (term === "") {
+        renderExpensesTable(cachedExpenses);
+      } else {
+        const filtered = cachedExpenses.filter((exp) => {
+          const clientName = exp["Client Name"] || exp["CLIENT NAME"] || "";
+          return clientName.toLowerCase().includes(term);
+        });
+        renderExpensesTable(filtered);
+      }
     };
 
     // File input UX changes
@@ -1571,6 +1593,8 @@
         .savePayment(data);
     }
 
+    let cachedPayments = [];
+
     window.loadPayments = function () {
       const tbody = document.getElementById("payments-tbody");
       if (!tbody) return;
@@ -1580,45 +1604,8 @@
 
       google.script.run
         .withSuccessHandler(function (payments) {
-          tbody.innerHTML = "";
-          if (!payments || payments.length === 0) {
-            tbody.innerHTML =
-              '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
-            return;
-          }
-
-          // Reverse to show latest first
-          payments.reverse().forEach((pay) => {
-            const tr = document.createElement("tr");
-
-            // Format amounts gracefully
-            let amt = parseFloat(pay["AMOUNT"]);
-            let formattedAmt = isNaN(amt)
-              ? pay["AMOUNT"]
-              : "$" + amt.toFixed(2);
-            let badgeHtml = isNaN(amt)
-              ? formattedAmt
-              : `<span class="amount-badge" style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 6px; font-weight: 700; display: inline-block;">${formattedAmt}</span>`;
-
-            // Format dates well
-            let dateStr = pay["PAYMENT DATE"];
-            if (dateStr) {
-              try {
-                let d = new Date(dateStr);
-                if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-              } catch (e) {}
-            }
-
-            tr.innerHTML = `
-            <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
-            <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
-            <td>${pay["Client Name"] || "-"}</td>
-            <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || "-"}</span></td>
-            <td>${badgeHtml}</td>
-            <td style="color: #6c757d;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
-          `;
-            tbody.appendChild(tr);
-          });
+          cachedPayments = payments || [];
+          renderPaymentsTable(cachedPayments);
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
@@ -1627,6 +1614,65 @@
             "</td></tr>";
         })
         .getPayments();
+    };
+
+    function renderPaymentsTable(paymentsToRender) {
+      const tbody = document.getElementById("payments-tbody");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      if (!paymentsToRender || paymentsToRender.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
+        return;
+      }
+
+      // Reverse to show latest first
+      [...paymentsToRender].reverse().forEach((pay) => {
+        const tr = document.createElement("tr");
+
+        // Format amounts gracefully
+        let amt = parseFloat(pay["AMOUNT"]);
+        let formattedAmt = isNaN(amt) ? pay["AMOUNT"] : "$" + amt.toFixed(2);
+        let badgeHtml = isNaN(amt)
+          ? formattedAmt
+          : `<span class="amount-badge" style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 6px; font-weight: 700; display: inline-block;">${formattedAmt}</span>`;
+
+        // Format dates well
+        let dateStr = pay["PAYMENT DATE"];
+        if (dateStr) {
+          try {
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+          } catch (e) {}
+        }
+
+        tr.innerHTML = `
+        <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
+        <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
+        <td>${pay["Client Name"] || pay["CLIENT NAME"] || "-"}</td>
+        <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || "-"}</span></td>
+        <td>${badgeHtml}</td>
+        <td style="color: #6c757d;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
+      `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.filterPaymentsByClient = function () {
+      const filterInput = document.getElementById("paymentClientFilter");
+      if (!filterInput) return;
+      const term = filterInput.value.toLowerCase().trim();
+
+      if (term === "") {
+        renderPaymentsTable(cachedPayments);
+      } else {
+        const filtered = cachedPayments.filter((pay) => {
+          const clientName = pay["Client Name"] || pay["CLIENT NAME"] || "";
+          return clientName.toLowerCase().includes(term);
+        });
+        renderPaymentsTable(filtered);
+      }
     };
   });
 

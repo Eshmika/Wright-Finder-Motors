@@ -352,20 +352,62 @@
 
   <!-- View Expenses Card -->
   <div class="expenses-card">
-    <div class="expenses-card-header">
-      <h3>
+    <div
+      class="expenses-card-header"
+      style="
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        justify-content: space-between;
+      "
+    >
+      <h3 style="margin: 0">
         <span class="icon-square bg-emerald-light"
           ><i class="fas fa-list-ul"></i
         ></span>
         Recent Expense Records
       </h3>
-      <button
-        onclick="loadExpenses()"
-        class="btn-secondary"
-        style="border-radius: 20px; font-size: 0.9rem"
+      <div
+        style="
+          display: flex;
+          gap: 10px;
+          flex-grow: 1;
+          justify-content: flex-end;
+        "
       >
-        <i class="fas fa-sync-alt"></i> Refresh Data
-      </button>
+        <div style="position: relative; max-width: 250px; width: 100%">
+          <i
+            class="fas fa-search"
+            style="
+              position: absolute;
+              left: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #aaa;
+            "
+          ></i>
+          <input
+            type="text"
+            id="expenseClientFilter"
+            class="form-control"
+            placeholder="Filter by Client Name..."
+            onkeyup="filterExpensesByClient()"
+            style="
+              padding-left: 35px;
+              border-radius: 20px;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            "
+          />
+        </div>
+        <button
+          onclick="loadExpenses()"
+          class="btn-secondary"
+          style="border-radius: 20px; font-size: 0.9rem; padding: 8px 15px"
+        >
+          <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+      </div>
     </div>
 
     <div class="expenses-table-wrapper">
