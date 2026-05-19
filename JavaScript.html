@@ -70,6 +70,10 @@
             else if (targetView === "payment") {
               initPaymentView();
             }
+            // If Add New Car is opened, load car list
+            else if (targetView === "buy-add-new") {
+              initAddNewCarView();
+            }
           } else {
             viewPlaceholder.classList.add("active");
             placeholderTitle.textContent = viewTitle + " Content Goes Here";
@@ -343,6 +347,40 @@
         }
       });
     });
+
+    // Add New Car View Logic
+    window.carListData = { names: [], models: {} };
+
+    window.initAddNewCarView = function () {
+      const carNameSelect = document.getElementById("carNameSelect");
+      if (carNameSelect && carNameSelect.options.length <= 1) {
+        google.script.run
+          .withSuccessHandler(function (data) {
+            window.carListData = data;
+
+            carNameSelect.innerHTML =
+              '<option value="">Select Car Name...</option>';
+            data.names.forEach((name) => {
+              carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+          })
+          .getCarListData();
+      }
+    };
+
+    window.updateModelDropdown = function () {
+      const carNameSelect = document.getElementById("carNameSelect");
+      const modelSelect = document.getElementById("modelSelect");
+
+      const selectedName = carNameSelect.value;
+      modelSelect.innerHTML = '<option value="">Select Model...</option>';
+
+      if (selectedName && window.carListData.models[selectedName]) {
+        window.carListData.models[selectedName].forEach((model) => {
+          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
+        });
+      }
+    };
 
     // View Cars Logic
     let allCars = [];

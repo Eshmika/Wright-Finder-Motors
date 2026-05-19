@@ -410,3 +410,34 @@ function getPayments() {
 
   return payments;
 }
+
+function getCarListData() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Car List");
+  if (!sheet) return { names: [], models: {} };
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { names: [], models: {} }; // assuming header row
+
+  var modelsByCar = {};
+
+  for (var i = 1; i < data.length; i++) {
+    var carName = data[i][0];
+    var carModel = data[i][1];
+
+    if (carName) {
+      carName = String(carName).trim();
+      carModel = String(carModel || "").trim();
+
+      if (!modelsByCar[carName]) {
+        modelsByCar[carName] = [];
+      }
+      if (carModel && modelsByCar[carName].indexOf(carModel) === -1) {
+        modelsByCar[carName].push(carModel);
+      }
+    }
+  }
+
+  var carNames = Object.keys(modelsByCar).sort();
+
+  return { names: carNames, models: modelsByCar };
+}

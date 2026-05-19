@@ -58,23 +58,21 @@
       <div class="grid-responsive">
         <div class="input-group">
           <label>Car Name</label>
-          <input
-            type="text"
+          <select
             name="carName"
+            id="carNameSelect"
             class="form-control"
-            placeholder="e.g. Ford Mustang"
             required
-          />
+            onchange="updateModelDropdown()"
+          >
+            <option value="">Select Car Name...</option>
+          </select>
         </div>
         <div class="input-group">
           <label>Model</label>
-          <input
-            type="text"
-            name="model"
-            class="form-control"
-            placeholder="e.g. GT Premium"
-            required
-          />
+          <select name="model" id="modelSelect" class="form-control" required>
+            <option value="">Select Model...</option>
+          </select>
         </div>
         <div class="input-group">
           <label>Year</label>
