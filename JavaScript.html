@@ -382,6 +382,26 @@
       }
     };
 
+    window.updateEditModelDropdown = function () {
+      const carNameSelect = document.getElementById("editCarNameSelect");
+      const modelSelect = document.getElementById("editModelSelect");
+
+      if (!carNameSelect || !modelSelect) return;
+
+      const selectedName = carNameSelect.value;
+      modelSelect.innerHTML = '<option value="">Select Model...</option>';
+
+      if (
+        selectedName &&
+        window.carListData &&
+        window.carListData.models[selectedName]
+      ) {
+        window.carListData.models[selectedName].forEach((model) => {
+          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
+        });
+      }
+    };
+
     // View Cars Logic
     let allCars = [];
 
@@ -523,7 +543,17 @@
         viewMode.style.display = "none";
         editMode.style.display = "block";
         editBtn.style.display = "none"; // Hide edit button while editing
-        populateEditForm();
+
+        if (window.carListData.names.length === 0) {
+          google.script.run
+            .withSuccessHandler(function (data) {
+              window.carListData = data;
+              populateEditForm();
+            })
+            .getCarListData();
+        } else {
+          populateEditForm();
+        }
       } else {
         viewMode.style.display = "block";
         editMode.style.display = "none";
@@ -694,6 +724,30 @@
               options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
             });
             inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
+          } else if (key === "Car Name") {
+            let options = '<option value="">Select Car Name...</option>';
+            if (window.carListData && window.carListData.names) {
+              window.carListData.names.forEach((name) => {
+                options += `<option value="${name}" ${val === name ? "selected" : ""}>${name}</option>`;
+              });
+            }
+            inputHtml = `<select name="${key}" id="editCarNameSelect" class="form-control" onchange="updateEditModelDropdown()">${options}</select>`;
+          } else if (key === "Model") {
+            let options = '<option value="">Select Model...</option>';
+            let currentCarName = currentEditableCar["Car Name"];
+            if (
+              window.carListData &&
+              window.carListData.models &&
+              currentCarName &&
+              window.carListData.models[currentCarName]
+            ) {
+              window.carListData.models[currentCarName].forEach((model) => {
+                options += `<option value="${model}" ${val === model ? "selected" : ""}>${model}</option>`;
+              });
+            } else if (val) {
+              options += `<option value="${val}" selected>${val}</option>`;
+            }
+            inputHtml = `<select name="${key}" id="editModelSelect" class="form-control">${options}</select>`;
           } else if (key === "Price" || key === "Discount") {
             // Changed to text input instead of number to allow for clean updates, but keeping it flexible.
             // Since some data already has formats like $20,000 we'll use text or strip characters if user enters.
