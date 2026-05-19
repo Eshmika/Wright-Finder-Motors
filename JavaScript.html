@@ -873,7 +873,7 @@
 
       // Set Header and Subtitle
       document.getElementById("pageCarTitle").innerHTML =
-        `<i class="fas fa-car title-icon"></i> ${car["Car Name"] || "Car Details"}`;
+        `<i class="fas fa-car title-icon"></i> ${car["Car Name"] || "Car Details"} ${car["Model"] ? "- " + car["Model"] : ""}`;
       document.getElementById("pageCarSubtitle").textContent =
         `ID: ${car["Car ID"] || "N/A"}`;
 
