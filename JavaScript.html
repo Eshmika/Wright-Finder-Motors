@@ -334,17 +334,30 @@
       });
     }
 
-    window.filterExpensesByClient = function () {
-      const filterInput = document.getElementById("expenseClientFilter");
-      if (!filterInput) return;
-      const term = filterInput.value.toLowerCase().trim();
+    window.filterExpenses = function () {
+      const clientInput = document.getElementById("expenseClientFilter");
+      const modelInput = document.getElementById("expenseCarModelFilter");
+      const idInput = document.getElementById("expenseCarIdFilter");
 
-      if (term === "") {
+      const clientTerm = clientInput
+        ? clientInput.value.toLowerCase().trim()
+        : "";
+      const modelTerm = modelInput ? modelInput.value.toLowerCase().trim() : "";
+      const idTerm = idInput ? idInput.value.toLowerCase().trim() : "";
+
+      if (!clientTerm && !modelTerm && !idTerm) {
         renderExpensesTable(cachedExpenses);
       } else {
         const filtered = cachedExpenses.filter((exp) => {
           const clientName = exp["Client Name"] || exp["CLIENT NAME"] || "";
-          return clientName.toLowerCase().includes(term);
+          const carModel = exp["CAR MODEL"] || "";
+          const carId = exp["CAR ID"] || "";
+
+          const matchesClient = clientName.toLowerCase().includes(clientTerm);
+          const matchesModel = carModel.toLowerCase().includes(modelTerm);
+          const matchesId = carId.toString().toLowerCase().includes(idTerm);
+
+          return matchesClient && matchesModel && matchesId;
         });
         renderExpensesTable(filtered);
       }
@@ -1659,17 +1672,30 @@
       });
     }
 
-    window.filterPaymentsByClient = function () {
-      const filterInput = document.getElementById("paymentClientFilter");
-      if (!filterInput) return;
-      const term = filterInput.value.toLowerCase().trim();
+    window.filterPayments = function () {
+      const clientInput = document.getElementById("paymentClientFilter");
+      const modelInput = document.getElementById("paymentCarModelFilter");
+      const idInput = document.getElementById("paymentCarIdFilter");
 
-      if (term === "") {
+      const clientTerm = clientInput
+        ? clientInput.value.toLowerCase().trim()
+        : "";
+      const modelTerm = modelInput ? modelInput.value.toLowerCase().trim() : "";
+      const idTerm = idInput ? idInput.value.toLowerCase().trim() : "";
+
+      if (!clientTerm && !modelTerm && !idTerm) {
         renderPaymentsTable(cachedPayments);
       } else {
         const filtered = cachedPayments.filter((pay) => {
           const clientName = pay["Client Name"] || pay["CLIENT NAME"] || "";
-          return clientName.toLowerCase().includes(term);
+          const carModel = pay["CAR MODEL"] || "";
+          const carId = pay["CAR ID"] || "";
+
+          const matchesClient = clientName.toLowerCase().includes(clientTerm);
+          const matchesModel = carModel.toLowerCase().includes(modelTerm);
+          const matchesId = carId.toString().toLowerCase().includes(idTerm);
+
+          return matchesClient && matchesModel && matchesId;
         });
         renderPaymentsTable(filtered);
       }
