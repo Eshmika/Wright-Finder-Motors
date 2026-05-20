@@ -2,18 +2,27 @@
   document.addEventListener("DOMContentLoaded", function () {
     // Sidebar Toggle Logic
     const sidebarToggle = document.getElementById("sidebarToggle");
+    const sidebarCreativeToggle = document.getElementById(
+      "sidebarCreativeToggle",
+    );
     const sidebar = document.getElementById("sidebar");
 
+    function toggleSidebar() {
+      if (window.innerWidth <= 768) {
+        // On mobile, toggle 'open' class for off-canvas effect
+        sidebar.classList.toggle("open");
+      } else {
+        // On desktop, toggle 'collapsed' class
+        sidebar.classList.toggle("collapsed");
+      }
+    }
+
     if (sidebarToggle && sidebar) {
-      sidebarToggle.addEventListener("click", function () {
-        if (window.innerWidth <= 768) {
-          // On mobile, toggle 'open' class for off-canvas effect
-          sidebar.classList.toggle("open");
-        } else {
-          // On desktop, toggle 'collapsed' class
-          sidebar.classList.toggle("collapsed");
-        }
-      });
+      sidebarToggle.addEventListener("click", toggleSidebar);
+    }
+
+    if (sidebarCreativeToggle && sidebar) {
+      sidebarCreativeToggle.addEventListener("click", toggleSidebar);
     }
 
     // Close sidebar on mobile when a link is clicked

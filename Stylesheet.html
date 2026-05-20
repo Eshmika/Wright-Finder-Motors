@@ -41,6 +41,42 @@
     overflow-x: hidden;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     z-index: 100;
+    position: relative;
+  }
+
+  /* Creative Sidely Toggle Button Settings */
+  .sidebar-creative-toggle {
+    position: absolute;
+    top: 50%;
+    right: -15px; /* Stick halfway out */
+    transform: translateY(-50%);
+    width: 30px;
+    height: 60px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    z-index: 101;
+  }
+
+  .sidebar-creative-toggle:hover {
+    background: var(--primary-dark);
+    width: 35px;
+    right: -18px;
+  }
+
+  .sidebar-creative-toggle i {
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.collapsed .sidebar-creative-toggle i {
+    transform: rotate(180deg);
   }
 
   .sidebar.collapsed {
@@ -69,6 +105,13 @@
       position: fixed;
       height: 100vh;
       left: -250px;
+      overflow: visible; /* To allow the toggle button to be visible */
+    }
+    .sidebar-creative-toggle {
+      display: none;
+    }
+    .toggle-btn#sidebarToggle {
+      display: inline-block !important; /* Show topbar toggle on mobile */
     }
     .sidebar.open {
       left: 0;
