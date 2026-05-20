@@ -40,6 +40,49 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+  }
+
+  .sidebar.collapsed {
+    width: 80px;
+  }
+
+  .sidebar.collapsed .sidebar-header {
+    padding: 20px 10px;
+  }
+
+  .sidebar.collapsed .nav-text {
+    display: none;
+  }
+
+  .sidebar.collapsed .nav-link {
+    padding: 15px;
+    justify-content: center;
+  }
+
+  .sidebar.collapsed .nav-link i:first-child {
+    font-size: 1.3rem;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      height: 100vh;
+      left: -250px;
+    }
+    .sidebar.open {
+      left: 0;
+    }
+    .sidebar.collapsed {
+      width: 250px; /* Don't collapse on mobile, just hide/show */
+    }
+    .sidebar.open .nav-text {
+      display: block;
+    }
+    .sidebar.open .nav-link {
+      padding: 12px 20px;
+      justify-content: flex-start;
+    }
   }
 
   .sidebar-header {

@@ -1,5 +1,28 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Sidebar Toggle Logic
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const sidebar = document.getElementById("sidebar");
+
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener("click", function () {
+        if (window.innerWidth <= 768) {
+          // On mobile, toggle 'open' class for off-canvas effect
+          sidebar.classList.toggle("open");
+        } else {
+          // On desktop, toggle 'collapsed' class
+          sidebar.classList.toggle("collapsed");
+        }
+      });
+    }
+
+    // Close sidebar on mobile when a link is clicked
+    function closeSidebarOnMobile() {
+      if (window.innerWidth <= 768 && sidebar.classList.contains("open")) {
+        sidebar.classList.remove("open");
+      }
+    }
+
     // Navigation logic
     const allNavLinks = document.querySelectorAll(
       ".nav-link[data-view], .submenu a[data-view]",
@@ -17,6 +40,7 @@
           !this.parentElement.classList.contains("has-submenu")
         ) {
           e.preventDefault();
+          closeSidebarOnMobile();
 
           // Remove active class from all links
           document
