@@ -733,9 +733,15 @@
           icon: "fa-map-marker-alt",
           keys: [
             "CLIENT NAME",
+            "Client Phone",
+            "Client Email",
             "CAR PICKUP LOCATION",
             "DRIVER NAME",
+            "Driver Phone",
+            "Driver Company",
             "DRIVER INFORMATION",
+            "Dispatcher Name",
+            "Dispatcher Price",
             "PURCHASE DATE",
             "SOLD DATE",
             "NOTES",
@@ -749,6 +755,7 @@
             "Price",
             "Discount",
             "Status",
+            "IAAI Price Before Fees",
             "IAAI TOTAL PRICE W/ FEES",
             "PAPE PRICE",
             "DISP-PRICE",
@@ -1132,6 +1139,18 @@
         "#4e73df",
       );
       logisticsHtml += createSpecItem(
+        "Client Phone",
+        car["Client Phone"],
+        "fa-phone",
+        "#36b9cc",
+      );
+      logisticsHtml += createSpecItem(
+        "Client Email",
+        car["Client Email"],
+        "fa-envelope",
+        "#f6c23e",
+      );
+      logisticsHtml += createSpecItem(
         "Pickup Location",
         car["CAR PICKUP LOCATION"],
         "fa-map-marker-alt",
@@ -1142,6 +1161,30 @@
         car["DRIVER NAME"],
         "fa-id-badge",
         "#4e73df",
+      );
+      logisticsHtml += createSpecItem(
+        "Driver Phone",
+        car["Driver Phone"],
+        "fa-phone-alt",
+        "#1cc88a",
+      );
+      logisticsHtml += createSpecItem(
+        "Driver Company",
+        car["Driver Company"],
+        "fa-building",
+        "#e74a3b",
+      );
+      logisticsHtml += createSpecItem(
+        "Dispatcher Name",
+        car["Dispatcher Name"],
+        "fa-headset",
+        "#8e44ad",
+      );
+      logisticsHtml += createSpecItem(
+        "Dispatcher Price",
+        car["Dispatcher Price"],
+        "fa-money-bill-wave",
+        "#1cc88a",
       );
       logisticsHtml += createSpecItem(
         "Driver Info",
@@ -1169,6 +1212,12 @@
       );
 
       let financialsHtml = "";
+      financialsHtml += createSpecItem(
+        "IAAI Price Before Fees",
+        car["IAAI Price Before Fees"],
+        "fa-money-check-alt",
+        "#f6c23e",
+      );
       financialsHtml += createSpecItem(
         "IAAI Total Price",
         car["IAAI TOTAL PRICE W/ FEES"],

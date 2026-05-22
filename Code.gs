@@ -144,6 +144,13 @@ function saveNewVehicle(data) {
       "DRIVER NAME",
       "DRIVER INFORMATION",
       "NOTES",
+      "IAAI Price Before Fees",
+      "Dispatcher Name",
+      "Dispatcher Price",
+      "Client Phone",
+      "Client Email",
+      "Driver Phone",
+      "Driver Company",
     ]);
   }
 
@@ -177,6 +184,13 @@ function saveNewVehicle(data) {
     data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
     "",
     "",
     "",
