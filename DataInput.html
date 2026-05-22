@@ -25,19 +25,49 @@
         <div class="grid-responsive">
           <div class="input-group">
             <label>Car Name</label>
-            <input type="text" name="carName" class="form-control" required />
+            <select
+              name="carName"
+              id="dataInputCarNameSelect"
+              class="form-control"
+              required
+              onchange="updateDataInputModelDropdown()"
+            >
+              <option value="">Select Car Name...</option>
+            </select>
           </div>
           <div class="input-group">
             <label>Year</label>
-            <input type="number" name="year" class="form-control" required />
+            <select
+              name="year"
+              id="dataInputYearSelect"
+              class="form-control"
+              required
+            >
+              <option value="">Select Year...</option>
+            </select>
           </div>
           <div class="input-group">
             <label>Model</label>
-            <input type="text" name="model" class="form-control" required />
+            <select
+              name="model"
+              id="dataInputModelSelect"
+              class="form-control"
+              required
+            >
+              <option value="">Select Model...</option>
+            </select>
           </div>
           <div class="input-group">
             <label>Mileage</label>
-            <input type="text" name="mileage" class="form-control" />
+            <input
+              type="text"
+              name="mileage"
+              class="form-control"
+              maxlength="7"
+              placeholder="e.g. 120,000"
+              pattern="[0-9,]+"
+              title="Only numbers and commas limit 6-7 char"
+            />
           </div>
           <div class="input-group">
             <label>Title</label>
@@ -51,7 +81,15 @@
           </div>
           <div class="input-group">
             <label>VIN</label>
-            <input type="text" name="vin" class="form-control" />
+            <input
+              type="text"
+              name="vin"
+              class="form-control"
+              maxlength="17"
+              pattern=".{17}"
+              title="Must be exactly 17 characters"
+              placeholder="17 Characters"
+            />
           </div>
         </div>
       </div>

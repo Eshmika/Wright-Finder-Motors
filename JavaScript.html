@@ -107,6 +107,10 @@
             else if (targetView === "buy-add-new") {
               initAddNewCarView();
             }
+            // If Data Input is opened, load car list
+            else if (targetView === "data-input") {
+              initDataInputView();
+            }
           } else {
             viewPlaceholder.classList.add("active");
             placeholderTitle.textContent = viewTitle + " Content Goes Here";
@@ -132,7 +136,7 @@
       });
     });
 
-    // Populate Year Dropdown (1990 - 2050)
+    // Populate Year Dropdowns (1990 - 2050)
     const yearSelect = document.getElementById("yearSelect");
     if (yearSelect) {
       for (let y = 1990; y <= 2050; y++) {
@@ -140,6 +144,16 @@
         opt.value = y;
         opt.textContent = y;
         yearSelect.appendChild(opt);
+      }
+    }
+
+    const dataInputYearSelect = document.getElementById("dataInputYearSelect");
+    if (dataInputYearSelect) {
+      for (let y = 1990; y <= 2050; y++) {
+        let opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        dataInputYearSelect.appendChild(opt);
       }
     }
 
@@ -436,9 +450,48 @@
       }
     };
 
+    window.initDataInputView = function () {
+      const carNameSelect = document.getElementById("dataInputCarNameSelect");
+      if (carNameSelect && carNameSelect.options.length <= 1) {
+        if (window.carListData.names && window.carListData.names.length > 0) {
+          carNameSelect.innerHTML =
+            '<option value="">Select Car Name...</option>';
+          window.carListData.names.forEach((name) => {
+            carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
+          });
+        } else {
+          google.script.run
+            .withSuccessHandler(function (data) {
+              window.carListData = data;
+
+              carNameSelect.innerHTML =
+                '<option value="">Select Car Name...</option>';
+              data.names.forEach((name) => {
+                carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
+              });
+            })
+            .getCarListData();
+        }
+      }
+    };
+
     window.updateModelDropdown = function () {
       const carNameSelect = document.getElementById("carNameSelect");
       const modelSelect = document.getElementById("modelSelect");
+
+      const selectedName = carNameSelect.value;
+      modelSelect.innerHTML = '<option value="">Select Model...</option>';
+
+      if (selectedName && window.carListData.models[selectedName]) {
+        window.carListData.models[selectedName].forEach((model) => {
+          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
+        });
+      }
+    };
+
+    window.updateDataInputModelDropdown = function () {
+      const carNameSelect = document.getElementById("dataInputCarNameSelect");
+      const modelSelect = document.getElementById("dataInputModelSelect");
 
       const selectedName = carNameSelect.value;
       modelSelect.innerHTML = '<option value="">Select Model...</option>';
