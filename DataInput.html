@@ -1,0 +1,265 @@
+<div id="view-data-input" class="view form-view">
+  <div class="view-header">
+    <h1 class="view-title">
+      <i class="fas fa-keyboard title-icon"></i> Data Input
+    </h1>
+    <p class="view-subtitle">
+      Quickly input and save detailed vehicle data into the database.
+    </p>
+  </div>
+
+  <div class="spec-card info-card" style="margin-top: 20px">
+    <h4><i class="fas fa-clipboard-list"></i> Data Input Form</h4>
+    <form
+      id="dataInputForm"
+      class="creative-form"
+      onsubmit="handleDataInputSubmit(event)"
+      style="margin-top: 20px"
+    >
+      <!-- Vehicle Information -->
+      <div class="form-section shadow-sm">
+        <h3 class="section-title">
+          <span class="icon-wrap"><i class="fas fa-car"></i></span>
+          Vehicle Information
+        </h3>
+        <div class="grid-responsive">
+          <div class="input-group">
+            <label>Car Name</label>
+            <input type="text" name="carName" class="form-control" required />
+          </div>
+          <div class="input-group">
+            <label>Year</label>
+            <input type="number" name="year" class="form-control" required />
+          </div>
+          <div class="input-group">
+            <label>Model</label>
+            <input type="text" name="model" class="form-control" required />
+          </div>
+          <div class="input-group">
+            <label>Mileage</label>
+            <input type="text" name="mileage" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Title</label>
+            <select name="title" class="form-control">
+              <option value="">Select Title...</option>
+              <option>Clean</option>
+              <option>Rebuilt</option>
+              <option>Lien</option>
+              <option>Salvage</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>VIN</label>
+            <input type="text" name="vin" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing Information -->
+      <div class="form-section shadow-sm">
+        <h3 class="section-title">
+          <span class="icon-wrap"><i class="fas fa-dollar-sign"></i></span>
+          Pricing Information
+        </h3>
+        <div class="grid-responsive">
+          <div class="input-group">
+            <label>IAAI Price Before Fees</label>
+            <input
+              type="number"
+              name="iaaiPriceBeforeFees"
+              class="form-control"
+              step="0.01"
+            />
+          </div>
+          <div class="input-group">
+            <label>IAAI TOTAL PRICE W/ FEES</label>
+            <input
+              type="number"
+              name="iaaiTotalPrice"
+              class="form-control"
+              step="0.01"
+            />
+          </div>
+          <div class="input-group">
+            <label>PAPE PRICE</label>
+            <input
+              type="number"
+              name="papePrice"
+              class="form-control"
+              step="0.01"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Dispatcher Information -->
+      <div class="form-section shadow-sm">
+        <h3 class="section-title">
+          <span class="icon-wrap"><i class="fas fa-headset"></i></span>
+          Dispatcher Information
+        </h3>
+        <div class="grid-responsive">
+          <div class="input-group">
+            <label>Dispatcher Name</label>
+            <input type="text" name="dispatcherName" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Dispatcher Price</label>
+            <input
+              type="number"
+              name="dispatcherPrice"
+              class="form-control"
+              step="0.01"
+            />
+          </div>
+          <div class="input-group">
+            <label>PURCHASE DATE</label>
+            <input type="date" name="purchaseDate" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Information -->
+      <div class="form-section shadow-sm">
+        <h3 class="section-title">
+          <span class="icon-wrap"><i class="fas fa-user-tie"></i></span>
+          Client Information
+        </h3>
+        <div class="grid-responsive">
+          <div class="input-group">
+            <label>CLIENT NAME</label>
+            <input type="text" name="clientName" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Client Phone</label>
+            <input type="text" name="clientPhone" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Client Email</label>
+            <input type="email" name="clientEmail" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Transportation Information -->
+      <div class="form-section shadow-sm">
+        <h3 class="section-title">
+          <span class="icon-wrap"><i class="fas fa-truck"></i></span>
+          Transportation Information
+        </h3>
+        <div class="grid-responsive">
+          <div class="input-group">
+            <label>TRANSPORT FEES</label>
+            <input
+              type="number"
+              name="transportFees"
+              class="form-control"
+              step="0.01"
+            />
+          </div>
+          <div class="input-group">
+            <label>CAR PICKUP LOCATION</label>
+            <input type="text" name="pickupLocation" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>DRIVER NAME</label>
+            <input type="text" name="driverName" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Driver Phone</label>
+            <input type="text" name="driverPhone" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Driver Company</label>
+            <input type="text" name="driverCompany" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-section shadow-sm">
+        <h3 class="section-title">
+          <span class="icon-wrap"><i class="fas fa-sticky-note"></i></span>
+          Notes
+        </h3>
+        <div class="input-group mt-4">
+          <textarea
+            name="notes"
+            rows="4"
+            class="form-control"
+            placeholder="Enter any additional notes here..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div
+        class="form-actions glass-panel"
+        style="display: flex; justify-content: flex-end; gap: 15px"
+      >
+        <button
+          type="button"
+          class="btn-secondary"
+          onclick="document.getElementById('dataInputForm').reset()"
+          style="padding: 10px 20px; border-radius: 8px; font-weight: bold"
+        >
+          <i class="fas fa-eraser"></i> Clear all
+        </button>
+        <button
+          type="submit"
+          class="btn-success"
+          id="btnSubmitDataInput"
+          style="
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #1cc88a;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+          "
+        >
+          <i class="fas fa-save"></i> Save data
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function handleDataInputSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById("dataInputForm");
+    const btn = document.getElementById("btnSubmitDataInput");
+    const originalText = btn.innerHTML;
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        if (response === "Success") {
+          // You might have a showCreativeSuccessModal function in JavaScript.html
+          if (typeof showCreativeSuccessModal === "function") {
+            showCreativeSuccessModal("Data Input saved successfully!");
+          } else {
+            alert("Data Input saved successfully!");
+          }
+          form.reset();
+        } else {
+          alert("Error: " + response);
+        }
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      })
+      .withFailureHandler(function (error) {
+        alert("Error: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      })
+      .saveDataInput(data);
+  }
+</script>

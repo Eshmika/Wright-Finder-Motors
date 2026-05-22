@@ -455,3 +455,77 @@ function getCarListData() {
 
   return { names: carNames, models: modelsByCar };
 }
+
+function saveDataInput(data) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return "Error: Sheet not found";
+
+  var cName = data.carName ? data.carName.toString().trim() : "";
+  var firstLetter = cName.length > 0 ? cName.charAt(0).toUpperCase() : "X";
+
+  var cModel = data.model ? data.model.toString().trim() : "";
+  var secondLetter = cModel.length > 0 ? cModel.charAt(0).toUpperCase() : "X";
+
+  var cYear = data.year ? data.year.toString().trim() : "";
+  var yearStr = cYear.length >= 2 ? cYear.slice(-2) : "00";
+
+  var randomNum = Math.floor(Math.random() * 100);
+  var randomStr = randomNum < 10 ? "0" + randomNum : randomNum.toString();
+
+  var carId = firstLetter + secondLetter + yearStr + "-" + randomStr;
+
+  sheet.appendRow([
+    new Date(), // 0: Timestamp
+    carId, // 1: Car ID
+    data.carName || "", // 2
+    data.model || "", // 3
+    data.year || "", // 4
+    data.mileage || "", // 5
+    "", // 6: Price
+    "", // 7: Discount
+    data.vin || "", // 8
+    "Available", // 9: Status
+    data.title || "", // 10
+    "", // 11: Style of Car
+    "", // 12: Body Style
+    "", // 13: Rent or Sell
+    "", // 14: Engine
+    "", // 15: Engine Type/Size
+    "", // 16: Transmission
+    "", // 17: Driveline
+    "", // 18: Fuel Type
+    "", // 19: Power Options
+    "", // 20: Drive Condition
+    "", // 21: Condition
+    "", // 22: Seat Material
+    "", // 23: Interior Color
+    "", // 24: Exterior Color
+    "", // 25: Interior Features
+    "", // 26: Description
+    "", // 27: Main Image URLs
+    "", // 28: Sub Image URLs
+    data.clientName || "", // 29: CLIENT NAME
+    data.purchaseDate || "", // 30: PURCHASE DATE
+    "", // 31: SOLD DATE
+    data.iaaiTotalPrice || "", // 32: IAAI TOTAL PRICE W/ FEES
+    data.papePrice || "", // 33: PAPE PRICE
+    "", // 34: DISP-PRICE
+    data.transportFees || "", // 35: TRANSPORT FEES
+    "", // 36: SOLD PRICE
+    "", // 37: DOWN PAYMENT
+    data.pickupLocation || "", // 38: CAR PICKUP LOCATION
+    data.driverName || "", // 39: DRIVER NAME
+    "", // 40: DRIVER INFORMATION
+    data.notes || "", // 41: NOTES
+    data.iaaiPriceBeforeFees || "", // 42: IAAI Price Before Fees
+    data.dispatcherName || "", // 43: Dispatcher Name
+    data.dispatcherPrice || "", // 44: Dispatcher Price
+    data.clientPhone || "", // 45: Client Phone
+    data.clientEmail || "", // 46: Client Email
+    data.driverPhone || "", // 47: Driver Phone
+    data.driverCompany || "", // 48: Driver Company
+  ]);
+
+  return "Success";
+}
