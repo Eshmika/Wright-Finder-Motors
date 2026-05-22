@@ -729,21 +729,24 @@
           keys: ["Seat Material", "Interior Features"],
         },
         {
-          title: "Logistics & Information",
-          icon: "fa-map-marker-alt",
+          title: "Client Information",
+          icon: "fa-user-tie",
+          keys: ["CLIENT NAME", "Client Phone", "Client Email", "SOLD DATE"],
+        },
+        {
+          title: "Dispatcher Information",
+          icon: "fa-headset",
+          keys: ["Dispatcher Name", "Dispatcher Price", "PURCHASE DATE"],
+        },
+        {
+          title: "Transportation Information",
+          icon: "fa-truck",
           keys: [
-            "CLIENT NAME",
-            "Client Phone",
-            "Client Email",
             "CAR PICKUP LOCATION",
             "DRIVER NAME",
             "Driver Phone",
             "Driver Company",
             "DRIVER INFORMATION",
-            "Dispatcher Name",
-            "Dispatcher Price",
-            "PURCHASE DATE",
-            "SOLD DATE",
             "NOTES",
             "Description",
           ],
@@ -1131,80 +1134,84 @@
         "#e74a3b",
       );
 
-      let logisticsHtml = "";
-      logisticsHtml += createSpecItem(
+      let clientHtml = "";
+      clientHtml += createSpecItem(
         "Client Name",
         car["CLIENT NAME"],
-        "fa-user",
+        "fa-user-tie",
         "#4e73df",
       );
-      logisticsHtml += createSpecItem(
+      clientHtml += createSpecItem(
         "Client Phone",
         car["Client Phone"],
         "fa-phone",
         "#36b9cc",
       );
-      logisticsHtml += createSpecItem(
+      clientHtml += createSpecItem(
         "Client Email",
         car["Client Email"],
         "fa-envelope",
         "#f6c23e",
       );
-      logisticsHtml += createSpecItem(
-        "Pickup Location",
-        car["CAR PICKUP LOCATION"],
-        "fa-map-marker-alt",
-        "#f6c23e",
-      );
-      logisticsHtml += createSpecItem(
-        "Driver Name",
-        car["DRIVER NAME"],
-        "fa-id-badge",
-        "#4e73df",
-      );
-      logisticsHtml += createSpecItem(
-        "Driver Phone",
-        car["Driver Phone"],
-        "fa-phone-alt",
-        "#1cc88a",
-      );
-      logisticsHtml += createSpecItem(
-        "Driver Company",
-        car["Driver Company"],
-        "fa-building",
-        "#e74a3b",
-      );
-      logisticsHtml += createSpecItem(
-        "Dispatcher Name",
-        car["Dispatcher Name"],
-        "fa-headset",
-        "#8e44ad",
-      );
-      logisticsHtml += createSpecItem(
-        "Dispatcher Price",
-        car["Dispatcher Price"],
-        "fa-money-bill-wave",
-        "#1cc88a",
-      );
-      logisticsHtml += createSpecItem(
-        "Driver Info",
-        car["DRIVER INFORMATION"],
-        "fa-info-circle",
-        "#36b9cc",
-      );
-      logisticsHtml += createSpecItem(
-        "Purchase Date",
-        car["PURCHASE DATE"],
-        "fa-calendar-plus",
-        "#1cc88a",
-      );
-      logisticsHtml += createSpecItem(
+      clientHtml += createSpecItem(
         "Sold Date",
         car["SOLD DATE"],
         "fa-calendar-check",
         "#f6c23e",
       );
-      logisticsHtml += createSpecItem(
+
+      let dispatcherHtml = "";
+      dispatcherHtml += createSpecItem(
+        "Dispatcher Name",
+        car["Dispatcher Name"],
+        "fa-headset",
+        "#8e44ad",
+      );
+      dispatcherHtml += createSpecItem(
+        "Dispatcher Price",
+        car["Dispatcher Price"],
+        "fa-money-bill-wave",
+        "#1cc88a",
+      );
+      dispatcherHtml += createSpecItem(
+        "Purchase Date",
+        car["PURCHASE DATE"],
+        "fa-calendar-plus",
+        "#1cc88a",
+      );
+
+      let transportHtml = "";
+      transportHtml += createSpecItem(
+        "Pickup Location",
+        car["CAR PICKUP LOCATION"],
+        "fa-map-marker-alt",
+        "#f6c23e",
+      );
+      transportHtml += createSpecItem(
+        "Driver Name",
+        car["DRIVER NAME"],
+        "fa-id-badge",
+        "#4e73df",
+      );
+      transportHtml += createSpecItem(
+        "Driver Phone",
+        car["Driver Phone"],
+        "fa-phone-alt",
+        "#1cc88a",
+      );
+      transportHtml += createSpecItem(
+        "Driver Company",
+        car["Driver Company"],
+        "fa-building",
+        "#e74a3b",
+      );
+      transportHtml += createSpecItem(
+        "Driver Info",
+        car["DRIVER INFORMATION"],
+        "fa-info-circle",
+        "#36b9cc",
+      );
+      transportHtml += createSpecItem(
         "Notes",
         car["NOTES"],
         "fa-sticky-note",
@@ -1354,9 +1361,19 @@
         featuresHtml,
       );
       infoHtml += buildCategory(
-        "Logistics & Information",
-        "fa-map-marker-alt",
-        logisticsHtml,
+        "Client Information",
+        "fa-user-tie",
+        clientHtml,
+      );
+      infoHtml += buildCategory(
+        "Dispatcher Information",
+        "fa-headset",
+        dispatcherHtml,
+      );
+      infoHtml += buildCategory(
+        "Transportation Information",
+        "fa-truck",
+        transportHtml,
       );
       infoHtml += buildCategory(
         "Financials & Sales",
