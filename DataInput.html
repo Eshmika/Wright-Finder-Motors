@@ -171,7 +171,14 @@
           </div>
           <div class="input-group">
             <label>Client Phone</label>
-            <input type="text" name="clientPhone" class="form-control" />
+            <input
+              type="tel"
+              name="clientPhone"
+              class="form-control"
+              oninput="formatPhoneNumber(this)"
+              placeholder="(123) 456-7890"
+              maxlength="14"
+            />
           </div>
           <div class="input-group">
             <label>Client Email</label>
@@ -206,7 +213,14 @@
           </div>
           <div class="input-group">
             <label>Driver Phone</label>
-            <input type="text" name="driverPhone" class="form-control" />
+            <input
+              type="tel"
+              name="driverPhone"
+              class="form-control"
+              oninput="formatPhoneNumber(this)"
+              placeholder="(123) 456-7890"
+              maxlength="14"
+            />
           </div>
           <div class="input-group">
             <label>Driver Company</label>
@@ -265,6 +279,31 @@
 </div>
 
 <script>
+  function formatPhoneNumber(input) {
+    // Strip all characters from the input except digits
+    let val = input.value.replace(/\D/g, "");
+
+    // Format based on the length
+    if (val.length > 0) {
+      if (val.length <= 3) {
+        val = "(" + val;
+      } else if (val.length <= 6) {
+        val = "(" + val.slice(0, 3) + ") " + val.slice(3);
+      } else {
+        val =
+          "(" +
+          val.slice(0, 3) +
+          ") " +
+          val.slice(3, 6) +
+          "-" +
+          val.slice(6, 10);
+      }
+    }
+
+    // Set the formatted value back to the input
+    input.value = val;
+  }
+
   function handleDataInputSubmit(e) {
     e.preventDefault();
     const form = document.getElementById("dataInputForm");
