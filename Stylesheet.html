@@ -1070,4 +1070,39 @@
     text-align: right;
     margin-left: 12px;
   }
+
+  /* Table Customizations for 1024px */
+  .stock-col {
+    white-space: nowrap;
+  }
+
+  .action-btn {
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: var(--transition);
+  }
+
+  .btn-view-action {
+    background: #3b5bdb;
+    margin-right: 5px;
+  }
+
+  .btn-edit-action {
+    background: #f6c23e;
+  }
+
+  @media (max-width: 1024px) {
+    .action-text {
+      display: none;
+    }
+    .action-btn {
+      padding: 6px 8px;
+    }
+  }
 </style>
