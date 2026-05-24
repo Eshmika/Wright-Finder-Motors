@@ -223,7 +223,7 @@
       const modelSelect = document.getElementById("expenseCarModel");
       const clientSelect = document.getElementById("expenseClientName");
 
-      carIdSelect.innerHTML = '<option value="">Select Car ID...</option>';
+      carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
       modelSelect.innerHTML = '<option value="">Select Model...</option>';
       clientSelect.innerHTML = '<option value="">Select Client...</option>';
 
@@ -441,7 +441,7 @@
             window.carListData = data;
 
             carNameSelect.innerHTML =
-              '<option value="">Select Car Name...</option>';
+              '<option value="">Select Mark...</option>';
             data.names.forEach((name) => {
               carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
             });
@@ -454,8 +454,7 @@
       const carNameSelect = document.getElementById("dataInputCarNameSelect");
       if (carNameSelect && carNameSelect.options.length <= 1) {
         if (window.carListData.names && window.carListData.names.length > 0) {
-          carNameSelect.innerHTML =
-            '<option value="">Select Car Name...</option>';
+          carNameSelect.innerHTML = '<option value="">Select Mark...</option>';
           window.carListData.names.forEach((name) => {
             carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
           });
@@ -465,7 +464,7 @@
               window.carListData = data;
 
               carNameSelect.innerHTML =
-                '<option value="">Select Car Name...</option>';
+                '<option value="">Select Mark...</option>';
               data.names.forEach((name) => {
                 carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
               });
@@ -856,7 +855,7 @@
             });
             inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
           } else if (key === "Car Name") {
-            let options = '<option value="">Select Car Name...</option>';
+            let options = '<option value="">Select Mark...</option>';
             if (window.carListData && window.carListData.names) {
               window.carListData.names.forEach((name) => {
                 options += `<option value="${name}" ${val === name ? "selected" : ""}>${name}</option>`;
@@ -908,7 +907,7 @@
 
           itemsHtml += `
             <div class="input-group" style="${gridColumnStyle}">
-               <label>${key}</label>
+               <label>${key === "Car ID" ? "Stock #" : key === "Car Name" ? "Mark" : key}</label>
                ${inputHtml}
             </div>
           `;
@@ -1006,7 +1005,7 @@
       document.getElementById("pageCarTitle").innerHTML =
         `<i class="fas fa-car title-icon"></i> ${car["Car Name"] || "Car Details"} ${car["Model"] ? "- " + car["Model"] : ""}`;
       document.getElementById("pageCarSubtitle").textContent =
-        `ID: ${car["Car ID"] || "N/A"}`;
+        `Stock #: ${car["Car ID"] || "N/A"}`;
 
       // Images
       const mainImageContainer = document.getElementById(
@@ -1647,7 +1646,7 @@
 
       if (!carIdSelect || !modelSelect || !clientSelect) return;
 
-      carIdSelect.innerHTML = '<option value="">Select Car ID...</option>';
+      carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
       modelSelect.innerHTML = '<option value="">Select Model...</option>';
       clientSelect.innerHTML = '<option value="">Select Client...</option>';
 
