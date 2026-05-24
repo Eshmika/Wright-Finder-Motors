@@ -147,6 +147,7 @@ function saveNewVehicle(data) {
       "IAAI Price Before Fees",
       "Dispatcher Name",
       "Dispatcher Price",
+      "Dispatcher Phone number",
       "Client Phone",
       "Client Email",
       "Driver Phone",
@@ -197,13 +198,13 @@ function saveNewVehicle(data) {
     "",
     "",
     "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
+    "", // Dispatcher Name
+    "", // Dispatcher Price
+    "", // Dispatcher Phone number
+    "", // Client Phone
+    "", // Client Email
+    "", // Driver Phone
+    "", // Driver Company
   ]);
 
   return "Success";
@@ -521,10 +522,11 @@ function saveDataInput(data) {
     data.iaaiPriceBeforeFees || "", // 42: IAAI Price Before Fees
     data.dispatcherName || "", // 43: Dispatcher Name
     data.dispatcherPrice || "", // 44: Dispatcher Price
-    data.clientPhone || "", // 45: Client Phone
-    data.clientEmail || "", // 46: Client Email
-    data.driverPhone || "", // 47: Driver Phone
-    data.driverCompany || "", // 48: Driver Company
+    data.dispatcherPhone || "", // 45: Dispatcher Phone number
+    data.clientPhone || "", // 46: Client Phone
+    data.clientEmail || "", // 47: Client Email
+    data.driverPhone || "", // 48: Driver Phone
+    data.driverCompany || "", // 49: Driver Company
   ]);
 
   return "Success";

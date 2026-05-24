@@ -796,7 +796,11 @@
         {
           title: "Dispatcher Information",
           icon: "fa-headset",
-          keys: ["Dispatcher Name", "Dispatcher Price"],
+          keys: [
+            "Dispatcher Name",
+            "Dispatcher Price",
+            "Dispatcher Phone number",
+          ],
         },
         {
           title: "Transportation Information",
@@ -1238,6 +1242,12 @@
         car["Dispatcher Price"],
         "fa-money-bill-wave",
         "#1cc88a",
+      );
+      dispatcherHtml += createSpecItem(
+        "Dispatcher Phone",
+        car["Dispatcher Phone number"],
+        "fa-phone-alt",
+        "#4e73df",
       );
 
       let transportHtml = "";
