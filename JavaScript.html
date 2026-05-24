@@ -704,12 +704,17 @@
         "Style of Car": ["4 Door", "2 Door"],
         "Body Style": ["Sedan", "SUV", "Sport", "Hatchback", "N/a"],
         "Rent or Sell": ["Sell", "Rent", "Both"],
-        Engine: ["Non sport", "Sport"],
+        Engine: ["Standard", "Sport", "Turbo", "Heavy duty"],
         "Engine Type/Size": ["2.5L 4 cylinder", "V6", "V8", "hybrid"],
         Transmission: ["Automatic", "Manual", "CVT(continuously variable)"],
         Driveline: ["FWD", "RWD", "AWD", "4WD"],
         "Fuel Type": ["Gasoline", "Diesel", "Hybrid", "Electric"],
-        "Power Options": ["Keyless", "Remote", "Key entry"],
+        "Power Options": [
+          "Keyless",
+          "Key entry",
+          "Key & Remote starter",
+          "Keyless & Remote starter",
+        ],
         "Drive Condition": ["Runs/drives", "Run, stationed", "n/a"],
         Condition: ["New", "Pre-owned", "Used", "Salvage"],
         "Seat Material": ["Leather", "Clothes"],
@@ -1136,6 +1141,24 @@
         "fa-palette",
         "#4e73df",
       );
+      overviewHtml += createSpecItem(
+        "Seat Material",
+        car["Seat Material"],
+        "fa-chair",
+        "#36b9cc",
+      );
+      overviewHtml += createSpecItem(
+        "Purchase Date",
+        car["PURCHASE DATE"],
+        "fa-calendar-plus",
+        "#1cc88a",
+      );
+      overviewHtml += createSpecItem(
+        "Sold Date",
+        car["SOLD DATE"],
+        "fa-calendar-check",
+        "#f6c23e",
+      );
 
       let performanceHtml = "";
       performanceHtml += createSpecItem(
@@ -1177,12 +1200,6 @@
 
       let featuresHtml = "";
       featuresHtml += createSpecItem(
-        "Seat Material",
-        car["Seat Material"],
-        "fa-chair",
-        "#36b9cc",
-      );
-      featuresHtml += createSpecItem(
         "Features",
         car["Interior Features"],
         "fa-star",
@@ -1208,12 +1225,6 @@
         "fa-envelope",
         "#f6c23e",
       );
-      clientHtml += createSpecItem(
-        "Sold Date",
-        car["SOLD DATE"],
-        "fa-calendar-check",
-        "#f6c23e",
-      );
 
       let dispatcherHtml = "";
       dispatcherHtml += createSpecItem(
@@ -1226,12 +1237,6 @@
         "Dispatcher Price",
         car["Dispatcher Price"],
         "fa-money-bill-wave",
-        "#1cc88a",
-      );
-      dispatcherHtml += createSpecItem(
-        "Purchase Date",
-        car["PURCHASE DATE"],
-        "fa-calendar-plus",
         "#1cc88a",
       );
 
