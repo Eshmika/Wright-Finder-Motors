@@ -100,6 +100,54 @@
     font-size: 1.3rem;
   }
 
+  /* Financial Fields Wrapper */
+  .modern-input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .modern-input-wrapper i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #b7b9cc;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .modern-input-wrapper .form-control {
+    padding-left: 45px !important;
+    height: 50px;
+    border-radius: 10px;
+    border: 2px solid #3a1f62;
+    background: #f8f9fc;
+    transition: all 0.3s;
+    font-size: 1rem;
+  }
+
+  .modern-input-wrapper .form-control:focus {
+    background: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1);
+  }
+
+  .modern-input-wrapper .form-control:focus + i,
+  .modern-input-wrapper input:focus ~ i,
+  .modern-input-wrapper select:focus ~ i {
+    color: var(--primary);
+  }
+
+  .readonly-field {
+    background-color: #f1f3f9 !important;
+    border-color: #d1d3e2 !important;
+    font-weight: bold !important;
+    color: var(--primary) !important;
+    cursor: not-allowed;
+  }
+
   @media (max-width: 768px) {
     .sidebar {
       position: fixed;
