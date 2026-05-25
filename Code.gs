@@ -136,7 +136,6 @@ function saveNewVehicle(data) {
       "Trade status",
       "IAAI TOTAL PRICE W/ FEES",
       "PAPE PRICE",
-      "DISP-PRICE",
       "TRANSPORT FEES",
       "SOLD PRICE",
       "DOWN PAYMENT",
@@ -511,8 +510,7 @@ function saveDataInput(data) {
     data.tradeStatus || "", // 31: Trade status
     data.iaaiTotalPrice || "", // 32: IAAI TOTAL PRICE W/ FEES
     data.papePrice || "", // 33: PAPE PRICE
-    "", // 34: DISP-PRICE
-    data.transportFees || "", // 35: TRANSPORT FEES
+    data.transportFees || "", // 34: TRANSPORT FEES
     "", // 35: SOLD PRICE
     "", // 36: DOWN PAYMENT
     data.pickupLocation || "", // 37: CAR PICKUP LOCATION

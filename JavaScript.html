@@ -1,4 +1,29 @@
 <script>
+  function formatPhoneNumber(input) {
+    // Strip all characters from the input except digits
+    let val = input.value.replace(/\D/g, "");
+
+    // Format based on the length
+    if (val.length > 0) {
+      if (val.length <= 3) {
+        val = "(" + val;
+      } else if (val.length <= 6) {
+        val = "(" + val.slice(0, 3) + ") " + val.slice(3);
+      } else {
+        val =
+          "(" +
+          val.slice(0, 3) +
+          ") " +
+          val.slice(3, 6) +
+          "-" +
+          val.slice(6, 10);
+      }
+    }
+
+    // Set the formatted value back to the input
+    input.value = val;
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     // Sidebar Toggle Logic
     const sidebarToggle = document.getElementById("sidebarToggle");
@@ -704,7 +729,7 @@
         "Style of Car": ["4 Door", "2 Door"],
         "Body Style": ["Sedan", "SUV", "Sport", "Hatchback", "N/a"],
         "Rent or Sell": ["Sell", "Rent", "Both"],
-        "Trade status": ["normal", "trade"],
+        "Trade status": ["Normal", "Trade"],
         Engine: ["Standard", "Sport", "Turbo", "Heavy duty"],
         "Engine Type/Size": ["2.5L 4 cylinder", "V6", "V8", "hybrid"],
         Transmission: ["Automatic", "Manual", "CVT(continuously variable)"],
@@ -813,6 +838,7 @@
             "Driver Phone",
             "Driver Company",
             "DRIVER INFORMATION",
+            "TRANSPORT FEES",
           ],
         },
         {
@@ -830,8 +856,6 @@
             "IAAI Price Before Fees",
             "IAAI TOTAL PRICE W/ FEES",
             "PAPE PRICE",
-            "DISP-PRICE",
-            "TRANSPORT FEES",
             "SOLD PRICE",
             "DOWN PAYMENT",
           ],
@@ -909,6 +933,12 @@
               } catch (e) {}
             }
             inputHtml = `<input type="date" name="${key}" value="${val}" class="form-control">`;
+          } else if (
+            key === "Client Phone" ||
+            key === "Driver Phone" ||
+            key === "Dispatcher Phone number"
+          ) {
+            inputHtml = `<input type="tel" name="${key}" value="${val}" class="form-control" oninput="formatPhoneNumber(this)" placeholder="(123) 456-7890" maxlength="14" pattern="\\(\\d{3}\\) \\d{3}-\\d{4}" title="Please enter a valid phone number: (123) 456-7890">`;
           } else {
             inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
           }
@@ -1290,6 +1320,12 @@
         "fa-info-circle",
         "#36b9cc",
       );
+      transportHtml += createSpecItem(
+        "Transport Fees",
+        car["TRANSPORT FEES"],
+        "fa-truck",
+        "#f6c23e",
+      );
 
       let notesHtml = "";
       notesHtml += createSpecItem(
@@ -1317,18 +1353,6 @@
         car["PAPE PRICE"],
         "fa-money-bill-wave",
         "#1cc88a",
-      );
-      financialsHtml += createSpecItem(
-        "Disp-Price",
-        car["DISP-PRICE"],
-        "fa-tag",
-        "#36b9cc",
-      );
-      financialsHtml += createSpecItem(
-        "Transport Fees",
-        car["TRANSPORT FEES"],
-        "fa-truck",
-        "#f6c23e",
       );
 
       // Async fetch for materials expenses
@@ -1474,7 +1498,6 @@
       let partialTotalCost =
         parseMoney(car["IAAI TOTAL PRICE W/ FEES"]) +
         parseMoney(car["PAPE PRICE"]) +
-        parseMoney(car["DISP-PRICE"]) +
         parseMoney(car["Dispatcher Price"]) +
         parseMoney(car["TRANSPORT FEES"]);
 
