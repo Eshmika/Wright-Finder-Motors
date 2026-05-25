@@ -704,6 +704,7 @@
         "Style of Car": ["4 Door", "2 Door"],
         "Body Style": ["Sedan", "SUV", "Sport", "Hatchback", "N/a"],
         "Rent or Sell": ["Sell", "Rent", "Both"],
+        "Trade status": ["normal", "trade"],
         Engine: ["Standard", "Sport", "Turbo", "Heavy duty"],
         "Engine Type/Size": ["2.5L 4 cylinder", "V6", "V8", "hybrid"],
         Transmission: ["Automatic", "Manual", "CVT(continuously variable)"],
@@ -767,6 +768,7 @@
             "Seat Material",
             "PURCHASE DATE",
             "SOLD DATE",
+            "Trade status",
           ],
         },
         {
@@ -811,8 +813,12 @@
             "Driver Phone",
             "Driver Company",
             "DRIVER INFORMATION",
-            "NOTES",
           ],
+        },
+        {
+          title: "Notes",
+          icon: "fa-sticky-note",
+          keys: ["NOTES"],
         },
         {
           title: "Financials & Sales",
@@ -1160,6 +1166,12 @@
         "fa-calendar-check",
         "#f6c23e",
       );
+      overviewHtml += createSpecItem(
+        "Trade Status",
+        car["Trade status"],
+        "fa-exchange-alt",
+        "#36b9cc",
+      );
 
       let performanceHtml = "";
       performanceHtml += createSpecItem(
@@ -1278,7 +1290,9 @@
         "fa-info-circle",
         "#36b9cc",
       );
-      transportHtml += createSpecItem(
+
+      let notesHtml = "";
+      notesHtml += createSpecItem(
         "Notes",
         car["NOTES"],
         "fa-sticky-note",
@@ -1442,6 +1456,7 @@
         "fa-truck",
         transportHtml,
       );
+      infoHtml += buildCategory("Notes", "fa-sticky-note", notesHtml);
       infoHtml += buildCategory(
         "Financials & Sales",
         "fa-dollar-sign",

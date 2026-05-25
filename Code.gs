@@ -133,6 +133,7 @@ function saveNewVehicle(data) {
       "CLIENT NAME",
       "PURCHASE DATE",
       "SOLD DATE",
+      "Trade status",
       "IAAI TOTAL PRICE W/ FEES",
       "PAPE PRICE",
       "DISP-PRICE",
@@ -185,6 +186,7 @@ function saveNewVehicle(data) {
     subImageUrls.join(", "),
     "",
     "",
+    data.tradeStatus || "",
     "",
     "",
     "",
@@ -506,10 +508,11 @@ function saveDataInput(data) {
     data.clientName || "", // 28: CLIENT NAME
     data.purchaseDate || "", // 29: PURCHASE DATE
     "", // 30: SOLD DATE
-    data.iaaiTotalPrice || "", // 31: IAAI TOTAL PRICE W/ FEES
-    data.papePrice || "", // 32: PAPE PRICE
-    "", // 33: DISP-PRICE
-    data.transportFees || "", // 34: TRANSPORT FEES
+    data.tradeStatus || "", // 31: Trade status
+    data.iaaiTotalPrice || "", // 32: IAAI TOTAL PRICE W/ FEES
+    data.papePrice || "", // 33: PAPE PRICE
+    "", // 34: DISP-PRICE
+    data.transportFees || "", // 35: TRANSPORT FEES
     "", // 35: SOLD PRICE
     "", // 36: DOWN PAYMENT
     data.pickupLocation || "", // 37: CAR PICKUP LOCATION
