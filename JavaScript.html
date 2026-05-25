@@ -993,7 +993,7 @@
 
           itemsHtml += `
             <div class="input-group" style="${gridColumnStyle}">
-               <label>${key === "Car ID" ? "Stock #" : key === "Car Name" ? "Mark" : key}</label>
+               <label>${key === "Car ID" ? "Stock #" : key === "Car Name" ? "Mark" : key === "Price" ? "Selling Price" : key}</label>
                ${inputHtml}
             </div>
           `;
