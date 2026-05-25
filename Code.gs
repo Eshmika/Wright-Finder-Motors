@@ -128,7 +128,6 @@ function saveNewVehicle(data) {
       "Interior Color",
       "Exterior Color",
       "Interior Features",
-      "Description",
       "Main Image URLs",
       "Sub Image URLs",
       "CLIENT NAME",
@@ -182,7 +181,6 @@ function saveNewVehicle(data) {
     data.interiorColor || "",
     data.exteriorColor || "",
     data.interiorFeaturesStr || "",
-    data.description || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
     "",
@@ -503,30 +501,29 @@ function saveDataInput(data) {
     "", // 23: Interior Color
     "", // 24: Exterior Color
     "", // 25: Interior Features
-    "", // 26: Description
-    "", // 27: Main Image URLs
-    "", // 28: Sub Image URLs
-    data.clientName || "", // 29: CLIENT NAME
-    data.purchaseDate || "", // 30: PURCHASE DATE
-    "", // 31: SOLD DATE
-    data.iaaiTotalPrice || "", // 32: IAAI TOTAL PRICE W/ FEES
-    data.papePrice || "", // 33: PAPE PRICE
-    "", // 34: DISP-PRICE
-    data.transportFees || "", // 35: TRANSPORT FEES
-    "", // 36: SOLD PRICE
-    "", // 37: DOWN PAYMENT
-    data.pickupLocation || "", // 38: CAR PICKUP LOCATION
-    data.driverName || "", // 39: DRIVER NAME
-    "", // 40: DRIVER INFORMATION
-    data.notes || "", // 41: NOTES
-    data.iaaiPriceBeforeFees || "", // 42: IAAI Price Before Fees
-    data.dispatcherName || "", // 43: Dispatcher Name
-    data.dispatcherPrice || "", // 44: Dispatcher Price
-    data.dispatcherPhone || "", // 45: Dispatcher Phone number
-    data.clientPhone || "", // 46: Client Phone
-    data.clientEmail || "", // 47: Client Email
-    data.driverPhone || "", // 48: Driver Phone
-    data.driverCompany || "", // 49: Driver Company
+    "", // 26: Main Image URLs
+    "", // 27: Sub Image URLs
+    data.clientName || "", // 28: CLIENT NAME
+    data.purchaseDate || "", // 29: PURCHASE DATE
+    "", // 30: SOLD DATE
+    data.iaaiTotalPrice || "", // 31: IAAI TOTAL PRICE W/ FEES
+    data.papePrice || "", // 32: PAPE PRICE
+    "", // 33: DISP-PRICE
+    data.transportFees || "", // 34: TRANSPORT FEES
+    "", // 35: SOLD PRICE
+    "", // 36: DOWN PAYMENT
+    data.pickupLocation || "", // 37: CAR PICKUP LOCATION
+    data.driverName || "", // 38: DRIVER NAME
+    "", // 39: DRIVER INFORMATION
+    data.notes || "", // 40: NOTES
+    data.iaaiPriceBeforeFees || "", // 41: IAAI Price Before Fees
+    data.dispatcherName || "", // 42: Dispatcher Name
+    data.dispatcherPrice || "", // 43: Dispatcher Price
+    data.dispatcherPhone || "", // 44: Dispatcher Phone number
+    data.clientPhone || "", // 45: Client Phone
+    data.clientEmail || "", // 46: Client Email
+    data.driverPhone || "", // 47: Driver Phone
+    data.driverCompany || "", // 48: Driver Company
   ]);
 
   return "Success";

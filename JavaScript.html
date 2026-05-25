@@ -812,7 +812,6 @@
             "Driver Company",
             "DRIVER INFORMATION",
             "NOTES",
-            "Description",
           ],
         },
         {
@@ -848,7 +847,6 @@
           if (key === "Car ID") {
             inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
           } else if (
-            key === "Description" ||
             key === "Interior Features" ||
             key === "NOTES" ||
             key === "DRIVER INFORMATION"
@@ -910,7 +908,6 @@
           }
 
           let gridColumnStyle =
-            key === "Description" ||
             key === "Interior Features" ||
             key === "NOTES" ||
             key === "DRIVER INFORMATION"
@@ -1529,17 +1526,6 @@
             remainEl.innerHTML = `<span class="text-danger">Error</span>`;
         })
         .getTotalPaymentForCar(car["Car ID"]);
-
-      // Description Card
-      const descCard = document.getElementById("pageCarDescCard");
-      if (car["Description"] && car["Description"].trim() !== "") {
-        document.getElementById("pageCarDescription").innerHTML = String(
-          car["Description"],
-        ).replace(/\n/g, "<br>");
-        descCard.style.display = "block";
-      } else {
-        descCard.style.display = "none";
-      }
     }
 
     // Search Logic
