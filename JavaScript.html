@@ -858,6 +858,11 @@
             "PAPE PRICE",
             "SOLD PRICE",
             "DOWN PAYMENT",
+            "All Materials Expenses",
+            "TOTAL COST",
+            "LOAN AMOUNT",
+            "REMAIN LOAN",
+            "PROFIT",
           ],
         },
       ];
@@ -939,6 +944,14 @@
             key === "Dispatcher Phone number"
           ) {
             inputHtml = `<input type="tel" name="${key}" value="${val}" class="form-control" oninput="formatPhoneNumber(this)" placeholder="(123) 456-7890" maxlength="14" pattern="\\(\\d{3}\\) \\d{3}-\\d{4}" title="Please enter a valid phone number: (123) 456-7890">`;
+          } else if (
+            key === "All Materials Expenses" ||
+            key === "TOTAL COST" ||
+            key === "LOAN AMOUNT" ||
+            key === "REMAIN LOAN" ||
+            key === "PROFIT"
+          ) {
+            inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#f8f9fc; font-weight:bold; color:var(--primary);">`;
           } else {
             inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
           }
@@ -971,7 +984,18 @@
       };
 
       categoriesDef.forEach((cat) => {
-        let keysToRender = cat.keys.filter((k) => k in currentEditableCar);
+        // Render keys if they exist in car OR if they are our new calculated fields
+        let keysToRender = cat.keys.filter(
+          (k) =>
+            k in currentEditableCar ||
+            [
+              "All Materials Expenses",
+              "TOTAL COST",
+              "LOAN AMOUNT",
+              "REMAIN LOAN",
+              "PROFIT",
+            ].includes(k),
+        );
         categoriesHtml += renderCategory(cat.title, cat.icon, keysToRender);
       });
 
@@ -990,6 +1014,95 @@
       }
 
       grid.innerHTML = categoriesHtml;
+
+      // Add live update listeners
+      const form = document.getElementById("carEditForm");
+      form.oninput = updateEditFormCalculations;
+
+      // Initial calculation and data fetch
+      updateEditFormCalculations();
+
+      // Fetch Materials Expenses for Edit Mode
+      google.script.run
+        .withSuccessHandler(function (total) {
+          const field = form.querySelector('[name="All Materials Expenses"]');
+          if (field) {
+            field.value = "$" + (parseFloat(total) || 0).toFixed(2);
+            updateEditFormCalculations(); // Recalculate after fetch
+          }
+        })
+        .getTotalExpenseForCar(currentEditableCar["Car ID"]);
+
+      // Fetch Total Payments for Remain Loan calculation
+      google.script.run
+        .withSuccessHandler(function (totalPayments) {
+          form.setAttribute("data-total-payments", totalPayments || 0);
+          updateEditFormCalculations(); // Recalculate after fetch
+        })
+        .getTotalPaymentForCar(currentEditableCar["Car ID"]);
+    }
+
+    function updateEditFormCalculations() {
+      const form = document.getElementById("carEditForm");
+      if (!form) return;
+
+      const parseMoneyLocal = (val) => {
+        if (!val) return 0;
+        let p = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
+        return isNaN(p) ? 0 : p;
+      };
+
+      const iaaiTotal = parseMoneyLocal(
+        form.querySelector('[name="IAAI TOTAL PRICE W/ FEES"]')?.value,
+      );
+      const papePrice = parseMoneyLocal(
+        form.querySelector('[name="PAPE PRICE"]')?.value,
+      );
+      const transportFees = parseMoneyLocal(
+        form.querySelector('[name="TRANSPORT FEES"]')?.value,
+      );
+      const dispatcherPrice = parseMoneyLocal(
+        form.querySelector('[name="Dispatcher Price"]')?.value,
+      );
+      const materialsExpenses = parseMoneyLocal(
+        form.querySelector('[name="All Materials Expenses"]')?.value,
+      );
+
+      const totalCost =
+        iaaiTotal +
+        papePrice +
+        transportFees +
+        dispatcherPrice +
+        materialsExpenses;
+      const soldPrice = parseMoneyLocal(
+        form.querySelector('[name="SOLD PRICE"]')?.value,
+      );
+      const downPayment = parseMoneyLocal(
+        form.querySelector('[name="DOWN PAYMENT"]')?.value,
+      );
+      const totalPayments =
+        parseFloat(form.getAttribute("data-total-payments")) || 0;
+
+      const loanAmount = soldPrice > 0 ? soldPrice - downPayment : 0;
+      const remainLoan = loanAmount > 0 ? loanAmount - totalPayments : 0;
+      const profit = soldPrice > 0 ? soldPrice - totalCost : 0;
+
+      // Update fields
+      const tcField = form.querySelector('[name="TOTAL COST"]');
+      if (tcField) tcField.value = "$" + totalCost.toFixed(2);
+
+      const laField = form.querySelector('[name="LOAN AMOUNT"]');
+      if (laField) laField.value = "$" + loanAmount.toFixed(2);
+
+      const rlField = form.querySelector('[name="REMAIN LOAN"]');
+      if (rlField) rlField.value = "$" + remainLoan.toFixed(2);
+
+      const pField = form.querySelector('[name="PROFIT"]');
+      if (pField) {
+        pField.value =
+          (profit >= 0 ? "+$" : "-$") + Math.abs(profit).toFixed(2);
+        pField.style.color = profit >= 0 ? "#1cc88a" : "#e74a3b";
+      }
     }
 
     const carEditForm = document.getElementById("carEditForm");
