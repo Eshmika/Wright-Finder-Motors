@@ -725,6 +725,8 @@
 
       const dropdownOptions = {
         Status: ["Available", "Sold", "Pending"],
+        "Financing status": ["Paid off", "Loan Active"],
+        "Tax Responsibility": ["Client", "Company", "Split"],
         Title: ["Clean", "Rebuilt", "Lien", "Salvage"],
         "Style of Car": ["4 Door", "2 Door"],
         "Body Style": ["Sedan", "SUV", "Sport", "Hatchback", "N/a"],
@@ -853,6 +855,7 @@
             "Price",
             "Discount",
             "Tax Amount",
+            "Price on title",
             "IAAI Price Before Fees",
             "IAAI TOTAL PRICE W/ FEES",
             "PAPE PRICE",
@@ -868,7 +871,7 @@
         {
           title: "Status",
           icon: "fa-info-circle",
-          keys: ["Status"],
+          keys: ["Status", "Financing status", "Tax Responsibility"],
         },
       ];
 
@@ -1508,7 +1511,13 @@
         "#f6c23e",
       );
       financialsHtml += createSpecItem(
-        "Price",
+        "Price on title",
+        car["Price on title"],
+        "fa-file-invoice",
+        "#36b9cc",
+      );
+      financialsHtml += createSpecItem(
+        "Selling Price",
         car["Price"]
           ? car["Price"].toString().startsWith("$")
             ? car["Price"]
@@ -1649,6 +1658,21 @@
         "fa-dollar-sign",
         financialsHtml,
       );
+
+      let statusSecHtml = "";
+      statusSecHtml += createSpecItem(
+        "Financing status",
+        car["Financing status"],
+        "fa-coins",
+        "#1cc88a",
+      );
+      statusSecHtml += createSpecItem(
+        "Tax Responsibility",
+        car["Tax Responsibility"],
+        "fa-balance-scale",
+        "#36b9cc",
+      );
+      infoHtml += buildCategory("Status", "fa-info-circle", statusSecHtml);
 
       infoContainer.innerHTML = infoHtml;
 

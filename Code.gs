@@ -153,6 +153,8 @@ function saveNewVehicle(data) {
       "Driver Company",
       "Tax Amount",
       "Price on title",
+      "Financing status",
+      "Tax Responsibility",
     ]);
   }
 
@@ -208,6 +210,8 @@ function saveNewVehicle(data) {
     "", // Driver Company
     data["Tax Amount"] || "",
     data["Price on title"] || "",
+    data["Financing status"] || "",
+    data["Tax Responsibility"] || "",
   ]);
 
   return "Success";
@@ -531,6 +535,8 @@ function saveDataInput(data) {
     data.driverCompany || "", // 48: Driver Company
     data["Tax Amount"] || "",
     data["Price on title"] || "",
+    data["Financing status"] || "",
+    data["Tax Responsibility"] || "",
   ]);
 
   return "Success";
