@@ -842,11 +842,6 @@
           ],
         },
         {
-          title: "Status",
-          icon: "fa-info-circle",
-          keys: ["Status"],
-        },
-        {
           title: "Notes",
           icon: "fa-sticky-note",
           keys: ["NOTES"],
@@ -858,7 +853,6 @@
             "Price",
             "Discount",
             "Tax Amount",
-            "Price on title",
             "IAAI Price Before Fees",
             "IAAI TOTAL PRICE W/ FEES",
             "PAPE PRICE",
@@ -870,6 +864,11 @@
             "REMAIN LOAN",
             "PROFIT",
           ],
+        },
+        {
+          title: "Status",
+          icon: "fa-info-circle",
+          keys: ["Status"],
         },
       ];
 
@@ -1253,7 +1252,7 @@
 
       // Price & Status Card
       document.getElementById("pageCarPrice").textContent =
-        `$${car["Price"] || "0"}`;
+        `$${car["Price on title"] || "0"}`;
       document.getElementById("pageCarStatus").textContent =
         car["Status"] || "Available";
 
@@ -1509,10 +1508,14 @@
         "#f6c23e",
       );
       financialsHtml += createSpecItem(
-        "Price on title",
-        car["Price on title"],
-        "fa-file-invoice",
-        "#36b9cc",
+        "Price",
+        car["Price"]
+          ? car["Price"].toString().startsWith("$")
+            ? car["Price"]
+            : "$" + car["Price"]
+          : "",
+        "fa-tag",
+        "#4e73df",
       );
 
       // Async fetch for materials expenses
