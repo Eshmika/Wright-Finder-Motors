@@ -854,22 +854,22 @@
           keys: [
             "Price",
             "Discount",
-            "Tax Amount",
-            "Price on title",
-            "IAAI Price Before Fees",
-            "IAAI TOTAL PRICE W/ FEES",
-            "PAPE PRICE",
             "SOLD PRICE",
             "DOWN PAYMENT",
             "All Materials Expenses",
-            "TOTAL COST",
+            "PAPE PRICE",
+            "IAAI Price Before Fees",
+            "IAAI TOTAL PRICE W/ FEES",
             "LOAN AMOUNT",
-            "REMAIN LOAN",
+            "TOTAL COST",
             "PROFIT",
+            "Tax Amount",
+            "Price on title",
+            "REMAIN LOAN",
           ],
         },
         {
-          title: "Status",
+          title: "Availabilities",
           icon: "fa-info-circle",
           keys: ["Status", "Financing status", "Tax Responsibility"],
         },
@@ -928,7 +928,7 @@
             }
             inputHtml = `<select name="${key}" class="form-control" required>${options}</select>`;
           } else if (dropdownOptions[key]) {
-            let options = `<option value="">Select ${key}...</option>`;
+            let options = `<option value="">Select ${key === "Status" ? "Availabilities" : key}...</option>`;
             dropdownOptions[key].forEach((opt) => {
               options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
             });
@@ -1003,7 +1003,7 @@
 
           itemsHtml += `
             <div class="input-group" style="${gridColumnStyle}">
-               <label>${key === "Car ID" ? "Stock #" : key === "Car Name" ? "Mark" : key === "Price" ? "Selling Price" : key}</label>
+               <label>${key === "Status" ? "Availabilities" : key === "Car ID" ? "Stock #" : key === "Car Name" ? "Mark" : key === "Price" ? "Selling Price" : key}</label>
                ${inputHtml}
             </div>
           `;
@@ -1486,36 +1486,8 @@
       );
 
       let financialsHtml = "";
-      financialsHtml += createSpecItem(
-        "IAAI Price Before Fees",
-        car["IAAI Price Before Fees"],
-        "fa-money-check-alt",
-        "#f6c23e",
-      );
-      financialsHtml += createSpecItem(
-        "IAAI Total Price",
-        car["IAAI TOTAL PRICE W/ FEES"],
-        "fa-dollar-sign",
-        "#e74a3b",
-      );
-      financialsHtml += createSpecItem(
-        "PAPE Price",
-        car["PAPE PRICE"],
-        "fa-money-bill-wave",
-        "#1cc88a",
-      );
-      financialsHtml += createSpecItem(
-        "Tax Amount",
-        car["Tax Amount"],
-        "fa-receipt",
-        "#f6c23e",
-      );
-      financialsHtml += createSpecItem(
-        "Price on title",
-        car["Price on title"],
-        "fa-file-invoice",
-        "#36b9cc",
-      );
+
+      // 1. Selling Price
       financialsHtml += createSpecItem(
         "Selling Price",
         car["Price"]
@@ -1527,23 +1499,15 @@
         "#4e73df",
       );
 
-      // Async fetch for materials expenses
-      financialsHtml += `
-          <div class="spec-item-card" style="background: rgba(142, 68, 173, 0.05); padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
-            <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: #8e44ad; font-weight:700;"><i class="fas fa-file-invoice-dollar" style="margin-right:5px;"></i> All Materials Expenses</div>
-            <div class="spec-value" id="pageCarTotalExpenses"><i class="fas fa-spinner fa-spin text-muted"></i></div>
-          </div>
-      `;
+      // 2. Discount
+      financialsHtml += createSpecItem(
+        "Discount",
+        car["Discount"],
+        "fa-tags",
+        "#e74a3b",
+      );
 
-      // Total Cost Row
-      financialsHtml += `
-          <div class="spec-item-card" style="background: rgba(231, 74, 59, 0.05); padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
-            <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: #e74a3b; font-weight:700;"><i class="fas fa-calculator" style="margin-right:5px;"></i> TOTAL COST</div>
-            <div class="spec-value" id="pageCarTotalCost"><i class="fas fa-spinner fa-spin text-muted"></i></div>
-          </div>
-      `;
-
-      // Big Emphasized Sold Price Row
+      // 3. SOLD PRICE
       if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
         let displaySoldPrice = car["SOLD PRICE"].toString().trim();
         if (
@@ -1562,10 +1526,11 @@
         `;
       }
 
-      // Emphasized Down Payment Row
+      // 4. DOWN PAYMENT & Helpers for Loan
+      let downPaymentVal = 0;
       if (car["DOWN PAYMENT"] && car["DOWN PAYMENT"].toString().trim() !== "") {
         let displayDownPayment = car["DOWN PAYMENT"].toString().trim();
-        let downPaymentVal =
+        downPaymentVal =
           parseFloat(displayDownPayment.replace(/[^0-9.-]+/g, "")) || 0;
 
         if (!displayDownPayment.startsWith("$") && !isNaN(downPaymentVal)) {
@@ -1577,38 +1542,100 @@
             <div class="spec-value" style="color: #f6c23e; font-size: 1.3em; font-weight: 800;">${displayDownPayment}</div>
           </div>
         `;
+      }
 
-        // Computed Loan Amount Row
-        if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
-          let soldPriceVal =
-            parseFloat(
-              car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, ""),
-            ) || 0;
-          let loanAmount = soldPriceVal - downPaymentVal;
+      // 5. All Materials Expenses
+      financialsHtml += `
+          <div class="spec-item-card" style="background: rgba(142, 68, 173, 0.05); padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
+            <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: #8e44ad; font-weight:700;"><i class="fas fa-file-invoice-dollar" style="margin-right:5px;"></i> All Materials Expenses</div>
+            <div class="spec-value" id="pageCarTotalExpenses"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+          </div>
+      `;
 
-          financialsHtml += `
+      // 6. PAPE PRICE
+      financialsHtml += createSpecItem(
+        "PAPE Price",
+        car["PAPE PRICE"],
+        "fa-money-bill-wave",
+        "#1cc88a",
+      );
+
+      // 7. IAAI Price Before Fees
+      financialsHtml += createSpecItem(
+        "IAAI Price Before Fees",
+        car["IAAI Price Before Fees"],
+        "fa-money-check-alt",
+        "#f6c23e",
+      );
+
+      // 8. IAAI Total Price
+      financialsHtml += createSpecItem(
+        "IAAI Total Price",
+        car["IAAI TOTAL PRICE W/ FEES"],
+        "fa-dollar-sign",
+        "#e74a3b",
+      );
+
+      // 9. LOAN AMOUNT (computed)
+      if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
+        let soldPriceVal =
+          parseFloat(car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, "")) ||
+          0;
+        let loanAmount = soldPriceVal - downPaymentVal;
+
+        financialsHtml += `
           <div class="spec-item-card" style="background: rgba(78, 115, 223, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(78,115,223,0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(78,115,223,0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(78,115,223,0.15)';">
             <div class="spec-label" style="color: #4e73df; font-size: 0.8rem; font-weight:700;"><i class="fas fa-handshake" style="margin-right:5px;"></i> LOAN AMOUNT</div>
             <div class="spec-value" style="color: #4e73df; font-size: 1.3em; font-weight: 800;">$${loanAmount.toFixed(2)}</div>
           </div>
         `;
-
-          // Remain Loan Row Placeholder
-          financialsHtml += `
-          <div class="spec-item-card" style="background: rgba(231, 74, 59, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(231,74,59,0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(231,74,59,0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(231,74,59,0.15)';">
-            <div class="spec-label" style="color: #e74a3b; font-size: 0.8rem; font-weight:700;"><i class="fas fa-balance-scale-right" style="margin-right:5px;"></i> REMAIN LOAN</div>
-            <div class="spec-value" id="pageCarRemainLoan" style="color: #e74a3b; font-size: 1.3em; font-weight: 800;" data-loan-amount="${loanAmount}"><i class="fas fa-spinner fa-spin"></i></div>
-          </div>
-        `;
-        }
       }
 
-      // Profit Row Placeholder
+      // 10. TOTAL COST
+      financialsHtml += `
+          <div class="spec-item-card" style="background: rgba(231, 74, 59, 0.05); padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
+            <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: #e74a3b; font-weight:700;"><i class="fas fa-calculator" style="margin-right:5px;"></i> TOTAL COST</div>
+            <div class="spec-value" id="pageCarTotalCost"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+          </div>
+      `;
+
+      // 11. PROFIT
       if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
         financialsHtml += `
           <div class="spec-item-card" style="background: rgba(28, 200, 138, 0.1); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(28,200,138,0.2); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(28,200,138,0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(28,200,138,0.2)';">
             <div class="spec-label" style="color: #1cc88a; font-size: 0.8rem; font-weight:700;"><i class="fas fa-chart-line" style="margin-right:5px;"></i> PROFIT</div>
             <div class="spec-value" id="pageCarProfit" style="color: #1cc88a; font-size: 1.4em; font-weight: 800;"><i class="fas fa-spinner fa-spin"></i></div>
+          </div>
+        `;
+      }
+
+      // 12. Tax Amount
+      financialsHtml += createSpecItem(
+        "Tax Amount",
+        car["Tax Amount"],
+        "fa-receipt",
+        "#f6c23e",
+      );
+
+      // 13. Price on title
+      financialsHtml += createSpecItem(
+        "Price on title",
+        car["Price on title"],
+        "fa-file-invoice",
+        "#36b9cc",
+      );
+
+      // 14. REMAIN LOAN
+      if (car["SOLD PRICE"] && car["SOLD PRICE"].toString().trim() !== "") {
+        let soldPriceVal =
+          parseFloat(car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, "")) ||
+          0;
+        let loanAmount = soldPriceVal - downPaymentVal;
+
+        financialsHtml += `
+          <div class="spec-item-card" style="background: rgba(231, 74, 59, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(231,74,59,0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(231,74,59,0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(231,74,59,0.15)';">
+            <div class="spec-label" style="color: #e74a3b; font-size: 0.8rem; font-weight:700;"><i class="fas fa-balance-scale-right" style="margin-right:5px;"></i> REMAIN LOAN</div>
+            <div class="spec-value" id="pageCarRemainLoan" style="color: #e74a3b; font-size: 1.3em; font-weight: 800;" data-loan-amount="${loanAmount}"><i class="fas fa-spinner fa-spin"></i></div>
           </div>
         `;
       }
