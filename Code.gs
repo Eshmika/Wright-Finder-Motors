@@ -151,6 +151,8 @@ function saveNewVehicle(data) {
       "Client Email",
       "Driver Phone",
       "Driver Company",
+      "Tax Amount",
+      "Price on title",
     ]);
   }
 
@@ -204,6 +206,8 @@ function saveNewVehicle(data) {
     "", // Client Email
     "", // Driver Phone
     "", // Driver Company
+    data["Tax Amount"] || "",
+    data["Price on title"] || "",
   ]);
 
   return "Success";
@@ -525,6 +529,8 @@ function saveDataInput(data) {
     data.clientEmail || "", // 46: Client Email
     data.driverPhone || "", // 47: Driver Phone
     data.driverCompany || "", // 48: Driver Company
+    data["Tax Amount"] || "",
+    data["Price on title"] || "",
   ]);
 
   return "Success";

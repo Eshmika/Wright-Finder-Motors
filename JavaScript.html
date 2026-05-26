@@ -842,6 +842,11 @@
           ],
         },
         {
+          title: "Status",
+          icon: "fa-info-circle",
+          keys: ["Status"],
+        },
+        {
           title: "Notes",
           icon: "fa-sticky-note",
           keys: ["NOTES"],
@@ -852,7 +857,8 @@
           keys: [
             "Price",
             "Discount",
-            "Status",
+            "Tax Amount",
+            "Price on title",
             "IAAI Price Before Fees",
             "IAAI TOTAL PRICE W/ FEES",
             "PAPE PRICE",
@@ -876,6 +882,8 @@
         const financialKeys = [
           "Price",
           "Discount",
+          "Tax Amount",
+          "Price on title",
           "IAAI Price Before Fees",
           "IAAI TOTAL PRICE W/ FEES",
           "PAPE PRICE",
@@ -1493,6 +1501,18 @@
         car["PAPE PRICE"],
         "fa-money-bill-wave",
         "#1cc88a",
+      );
+      financialsHtml += createSpecItem(
+        "Tax Amount",
+        car["Tax Amount"],
+        "fa-receipt",
+        "#f6c23e",
+      );
+      financialsHtml += createSpecItem(
+        "Price on title",
+        car["Price on title"],
+        "fa-file-invoice",
+        "#36b9cc",
       );
 
       // Async fetch for materials expenses
