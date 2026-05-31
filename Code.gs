@@ -155,6 +155,9 @@ function saveNewVehicle(data) {
       "Price on title",
       "Financing status",
       "Tax Responsibility",
+      "Trade Value",
+      "Trade In",
+      "Comment",
     ]);
   }
 
@@ -483,6 +486,18 @@ function saveDataInput(data) {
 
   var carId = firstLetter + secondLetter + yearStr + "-" + randomStr;
 
+  // Ensure headers exist
+  var currentHeaders = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getValues()[0];
+  var requiredHeaders = ["Trade Value", "Trade In", "Comment"];
+  requiredHeaders.forEach(function (h) {
+    if (currentHeaders.indexOf(h) === -1) {
+      sheet.getRange(1, currentHeaders.length + 1).setValue(h);
+      currentHeaders.push(h);
+    }
+  });
+
   sheet.appendRow([
     new Date(), // 0: Timestamp
     carId, // 1: Car ID
@@ -537,6 +552,9 @@ function saveDataInput(data) {
     data["Price on title"] || "",
     data["Financing status"] || "",
     data["Tax Responsibility"] || "",
+    data["Trade Value"] || "",
+    data["Trade In"] || "",
+    data["Comment"] || "",
   ]);
 
   return "Success";

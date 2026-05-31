@@ -873,6 +873,11 @@
           icon: "fa-info-circle",
           keys: ["Status", "Financing status", "Tax Responsibility"],
         },
+        {
+          title: "Trade",
+          icon: "fa-exchange-alt",
+          keys: ["Trade Value", "Trade In", "Comment"],
+        },
       ];
 
       let mappedKeys = [];
@@ -898,6 +903,8 @@
           "LOAN AMOUNT",
           "REMAIN LOAN",
           "PROFIT",
+          "Trade Value",
+          "Trade In",
         ];
 
         for (const key of keys) {
@@ -918,7 +925,8 @@
           } else if (
             key === "Interior Features" ||
             key === "NOTES" ||
-            key === "DRIVER INFORMATION"
+            key === "DRIVER INFORMATION" ||
+            key === "Comment"
           ) {
             inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
           } else if (key === "Year") {
@@ -997,7 +1005,8 @@
           let gridColumnStyle =
             key === "Interior Features" ||
             key === "NOTES" ||
-            key === "DRIVER INFORMATION"
+            key === "DRIVER INFORMATION" ||
+            key === "Comment"
               ? "grid-column: 1 / -1;"
               : "";
 
@@ -1012,7 +1021,7 @@
         if (itemsHtml.trim() === "") return "";
 
         return `
-          <div class="spec-category" style="background:#fff; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,0.05); padding:25px; margin-bottom: 30px; border-top: 5px solid var(--primary); width: 100%;">
+          <div id="${title === "Trade" ? "editCategoryTrade" : ""}" class="spec-category" style="background:#fff; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,0.05); padding:25px; margin-bottom: 30px; border-top: 5px solid var(--primary); width: 100%;">
             <h5 style="color: var(--primary); padding-bottom: 15px; border-bottom: 2px solid #eef4ff; margin-bottom: 20px; font-weight:700;"><i class="fas ${icon}" style="width: 25px;"></i> ${title}</h5>
             <div class="grid-responsive">
               ${itemsHtml}
@@ -1032,6 +1041,9 @@
               "LOAN AMOUNT",
               "REMAIN LOAN",
               "PROFIT",
+              "Trade Value",
+              "Trade In",
+              "Comment",
             ].includes(k),
         );
         categoriesHtml += renderCategory(cat.title, cat.icon, keysToRender);
@@ -1052,6 +1064,24 @@
       }
 
       grid.innerHTML = categoriesHtml;
+
+      // Show/Hide Trade section based on Trade status
+      const tradeStatusSelect = document.querySelector(
+        'select[name="Trade status"]',
+      );
+      const tradeSection = document.getElementById("editCategoryTrade");
+
+      const updateTradeVisibility = () => {
+        if (tradeStatusSelect && tradeSection) {
+          tradeSection.style.display =
+            tradeStatusSelect.value === "Trade" ? "block" : "none";
+        }
+      };
+
+      if (tradeStatusSelect) {
+        tradeStatusSelect.onchange = updateTradeVisibility;
+        updateTradeVisibility();
+      }
 
       // Add live update listeners
       const form = document.getElementById("carEditForm");
@@ -1738,6 +1768,33 @@
       );
       infoHtml += buildCategory("Status", "fa-info-circle", statusSecHtml);
 
+      let tradeHtml = "";
+      if (car["Trade status"] === "Trade") {
+        tradeHtml += createSpecItem(
+          "Trade Value",
+          car["Trade Value"]
+            ? car["Trade Value"].toString().startsWith("$")
+              ? car["Trade Value"]
+              : "$" + car["Trade Value"]
+            : "",
+          "fa-handshake",
+          "#6B7280",
+        );
+        tradeHtml += createSpecItem(
+          "Trade In",
+          car["Trade In"],
+          "fa-car-side",
+          "#6B7280",
+        );
+        tradeHtml += createSpecItem(
+          "Comment",
+          car["Comment"],
+          "fa-comment-alt",
+          "#6B7280",
+        );
+        infoHtml += buildCategory("Trade", "fa-exchange-alt", tradeHtml);
+      }
+
       infoContainer.innerHTML = infoHtml;
 
       function parseMoney(val) {
@@ -2246,6 +2303,14 @@
       alert("Error processing form files: " + error);
       btn.innerHTML = originalText;
       btn.disabled = false;
+    }
+  }
+
+  function toggleAddTradeSection() {
+    const tradeStatus = document.getElementById("addTradeStatus").value;
+    const tradeSection = document.getElementById("addTradeSection");
+    if (tradeSection) {
+      tradeSection.style.display = tradeStatus === "Trade" ? "block" : "none";
     }
   }
 
