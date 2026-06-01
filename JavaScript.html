@@ -466,7 +466,7 @@
             window.carListData = data;
 
             carNameSelect.innerHTML =
-              '<option value="">Select Mark...</option>';
+              '<option value="">Select Make...</option>';
             data.names.forEach((name) => {
               carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
             });
@@ -479,7 +479,7 @@
       const carNameSelect = document.getElementById("dataInputCarNameSelect");
       if (carNameSelect && carNameSelect.options.length <= 1) {
         if (window.carListData.names && window.carListData.names.length > 0) {
-          carNameSelect.innerHTML = '<option value="">Select Mark...</option>';
+          carNameSelect.innerHTML = '<option value="">Select Make...</option>';
           window.carListData.names.forEach((name) => {
             carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
           });
@@ -489,7 +489,7 @@
               window.carListData = data;
 
               carNameSelect.innerHTML =
-                '<option value="">Select Mark...</option>';
+                '<option value="">Select Make...</option>';
               data.names.forEach((name) => {
                 carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
               });
@@ -942,7 +942,7 @@
             });
             inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
           } else if (key === "Car Name") {
-            let options = '<option value="">Select Mark...</option>';
+            let options = '<option value="">Select Make...</option>';
             if (window.carListData && window.carListData.names) {
               window.carListData.names.forEach((name) => {
                 options += `<option value="${name}" ${val === name ? "selected" : ""}>${name}</option>`;
@@ -1012,7 +1012,7 @@
 
           itemsHtml += `
             <div class="input-group" style="${gridColumnStyle}">
-               <label>${key === "Status" ? "Availabilities" : key === "Car ID" ? "Stock #" : key === "Car Name" ? "Mark" : key === "Price" ? "Selling Price" : key}</label>
+               <label>${key === "Status" ? "Availabilities" : key === "Car ID" ? "Stock #" : key === "Car Name" ? "Make" : key === "Price" ? "Selling Price" : key}</label>
                ${inputHtml}
             </div>
           `;
