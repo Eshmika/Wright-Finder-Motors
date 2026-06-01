@@ -41,6 +41,22 @@
       </div>
     </div>
 
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox()">
+      <span
+        style="
+          position: absolute;
+          top: 20px;
+          right: 30px;
+          color: white;
+          font-size: 40px;
+          font-weight: bold;
+          cursor: pointer;
+        "
+        >&times;</span
+      >
+      <img id="lightboxImg" src="" />
+    </div>
+
     <?!= include('JavaScript'); ?>
   </body>
 </html>

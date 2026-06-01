@@ -10,45 +10,6 @@
   </div>
 
   <form id="addCarForm" class="creative-form" onsubmit="handleCarSubmit(event)">
-    <!-- Image Uploads -->
-    <div class="form-section shadow-sm">
-      <h3 class="section-title">
-        <span class="icon-wrap"><i class="fas fa-images"></i></span>
-        Vehicle Imagery
-      </h3>
-      <div class="grid-2-col upload-grid">
-        <div class="input-group">
-          <label>Main Header Image</label>
-          <div class="file-upload-wrapper">
-            <i class="fas fa-cloud-upload-alt upload-icon"></i>
-            <p>Drag or Click to Upload</p>
-            <input
-              type="file"
-              name="mainImage"
-              accept="image/*"
-              class="file-input"
-              required
-            />
-          </div>
-        </div>
-        <div class="input-group">
-          <label>Sub Images (Gallery)</label>
-          <div class="file-upload-wrapper">
-            <i class="fas fa-images upload-icon"></i>
-            <p>Select Multiple Images</p>
-            <input
-              type="file"
-              name="subImages"
-              accept="image/*"
-              multiple
-              class="file-input"
-              required
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Basic Details -->
     <div class="form-section shadow-sm">
       <h3 class="section-title">
@@ -325,6 +286,45 @@
             placeholder="e.g. Nav System, Bluetooth, Heated Seats"
           />
           <input type="hidden" name="interiorFeatures" id="hiddenFeatures" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Uploads -->
+    <div class="form-section shadow-sm">
+      <h3 class="section-title">
+        <span class="icon-wrap"><i class="fas fa-images"></i></span>
+        Vehicle Imagery
+      </h3>
+      <div class="grid-2-col upload-grid">
+        <div class="input-group">
+          <label>Main Header Image</label>
+          <div class="file-upload-wrapper">
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <p>Drag or Click to Upload</p>
+            <input
+              type="file"
+              name="mainImage"
+              accept="image/*"
+              class="file-input"
+              required
+            />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Sub Images (Gallery)</label>
+          <div class="file-upload-wrapper">
+            <i class="fas fa-images upload-icon"></i>
+            <p>Select Multiple Images</p>
+            <input
+              type="file"
+              name="subImages"
+              accept="image/*"
+              multiple
+              class="file-input"
+              required
+            />
+          </div>
         </div>
       </div>
     </div>
