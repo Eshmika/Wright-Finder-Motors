@@ -221,6 +221,44 @@ function saveNewVehicle(data) {
 }
 
 function updateVehicleData(updatedData) {
+  var folderId = "1EUPGHZPwovNhVOsIc-AEEJqUinAqEZKK";
+  var folder = DriveApp.getFolderById(folderId);
+
+  // Handle Image Updates if provided
+  if (updatedData.mainImages && updatedData.mainImages.length > 0) {
+    var mainImageUrls = [];
+    for (var m = 0; m < updatedData.mainImages.length; m++) {
+      var img = updatedData.mainImages[m];
+      var mainBlob = Utilities.newBlob(
+        Utilities.base64Decode(img.data),
+        img.mimeType,
+        img.name,
+      );
+      var mainFile = DriveApp.createFile(mainBlob);
+      mainFile.moveTo(folder);
+      mainImageUrls.push(mainFile.getUrl());
+    }
+    updatedData["Main Image URLs"] = mainImageUrls.join(", ");
+  }
+  delete updatedData.mainImages;
+
+  if (updatedData.subImages && updatedData.subImages.length > 0) {
+    var subImageUrls = [];
+    for (var s = 0; s < updatedData.subImages.length; s++) {
+      var imgSub = updatedData.subImages[s];
+      var subBlob = Utilities.newBlob(
+        Utilities.base64Decode(imgSub.data),
+        imgSub.mimeType,
+        imgSub.name,
+      );
+      var subFile = DriveApp.createFile(subBlob);
+      subFile.moveTo(folder);
+      subImageUrls.push(subFile.getUrl());
+    }
+    updatedData["Sub Image URLs"] = subImageUrls.join(", ");
+  }
+  delete updatedData.subImages;
+
   var sheet =
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
   if (!sheet) return "Error: Sheet not found";

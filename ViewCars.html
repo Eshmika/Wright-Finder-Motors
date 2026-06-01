@@ -134,6 +134,44 @@
           <div id="editFormFieldsGrid" style="display: block">
             <!-- Fields will go here -->
           </div>
+
+          <!-- Update Imagery Section -->
+          <div class="form-section shadow-sm" style="margin-top: 25px">
+            <h3 class="section-title">
+              <span class="icon-wrap"><i class="fas fa-images"></i></span>
+              Update Vehicle Imagery (Optional)
+            </h3>
+            <div class="grid-2-col upload-grid">
+              <div class="input-group">
+                <label>Update Main Header Image</label>
+                <div class="file-upload-wrapper">
+                  <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                  <p>Click to Replace</p>
+                  <input
+                    type="file"
+                    name="mainImageEdit"
+                    accept="image/*"
+                    class="file-input"
+                  />
+                </div>
+              </div>
+              <div class="input-group">
+                <label>Update Sub Images (Gallery)</label>
+                <div class="file-upload-wrapper">
+                  <i class="fas fa-images upload-icon"></i>
+                  <p>Click to Replace All</p>
+                  <input
+                    type="file"
+                    name="subImagesEdit"
+                    accept="image/*"
+                    multiple
+                    class="file-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div style="margin-top: 20px; text-align: right">
             <button
               type="button"
@@ -189,18 +227,21 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="car-gallery-section banner-card">
-      <div
-        class="main-image-display hero-image-container"
-        id="pageMainImageContainer"
-      >
-        <!-- Main image will be loaded here -->
-      </div>
-      <div class="sub-images-display image-strip" id="pageSubImagesContainer">
-        <!-- Sub images will be loaded here -->
+        <div class="car-gallery-section banner-card" style="margin-top: 25px">
+          <div
+            class="main-image-display hero-image-container"
+            id="pageMainImageContainer"
+          >
+            <!-- Main image will be loaded here -->
+          </div>
+          <div
+            class="sub-images-display image-strip"
+            id="pageSubImagesContainer"
+          >
+            <!-- Sub images will be loaded here -->
+          </div>
+        </div>
       </div>
     </div>
   </div>

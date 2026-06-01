@@ -1174,18 +1174,53 @@
 
     const carEditForm = document.getElementById("carEditForm");
     if (carEditForm) {
-      carEditForm.onsubmit = function (e) {
+      carEditForm.onsubmit = async function (e) {
         e.preventDefault();
         const btn = carEditForm.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         btn.disabled = true;
 
-        const formData = new FormData(carEditForm);
-        const updatedData = {};
-        formData.forEach((value, key) => {
-          updatedData[key] = value;
+        const formDataObj = {};
+
+        // Get standard text/select elements
+        const elements = carEditForm.querySelectorAll(
+          "input:not([type='file']), select, textarea",
+        );
+        elements.forEach((el) => {
+          if (el.name) {
+            formDataObj[el.name] = el.value;
+          }
         });
+
+        // Add Car ID manually if needed (it might not be in the form fields)
+        if (currentEditableCar && currentEditableCar["Car ID"]) {
+          formDataObj["Car ID"] = currentEditableCar["Car ID"];
+        }
+
+        // Handle Main Image Update
+        const mainImageBase64 = [];
+        const mainImageInput = carEditForm.querySelector(
+          'input[name="mainImageEdit"]',
+        );
+        if (mainImageInput && mainImageInput.files.length > 0) {
+          for (let i = 0; i < mainImageInput.files.length; i++) {
+            mainImageBase64.push(await fileToBase64(mainImageInput.files[i]));
+          }
+        }
+        formDataObj.mainImages = mainImageBase64;
+
+        // Handle Sub Images Update
+        const subImagesBase64 = [];
+        const subImagesInput = carEditForm.querySelector(
+          'input[name="subImagesEdit"]',
+        );
+        if (subImagesInput && subImagesInput.files.length > 0) {
+          for (let i = 0; i < subImagesInput.files.length; i++) {
+            subImagesBase64.push(await fileToBase64(subImagesInput.files[i]));
+          }
+        }
+        formDataObj.subImages = subImagesBase64;
 
         google.script.run
           .withSuccessHandler(function (response) {
@@ -1193,22 +1228,40 @@
             btn.innerHTML = originalText;
             btn.disabled = false;
 
-            // Update locally so we don't have to fully reload immediately
-            Object.assign(currentEditableCar, updatedData);
+            // Update local object (note: images won't update locally until we get result from server or reload)
+            // But we can merge the text fields
+            const newTextData = {};
+            elements.forEach((el) => {
+              if (el.name) newTextData[el.name] = el.value;
+            });
+
+            // If images were uploaded, the local currentEditableCar might be out of date for images
+            // For now, let's just reload the list or update text fields
+            Object.assign(currentEditableCar, newTextData);
 
             // Re-render the details in view mode
-            openCarModal(currentEditableCar);
-            setEditMode(false);
-
-            // Optionally refresh the whole list in background
-            // loadCars();
+            // If images were changed, they won't show the new ones immediately because we don't have the URLs yet
+            // So we might need to fetch the updated vehicle data
+            google.script.run
+              .withSuccessHandler(function (updatedCarList) {
+                // Find the updated car in the list
+                const refreshedCar = updatedCarList.find(
+                  (c) => c["Car ID"] === currentEditableCar["Car ID"],
+                );
+                if (refreshedCar) {
+                  currentEditableCar = refreshedCar;
+                  openCarModal(currentEditableCar);
+                }
+                setEditMode(false);
+              })
+              .getVehicles();
           })
           .withFailureHandler(function (error) {
             alert("Error saving: " + error.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
           })
-          .updateVehicleData(updatedData);
+          .updateVehicleData(formDataObj);
       };
     }
 
