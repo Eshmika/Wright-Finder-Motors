@@ -799,6 +799,11 @@
           ],
         },
         {
+          title: "Trade",
+          icon: "fa-exchange-alt",
+          keys: ["Trade Value", "Trade In", "Comment"],
+        },
+        {
           title: "Power & Performance",
           icon: "fa-bolt",
           keys: [
@@ -872,11 +877,6 @@
           title: "Availabilities",
           icon: "fa-info-circle",
           keys: ["Status", "Financing status", "Tax Responsibility"],
-        },
-        {
-          title: "Trade",
-          icon: "fa-exchange-alt",
-          keys: ["Trade Value", "Trade In", "Comment"],
         },
       ];
 
@@ -1774,6 +1774,34 @@
 
       let infoHtml = "";
       infoHtml += buildCategory("Vehicle Overview", "fa-car", overviewHtml);
+
+      let tradeHtml = "";
+      if (car["Trade status"] === "Trade") {
+        tradeHtml += createSpecItem(
+          "Trade Value",
+          car["Trade Value"]
+            ? car["Trade Value"].toString().startsWith("$")
+              ? car["Trade Value"]
+              : "$" + car["Trade Value"]
+            : "",
+          "fa-handshake",
+          "#6B7280",
+        );
+        tradeHtml += createSpecItem(
+          "Trade In",
+          car["Trade In"],
+          "fa-car-side",
+          "#6B7280",
+        );
+        tradeHtml += createSpecItem(
+          "Comment",
+          car["Comment"],
+          "fa-comment-alt",
+          "#6B7280",
+        );
+        infoHtml += buildCategory("Trade", "fa-exchange-alt", tradeHtml);
+      }
+
       infoHtml += buildCategory(
         "Power & Performance",
         "fa-bolt",
@@ -1820,33 +1848,6 @@
         "#6B7280",
       );
       infoHtml += buildCategory("Status", "fa-info-circle", statusSecHtml);
-
-      let tradeHtml = "";
-      if (car["Trade status"] === "Trade") {
-        tradeHtml += createSpecItem(
-          "Trade Value",
-          car["Trade Value"]
-            ? car["Trade Value"].toString().startsWith("$")
-              ? car["Trade Value"]
-              : "$" + car["Trade Value"]
-            : "",
-          "fa-handshake",
-          "#6B7280",
-        );
-        tradeHtml += createSpecItem(
-          "Trade In",
-          car["Trade In"],
-          "fa-car-side",
-          "#6B7280",
-        );
-        tradeHtml += createSpecItem(
-          "Comment",
-          car["Comment"],
-          "fa-comment-alt",
-          "#6B7280",
-        );
-        infoHtml += buildCategory("Trade", "fa-exchange-alt", tradeHtml);
-      }
 
       infoContainer.innerHTML = infoHtml;
 
