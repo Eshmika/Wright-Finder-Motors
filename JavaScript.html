@@ -2590,10 +2590,14 @@
         </tr>
       `;
       if (updateStats) {
-        document.getElementById("stats-total-cars").innerText = "0";
-        document.getElementById("stats-unique-makes").innerText = "0";
-        document.getElementById("stats-unique-models").innerText = "0";
-        document.getElementById("stats-popular-fuel").innerText = "-";
+        const totalCarsEl = document.getElementById("stats-total-cars");
+        if (totalCarsEl) totalCarsEl.innerText = "0";
+        const uniqueMakesEl = document.getElementById("stats-unique-makes");
+        if (uniqueMakesEl) uniqueMakesEl.innerText = "0";
+        const uniqueModelsEl = document.getElementById("stats-unique-models");
+        if (uniqueModelsEl) uniqueModelsEl.innerText = "0";
+        const popularFuelEl = document.getElementById("stats-popular-fuel");
+        if (popularFuelEl) popularFuelEl.innerText = "-";
       }
       return;
     }
@@ -2631,7 +2635,8 @@
     if (updateStats) {
       // Calculate and update stats from all cached items
       const totalCount = window.cachedCarList.length;
-      document.getElementById("stats-total-cars").innerText = totalCount;
+      const totalCarsEl = document.getElementById("stats-total-cars");
+      if (totalCarsEl) totalCarsEl.innerText = totalCount;
 
       const uniqueMakes = new Set();
       const uniqueModels = new Set();
@@ -2645,10 +2650,11 @@
         }
       });
 
-      document.getElementById("stats-unique-makes").innerText =
-        uniqueMakes.size;
-      document.getElementById("stats-unique-models").innerText =
-        uniqueModels.size;
+      const uniqueMakesEl = document.getElementById("stats-unique-makes");
+      if (uniqueMakesEl) uniqueMakesEl.innerText = uniqueMakes.size;
+
+      const uniqueModelsEl = document.getElementById("stats-unique-models");
+      if (uniqueModelsEl) uniqueModelsEl.innerText = uniqueModels.size;
 
       let topFuel = "-";
       let maxFuelCount = 0;
@@ -2658,7 +2664,8 @@
           topFuel = fuel;
         }
       }
-      document.getElementById("stats-popular-fuel").innerText = topFuel;
+      const popularFuelEl = document.getElementById("stats-popular-fuel");
+      if (popularFuelEl) popularFuelEl.innerText = topFuel;
     }
   }
 
