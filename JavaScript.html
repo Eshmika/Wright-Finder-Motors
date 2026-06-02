@@ -728,7 +728,6 @@
         "Financing status": ["Paid off", "Loan Active"],
         "Tax Responsibility": ["Client", "Company", "Split"],
         Title: ["Clean", "Rebuilt", "Lien", "Salvage"],
-        "Style of Car": ["4 Door", "2 Door"],
         "Body Style": [
           "Crossover",
           "Sedan",
@@ -810,7 +809,7 @@
             "VIN",
             "Title",
             "Rent or Sell",
-            "Style of Car",
+            "Trim",
             "Body Style",
             "Mileage",
             "Exterior Color",
@@ -1478,8 +1477,8 @@
         "#6B7280",
       );
       overviewHtml += createSpecItem(
-        "Style / Body",
-        `${car["Style of Car"] || ""} ${car["Body Style"] ? "/ " + car["Body Style"] : ""}`,
+        "Trim / Body",
+        `${car["Trim"] || ""} ${car["Body Style"] ? "/ " + car["Body Style"] : ""}`,
         "fa-car",
         "#6B7280",
       );

@@ -113,7 +113,7 @@ function saveNewVehicle(data) {
       "VIN",
       "Status",
       "Title",
-      "Style of Car",
+      "Trim",
       "Body Style",
       "Rent or Sell",
       "Engine",
@@ -173,7 +173,7 @@ function saveNewVehicle(data) {
     data.vin || "",
     data.status || "",
     data.title || "",
-    data.styleOfCar || "",
+    data.trim || "",
     data.bodyStyle || "",
     data.rentOrSell || "",
     data.engine || "",
@@ -548,7 +548,7 @@ function saveDataInput(data) {
     data.vin || "", // 8
     "Available", // 9: Status
     data.title || "", // 10
-    "", // 11: Style of Car
+    "", // 11: Trim
     "", // 12: Body Style
     "", // 13: Rent or Sell
     "", // 14: Engine
