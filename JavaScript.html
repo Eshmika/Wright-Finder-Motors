@@ -136,6 +136,10 @@
             else if (targetView === "data-input") {
               initDataInputView();
             }
+            // If Update Car List is opened, load reference car list
+            else if (targetView === "update-car-list") {
+              initUpdateCarListView();
+            }
           } else {
             viewPlaceholder.classList.add("active");
             placeholderTitle.textContent = viewTitle + " Content Goes Here";
@@ -2514,6 +2518,363 @@
       modal.style.transform = "scale(1)";
     });
   }
+
+  // =============================================
+  // Update Car List View Controller
+  // =============================================
+  window.cachedCarList = [];
+
+  window.initUpdateCarListView = function () {
+    const form = document.getElementById("addCarListItemForm");
+    if (form) form.reset();
+
+    const searchInput = document.getElementById("carListSearchFilter");
+    if (searchInput) searchInput.value = "";
+
+    window.loadUpdateCarList();
+  };
+
+  window.loadUpdateCarList = function () {
+    const tbody = document.getElementById("carListTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-center" style="padding: 40px">
+          <i class="fas fa-circle-notch fa-spin fa-2x text-primary" style="margin-bottom: 15px; display: block"></i>
+          Loading vehicle list...
+        </td>
+      </tr>
+    `;
+
+    google.script.run
+      .withSuccessHandler(function (items) {
+        window.cachedCarList = items || [];
+        renderCarListTable(window.cachedCarList, true); // true to update stats
+      })
+      .withFailureHandler(function (error) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center text-danger" style="padding: 20px">
+              Error loading reference car list: ${error.message}
+            </td>
+          </tr>
+        `;
+      })
+      .getCarListItems();
+  };
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderCarListTable(items, updateStats) {
+    const tbody = document.getElementById("carListTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!items || items.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center" style="padding: 30px; color: #7f8c8d">
+            <i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7"></i>
+            No reference vehicle records found.
+          </td>
+        </tr>
+      `;
+      if (updateStats) {
+        document.getElementById("stats-total-cars").innerText = "0";
+        document.getElementById("stats-unique-makes").innerText = "0";
+        document.getElementById("stats-unique-models").innerText = "0";
+        document.getElementById("stats-popular-fuel").innerText = "-";
+      }
+      return;
+    }
+
+    items.forEach((item) => {
+      const tr = document.createElement("tr");
+      tr.id = "car-row-" + item.rowNumber;
+
+      tr.innerHTML = `
+        <td class="brand-cell" style="font-weight: 600; color: #2c3e50;">${escapeHtml(item.carName)}</td>
+        <td class="model-cell">${escapeHtml(item.model)}</td>
+        <td class="trim-cell">${escapeHtml(item.trim || "-")}</td>
+        <td class="fuel-cell">
+          <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.85em;">
+            ${escapeHtml(item.fuelType)}
+          </span>
+        </td>
+        <td class="body-cell">${escapeHtml(item.bodyType)}</td>
+        <td class="years-cell">
+          <i class="far fa-calendar-alt text-muted" style="margin-right: 5px"></i>
+          ${escapeHtml(item.yearsSold)}
+        </td>
+        <td style="text-align: center; white-space: nowrap;">
+          <button class="action-btn-sm btn-edit-item" onclick="toggleCarRowEdit(${item.rowNumber}, true)">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="action-btn-sm btn-delete-item" onclick="deleteCarRowItem(${item.rowNumber}, \`${escapeHtml(item.carName)}\`, \`${escapeHtml(item.model)}\`)">
+            <i class="fas fa-trash-alt"></i> Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (updateStats) {
+      // Calculate and update stats from all cached items
+      const totalCount = window.cachedCarList.length;
+      document.getElementById("stats-total-cars").innerText = totalCount;
+
+      const uniqueMakes = new Set();
+      const uniqueModels = new Set();
+      const fuelCounts = {};
+
+      window.cachedCarList.forEach((car) => {
+        if (car.carName) uniqueMakes.add(car.carName.toLowerCase().trim());
+        if (car.model) uniqueModels.add(car.model.toLowerCase().trim());
+        if (car.fuelType) {
+          fuelCounts[car.fuelType] = (fuelCounts[car.fuelType] || 0) + 1;
+        }
+      });
+
+      document.getElementById("stats-unique-makes").innerText =
+        uniqueMakes.size;
+      document.getElementById("stats-unique-models").innerText =
+        uniqueModels.size;
+
+      let topFuel = "-";
+      let maxFuelCount = 0;
+      for (const fuel in fuelCounts) {
+        if (fuelCounts[fuel] > maxFuelCount) {
+          maxFuelCount = fuelCounts[fuel];
+          topFuel = fuel;
+        }
+      }
+      document.getElementById("stats-popular-fuel").innerText = topFuel;
+    }
+  }
+
+  window.handleCarListItemSubmit = function (e) {
+    e.preventDefault();
+
+    const form = document.getElementById("addCarListItemForm");
+    const btn = document.getElementById("btnSubmitCarListItem");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+    const data = {
+      carName: formData.get("carName"),
+      model: formData.get("model"),
+      trim: formData.get("trim"),
+      fuelType: formData.get("fuelType"),
+      bodyType: formData.get("bodyType"),
+      yearsSold: formData.get("yearsSold"),
+    };
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        showCreativeSuccessModal(
+          "Vehicle added to reference directory successfully!",
+        );
+        form.reset();
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        // Force dropdowns lists to refresh by wiping cash
+        window.carListData = { names: [], models: {} };
+
+        // Reload data
+        window.loadUpdateCarList();
+      })
+      .withFailureHandler(function (error) {
+        alert("Error saving: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      })
+      .saveCarListItem(data);
+  };
+
+  window.filterCarListTable = function () {
+    const searchInput = document.getElementById("carListSearchFilter");
+    if (!searchInput) return;
+
+    const query = searchInput.value.toLowerCase().trim();
+    if (!query) {
+      renderCarListTable(window.cachedCarList, false);
+      return;
+    }
+
+    const filtered = window.cachedCarList.filter((item) => {
+      const name = (item.carName || "").toLowerCase();
+      const model = (item.model || "").toLowerCase();
+      const trim = (item.trim || "").toLowerCase();
+      const fuel = (item.fuelType || "").toLowerCase();
+      const body = (item.bodyType || "").toLowerCase();
+      return (
+        name.includes(query) ||
+        model.includes(query) ||
+        trim.includes(query) ||
+        fuel.includes(query) ||
+        body.includes(query)
+      );
+    });
+
+    renderCarListTable(filtered, false); // do not reset global stats
+  };
+
+  window.toggleCarRowEdit = function (rowNumber, editState) {
+    const tr = document.getElementById("car-row-" + rowNumber);
+    if (!tr) return;
+
+    if (!editState) {
+      // Re-render table from cache to cancel inline edits
+      renderCarListTable(window.cachedCarList, false);
+      return;
+    }
+
+    // Find current item in cache
+    const item = window.cachedCarList.find((i) => i.rowNumber === rowNumber);
+    if (!item) return;
+
+    tr.classList.add("editing-row");
+
+    // Replace columns with input elements
+    tr.innerHTML = `
+      <td>
+        <input type="text" class="inline-edit-input inline-edit-brand" value="${escapeHtml(item.carName)}" required />
+      </td>
+      <td>
+        <input type="text" class="inline-edit-input inline-edit-model" value="${escapeHtml(item.model)}" required />
+      </td>
+      <td>
+        <input type="text" class="inline-edit-input inline-edit-trim" value="${escapeHtml(item.trim)}" />
+      </td>
+      <td>
+        <select class="inline-edit-input inline-edit-fuel" required>
+          <option value="Gasoline" ${item.fuelType === "Gasoline" ? "selected" : ""}>Gasoline</option>
+          <option value="Diesel" ${item.fuelType === "Diesel" ? "selected" : ""}>Diesel</option>
+          <option value="Hybrid" ${item.fuelType === "Hybrid" ? "selected" : ""}>Hybrid</option>
+          <option value="Electric" ${item.fuelType === "Electric" ? "selected" : ""}>Electric</option>
+          <option value="Plug-in Hybrid" ${item.fuelType === "Plug-in Hybrid" ? "selected" : ""}>Plug-in Hybrid</option>
+          <option value="Hydrogen" ${item.fuelType === "Hydrogen" ? "selected" : ""}>Hydrogen</option>
+        </select>
+      </td>
+      <td>
+        <select class="inline-edit-input inline-edit-body" required>
+          <option value="Crossover" ${item.bodyType === "Crossover" ? "selected" : ""}>Crossover</option>
+          <option value="Sedan" ${item.bodyType === "Sedan" ? "selected" : ""}>Sedan</option>
+          <option value="Coupe/Convertible" ${item.bodyType === "Coupe/Convertible" ? "selected" : ""}>Coupe/Convertible</option>
+          <option value="SUV" ${item.bodyType === "SUV" ? "selected" : ""}>SUV</option>
+          <option value="Minivan/Van" ${item.bodyType === "Minivan/Van" ? "selected" : ""}>Minivan/Van</option>
+          <option value="Sport" ${item.bodyType === "Sport" ? "selected" : ""}>Sport</option>
+          <option value="Wagon" ${item.bodyType === "Wagon" ? "selected" : ""}>Wagon</option>
+          <option value="Hatchback" ${item.bodyType === "Hatchback" ? "selected" : ""}>Hatchback</option>
+          <option value="Pickup Truck" ${item.bodyType === "Pickup Truck" ? "selected" : ""}>Pickup Truck</option>
+          <option value="Other" ${item.bodyType === "Other" ? "selected" : ""}>Other</option>
+        </select>
+      </td>
+      <td>
+        <input type="text" class="inline-edit-input inline-edit-years" value="${escapeHtml(item.yearsSold)}" required />
+      </td>
+      <td style="text-align: center; white-space: nowrap;">
+        <button class="action-btn-sm btn-save-item" onclick="saveCarRowEdit(${rowNumber})">
+          <i class="fas fa-check"></i> Save
+        </button>
+        <button class="action-btn-sm btn-cancel-item" onclick="toggleCarRowEdit(${rowNumber}, false)">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </td>
+    `;
+  };
+
+  window.saveCarRowEdit = function (rowNumber) {
+    const tr = document.getElementById("car-row-" + rowNumber);
+    if (!tr) return;
+
+    const brandInput = tr.querySelector(".inline-edit-brand");
+    const modelInput = tr.querySelector(".inline-edit-model");
+    const trimInput = tr.querySelector(".inline-edit-trim");
+    const fuelInput = tr.querySelector(".inline-edit-fuel");
+    const bodyInput = tr.querySelector(".inline-edit-body");
+    const yearsInput = tr.querySelector(".inline-edit-years");
+
+    const brandVal = brandInput.value.trim();
+    const modelVal = modelInput.value.trim();
+    const trimVal = trimInput.value.trim();
+    const fuelVal = fuelInput.value;
+    const bodyVal = bodyInput.value;
+    const yearsVal = yearsInput.value.trim();
+
+    if (!brandVal || !modelVal || !fuelVal || !bodyVal || !yearsVal) {
+      alert(
+        "Please fill out all required fields (Make, Model, Fuel Type, Body Type, Years Sold).",
+      );
+      return;
+    }
+
+    // Show spinner inside the save button
+    const saveBtn = tr.querySelector(".btn-save-item");
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    const data = {
+      carName: brandVal,
+      model: modelVal,
+      trim: trimVal,
+      fuelType: fuelVal,
+      bodyType: bodyVal,
+      yearsSold: yearsVal,
+    };
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        showCreativeSuccessModal("Vehicle details updated successfully!");
+
+        // Force drop-down makes & models to refresh on next load
+        window.carListData = { names: [], models: {} };
+
+        // Reload data
+        window.loadUpdateCarList();
+      })
+      .withFailureHandler(function (error) {
+        alert("Error updating vehicle: " + error.message);
+        window.loadUpdateCarList();
+      })
+      .updateCarListItem(rowNumber, data);
+  };
+
+  window.deleteCarRowItem = function (rowNumber, carName, model) {
+    if (
+      confirm(
+        `Are you sure you want to delete "${carName} ${model}" from the reference car list?`,
+      )
+    ) {
+      google.script.run
+        .withSuccessHandler(function (response) {
+          showCreativeSuccessModal("Vehicle record deleted successfully!");
+
+          // Force drop-down makes & models to refresh on next load
+          window.carListData = { names: [], models: {} };
+
+          // Reload data
+          window.loadUpdateCarList();
+        })
+        .withFailureHandler(function (error) {
+          alert("Error deleting vehicle: " + error.message);
+        })
+        .deleteCarListItem(rowNumber);
+    }
+  };
 
   function openLightbox(src) {
     const lightbox = document.getElementById("imageLightbox");

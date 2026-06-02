@@ -597,3 +597,97 @@ function saveDataInput(data) {
 
   return "Success";
 }
+
+function getCarListItems() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Car List");
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Car List");
+    sheet.appendRow([
+      "Car Name",
+      "Model",
+      "Trim",
+      "Fuel Type",
+      "Body Type",
+      "Years Sold",
+    ]);
+    return [];
+  }
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return []; // only headers or empty
+
+  var items = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    items.push({
+      rowNumber: i + 1, // row number in spreadsheet (1-indexed, starts at 2 for first data row)
+      carName: row[0] ? String(row[0]).trim() : "",
+      model: row[1] ? String(row[1]).trim() : "",
+      trim: row[2] ? String(row[2]).trim() : "",
+      fuelType: row[3] ? String(row[3]).trim() : "",
+      bodyType: row[4] ? String(row[4]).trim() : "",
+      yearsSold: row[5] ? String(row[5]).trim() : "",
+    });
+  }
+  return items;
+}
+
+function saveCarListItem(itemData) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Car List");
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Car List");
+    sheet.appendRow([
+      "Car Name",
+      "Model",
+      "Trim",
+      "Fuel Type",
+      "Body Type",
+      "Years Sold",
+    ]);
+  }
+
+  sheet.appendRow([
+    itemData.carName ? String(itemData.carName).trim() : "",
+    itemData.model ? String(itemData.model).trim() : "",
+    itemData.trim ? String(itemData.trim).trim() : "",
+    itemData.fuelType ? String(itemData.fuelType).trim() : "",
+    itemData.bodyType ? String(itemData.bodyType).trim() : "",
+    itemData.yearsSold ? String(itemData.yearsSold).trim() : "",
+  ]);
+
+  return "Success";
+}
+
+function updateCarListItem(rowNumber, itemData) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Car List");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  sheet
+    .getRange(row, 1, 1, 6)
+    .setValues([
+      [
+        itemData.carName ? String(itemData.carName).trim() : "",
+        itemData.model ? String(itemData.model).trim() : "",
+        itemData.trim ? String(itemData.trim).trim() : "",
+        itemData.fuelType ? String(itemData.fuelType).trim() : "",
+        itemData.bodyType ? String(itemData.bodyType).trim() : "",
+        itemData.yearsSold ? String(itemData.yearsSold).trim() : "",
+      ],
+    ]);
+
+  return "Success";
+}
+
+function deleteCarListItem(rowNumber) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Car List");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  sheet.deleteRow(row);
+  return "Success";
+}
