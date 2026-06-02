@@ -894,6 +894,8 @@
             "Tax Amount",
             "Price on title",
             "REMAIN LOAN",
+            "Dispatcher Price",
+            "TRANSPORT FEES",
           ],
         },
         {
@@ -1035,7 +1037,21 @@
 
           itemsHtml += `
             <div class="input-group" style="${gridColumnStyle}">
-               <label>${key === "Status" ? "Availabilities" : key === "Car ID" ? "Stock #" : key === "Car Name" ? "Make" : key === "Price" ? "Selling Price" : key}</label>
+               <label>${
+                 key === "Status"
+                   ? "Availabilities"
+                   : key === "Car ID"
+                     ? "Stock #"
+                     : key === "Car Name"
+                       ? "Make"
+                       : key === "Price"
+                         ? "Selling Price"
+                         : key === "Dispatcher Phone number"
+                           ? "Dispatcher Phone"
+                           : key === "TRANSPORT FEES"
+                             ? "Transport Fees"
+                             : key
+               }</label>
                ${inputHtml}
             </div>
           `;
@@ -1087,6 +1103,21 @@
       }
 
       grid.innerHTML = categoriesHtml;
+
+      // Sync duplicated fields (Dispatcher Price and TRANSPORT FEES)
+      grid
+        .querySelectorAll(
+          'input[name="Dispatcher Price"], input[name="TRANSPORT FEES"]',
+        )
+        .forEach((input) => {
+          input.addEventListener("input", (e) => {
+            const name = e.target.getAttribute("name");
+            const value = e.target.value;
+            grid.querySelectorAll(`input[name="${name}"]`).forEach((dupe) => {
+              if (dupe !== e.target) dupe.value = value;
+            });
+          });
+        });
 
       // Show/Hide Trade section based on Trade status
       const tradeStatusSelect = document.querySelector(
@@ -1782,6 +1813,24 @@
           </div>
         `;
       }
+
+      // 15. Dispatcher Price (Duplicate)
+      financialsHtml += createSpecItem(
+        "Dispatcher Price",
+        car["Dispatcher Price"],
+        "fa-headset",
+        "#6B7280",
+        "rgba(107, 114, 128, 0.08)",
+      );
+
+      // 16. TRANSPORT FEES (Duplicate)
+      financialsHtml += createSpecItem(
+        "Transport Fees",
+        car["TRANSPORT FEES"],
+        "fa-truck",
+        "#6B7280",
+        "rgba(107, 114, 128, 0.08)",
+      );
 
       const buildCategory = (title, icon, items) => {
         if (!items || items.trim() === "") return "";
