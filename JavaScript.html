@@ -2803,6 +2803,21 @@
       .getCarListItems();
   };
 
+  function splitCommaValues(value) {
+    if (!value) return [];
+    return String(value)
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+
+  function joinSelectedOptions(selectElement) {
+    return Array.from(selectElement.selectedOptions)
+      .map((option) => option.value.trim())
+      .filter(Boolean)
+      .join(", ");
+  }
+
   function escapeHtml(str) {
     if (!str) return "";
     return String(str)
@@ -2811,6 +2826,17 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function renderCommaValues(value, fallbackText = "-") {
+    const values = splitCommaValues(value);
+    if (!values.length) return `<span>${escapeHtml(fallbackText)}</span>`;
+    return values
+      .map(
+        (item) =>
+          `<span style="display:inline-block; margin:2px 6px 2px 0; background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:20px; font-weight:600; font-size:0.85em;">${escapeHtml(item)}</span>`,
+      )
+      .join("");
   }
 
   function renderCarListTable(items, updateStats) {
@@ -2849,12 +2875,8 @@
         <td class="brand-cell" style="font-weight: 600; color: #2c3e50;">${escapeHtml(item.carName)}</td>
         <td class="model-cell">${escapeHtml(item.model)}</td>
         <td class="trim-cell">${escapeHtml(item.trim || "-")}</td>
-        <td class="fuel-cell">
-          <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.85em;">
-            ${escapeHtml(item.fuelType)}
-          </span>
-        </td>
-        <td class="body-cell">${escapeHtml(item.bodyType)}</td>
+        <td class="fuel-cell">${renderCommaValues(item.fuelType)}</td>
+        <td class="body-cell">${renderCommaValues(item.bodyType)}</td>
         <td class="years-cell">
           <i class="far fa-calendar-alt text-muted" style="margin-right: 5px"></i>
           ${escapeHtml(item.yearsSold)}
@@ -2885,7 +2907,9 @@
         if (car.carName) uniqueMakes.add(car.carName.toLowerCase().trim());
         if (car.model) uniqueModels.add(car.model.toLowerCase().trim());
         if (car.fuelType) {
-          fuelCounts[car.fuelType] = (fuelCounts[car.fuelType] || 0) + 1;
+          splitCommaValues(car.fuelType).forEach((fuel) => {
+            fuelCounts[fuel] = (fuelCounts[fuel] || 0) + 1;
+          });
         }
       });
 
@@ -2922,8 +2946,8 @@
       carName: formData.get("carName"),
       model: formData.get("model"),
       trim: formData.get("trim"),
-      fuelType: formData.get("fuelType"),
-      bodyType: formData.get("bodyType"),
+      fuelType: formData.getAll("fuelType").join(", "),
+      bodyType: formData.getAll("bodyType").join(", "),
       yearsSold: formData.get("yearsSold"),
     };
 
@@ -2994,6 +3018,8 @@
     if (!item) return;
 
     tr.classList.add("editing-row");
+    const fuelSelections = splitCommaValues(item.fuelType);
+    const bodySelections = splitCommaValues(item.bodyType);
 
     // Replace columns with input elements
     tr.innerHTML = `
@@ -3007,25 +3033,25 @@
         <input type="text" class="inline-edit-input inline-edit-trim" value="${escapeHtml(item.trim)}" />
       </td>
       <td>
-        <select class="inline-edit-input inline-edit-fuel" required>
-          <option value="Gasoline" ${item.fuelType === "Gasoline" ? "selected" : ""}>Gasoline</option>
-          <option value="Diesel" ${item.fuelType === "Diesel" ? "selected" : ""}>Diesel</option>
-          <option value="Hybrid" ${item.fuelType === "Hybrid" ? "selected" : ""}>Hybrid</option>
-          <option value="Electric" ${item.fuelType === "Electric" ? "selected" : ""}>Electric</option>         
+        <select class="inline-edit-input inline-edit-fuel" multiple required>
+          <option value="Gasoline" ${fuelSelections.includes("Gasoline") ? "selected" : ""}>Gasoline</option>
+          <option value="Diesel" ${fuelSelections.includes("Diesel") ? "selected" : ""}>Diesel</option>
+          <option value="Hybrid" ${fuelSelections.includes("Hybrid") ? "selected" : ""}>Hybrid</option>
+          <option value="Electric" ${fuelSelections.includes("Electric") ? "selected" : ""}>Electric</option>
         </select>
       </td>
       <td>
-        <select class="inline-edit-input inline-edit-body" required>
-          <option value="Crossover" ${item.bodyType === "Crossover" ? "selected" : ""}>Crossover</option>
-          <option value="Sedan" ${item.bodyType === "Sedan" ? "selected" : ""}>Sedan</option>
-          <option value="Coupe/Convertible" ${item.bodyType === "Coupe/Convertible" ? "selected" : ""}>Coupe/Convertible</option>
-          <option value="SUV" ${item.bodyType === "SUV" ? "selected" : ""}>SUV</option>
-          <option value="Minivan/Van" ${item.bodyType === "Minivan/Van" ? "selected" : ""}>Minivan/Van</option>
-          <option value="Sport" ${item.bodyType === "Sport" ? "selected" : ""}>Sport</option>
-          <option value="Wagon" ${item.bodyType === "Wagon" ? "selected" : ""}>Wagon</option>
-          <option value="Hatchback" ${item.bodyType === "Hatchback" ? "selected" : ""}>Hatchback</option>
-          <option value="Pickup Truck" ${item.bodyType === "Pickup Truck" ? "selected" : ""}>Pickup Truck</option>
-          <option value="Other" ${item.bodyType === "Other" ? "selected" : ""}>Other</option>
+        <select class="inline-edit-input inline-edit-body" multiple required>
+          <option value="Crossover" ${bodySelections.includes("Crossover") ? "selected" : ""}>Crossover</option>
+          <option value="Sedan" ${bodySelections.includes("Sedan") ? "selected" : ""}>Sedan</option>
+          <option value="Coupe/Convertible" ${bodySelections.includes("Coupe/Convertible") ? "selected" : ""}>Coupe/Convertible</option>
+          <option value="SUV" ${bodySelections.includes("SUV") ? "selected" : ""}>SUV</option>
+          <option value="Minivan/Van" ${bodySelections.includes("Minivan/Van") ? "selected" : ""}>Minivan/Van</option>
+          <option value="Sport" ${bodySelections.includes("Sport") ? "selected" : ""}>Sport</option>
+          <option value="Wagon" ${bodySelections.includes("Wagon") ? "selected" : ""}>Wagon</option>
+          <option value="Hatchback" ${bodySelections.includes("Hatchback") ? "selected" : ""}>Hatchback</option>
+          <option value="Pickup Truck" ${bodySelections.includes("Pickup Truck") ? "selected" : ""}>Pickup Truck</option>
+          <option value="Other" ${bodySelections.includes("Other") ? "selected" : ""}>Other</option>
         </select>
       </td>
       <td>
@@ -3056,8 +3082,8 @@
     const brandVal = brandInput.value.trim();
     const modelVal = modelInput.value.trim();
     const trimVal = trimInput.value.trim();
-    const fuelVal = fuelInput.value;
-    const bodyVal = bodyInput.value;
+    const fuelVal = joinSelectedOptions(fuelInput);
+    const bodyVal = joinSelectedOptions(bodyInput);
     const yearsVal = yearsInput.value.trim();
 
     if (!brandVal || !modelVal || !fuelVal || !bodyVal || !yearsVal) {

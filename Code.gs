@@ -632,6 +632,22 @@ function getCarListItems() {
   return items;
 }
 
+function normalizeCommaSeparatedField(value) {
+  if (value === null || value === undefined) return "";
+
+  var parts = Array.isArray(value) ? value : String(value).split(",");
+
+  var cleaned = [];
+  for (var i = 0; i < parts.length; i++) {
+    var part = String(parts[i]).trim();
+    if (part && cleaned.indexOf(part) === -1) {
+      cleaned.push(part);
+    }
+  }
+
+  return cleaned.join(", ");
+}
+
 function saveCarListItem(itemData) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Car List");
   if (!sheet) {
@@ -650,8 +666,8 @@ function saveCarListItem(itemData) {
     itemData.carName ? String(itemData.carName).trim() : "",
     itemData.model ? String(itemData.model).trim() : "",
     itemData.trim ? String(itemData.trim).trim() : "",
-    itemData.fuelType ? String(itemData.fuelType).trim() : "",
-    itemData.bodyType ? String(itemData.bodyType).trim() : "",
+    normalizeCommaSeparatedField(itemData.fuelType),
+    normalizeCommaSeparatedField(itemData.bodyType),
     itemData.yearsSold ? String(itemData.yearsSold).trim() : "",
   ]);
 
@@ -672,8 +688,8 @@ function updateCarListItem(rowNumber, itemData) {
         itemData.carName ? String(itemData.carName).trim() : "",
         itemData.model ? String(itemData.model).trim() : "",
         itemData.trim ? String(itemData.trim).trim() : "",
-        itemData.fuelType ? String(itemData.fuelType).trim() : "",
-        itemData.bodyType ? String(itemData.bodyType).trim() : "",
+        normalizeCommaSeparatedField(itemData.fuelType),
+        normalizeCommaSeparatedField(itemData.bodyType),
         itemData.yearsSold ? String(itemData.yearsSold).trim() : "",
       ],
     ]);
