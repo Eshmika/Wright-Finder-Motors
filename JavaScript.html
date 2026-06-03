@@ -2763,6 +2763,146 @@
   // =============================================
   window.cachedCarList = [];
 
+  window.initCustomMultiselect = function (selectElement) {
+    if (!selectElement || selectElement.dataset.multiselectInitialized) return;
+    selectElement.dataset.multiselectInitialized = "true";
+
+    // Hide original select visually
+    selectElement.classList.add("visually-hidden-select");
+
+    // Wrap in container
+    const container = document.createElement("div");
+    container.className = "multiselect-container";
+    selectElement.parentNode.insertBefore(container, selectElement);
+    container.appendChild(selectElement);
+
+    // Create selection box
+    const selectBox = document.createElement("div");
+    selectBox.className = "multiselect-select-box";
+    selectBox.setAttribute("tabindex", "0");
+
+    const selectedText = document.createElement("span");
+    selectedText.className = "selected-text placeholder-text";
+
+    // Set initial placeholder based on select id or class
+    let placeholder = "Select options...";
+    if (
+      selectElement.id === "car-list-fuel" ||
+      selectElement.classList.contains("inline-edit-fuel")
+    ) {
+      placeholder = "Select Fuel Types...";
+    } else if (
+      selectElement.id === "car-list-body" ||
+      selectElement.classList.contains("inline-edit-body")
+    ) {
+      placeholder = "Select Body Types...";
+    }
+    selectedText.innerText = placeholder;
+
+    const arrowIcon = document.createElement("i");
+    arrowIcon.className = "fas fa-chevron-down arrow-icon";
+
+    selectBox.appendChild(selectedText);
+    selectBox.appendChild(arrowIcon);
+    container.appendChild(selectBox);
+
+    // Create dropdown menu
+    const dropdown = document.createElement("div");
+    dropdown.className = "multiselect-dropdown";
+    container.appendChild(dropdown);
+
+    // Populate options
+    const updateDropdownOptions = () => {
+      dropdown.innerHTML = "";
+      Array.from(selectElement.options).forEach((opt, idx) => {
+        const optionWrapper = document.createElement("div");
+        optionWrapper.className = "multiselect-option";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = opt.value;
+        checkbox.checked = opt.selected;
+
+        const label = document.createElement("span");
+        label.innerText = opt.text;
+
+        optionWrapper.appendChild(checkbox);
+        optionWrapper.appendChild(label);
+        dropdown.appendChild(optionWrapper);
+
+        // Click handler for option row
+        optionWrapper.addEventListener("click", (e) => {
+          if (e.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+          }
+          opt.selected = checkbox.checked;
+
+          // Trigger change event on original select
+          const changeEvent = new Event("change", { bubbles: true });
+          selectElement.dispatchEvent(changeEvent);
+
+          updateSelectionText();
+        });
+      });
+    };
+
+    const updateSelectionText = () => {
+      const selected = Array.from(selectElement.options)
+        .filter((opt) => opt.selected)
+        .map((opt) => opt.text);
+
+      if (selected.length > 0) {
+        selectedText.innerText = selected.join(", ");
+        selectedText.classList.remove("placeholder-text");
+      } else {
+        selectedText.innerText = placeholder;
+        selectedText.classList.add("placeholder-text");
+      }
+    };
+
+    // Toggle dropdown
+    selectBox.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.querySelectorAll(".multiselect-container").forEach((c) => {
+        if (c !== container) c.classList.remove("active");
+      });
+      container.classList.toggle("active");
+    });
+
+    // Close on click outside
+    document.addEventListener("click", (e) => {
+      if (!container.contains(e.target)) {
+        container.classList.remove("active");
+      }
+    });
+
+    // Sync on external change (e.g. form reset or value update)
+    selectElement.addEventListener("change", () => {
+      const checkboxes = dropdown.querySelectorAll("input[type='checkbox']");
+      Array.from(selectElement.options).forEach((opt, idx) => {
+        if (checkboxes[idx]) {
+          checkboxes[idx].checked = opt.selected;
+        }
+      });
+      updateSelectionText();
+    });
+
+    // Sync on form reset
+    const form = selectElement.form;
+    if (form) {
+      form.addEventListener("reset", () => {
+        setTimeout(() => {
+          updateDropdownOptions();
+          updateSelectionText();
+        }, 0);
+      });
+    }
+
+    // Initial render
+    updateDropdownOptions();
+    updateSelectionText();
+  };
+
   window.initUpdateCarListView = function () {
     const form = document.getElementById("addCarListItemForm");
     if (form) form.reset();
@@ -2770,13 +2910,15 @@
     const searchInput = document.getElementById("carListSearchFilter");
     if (searchInput) searchInput.value = "";
 
+    setTimeout(() => {
+      window.initCustomMultiselect(document.getElementById("car-list-fuel"));
+      window.initCustomMultiselect(document.getElementById("car-list-body"));
+    }, 0);
+
     window.loadUpdateCarList();
   };
 
   window.loadUpdateCarList = function () {
-    const tbody = document.getElementById("carListTableBody");
-    if (!tbody) return;
-
     tbody.innerHTML = `
       <tr>
         <td colspan="7" class="text-center" style="padding: 40px">
@@ -3066,6 +3208,13 @@
         </button>
       </td>
     `;
+
+    setTimeout(() => {
+      const fuelSel = tr.querySelector(".inline-edit-fuel");
+      const bodySel = tr.querySelector(".inline-edit-body");
+      if (fuelSel) window.initCustomMultiselect(fuelSel);
+      if (bodySel) window.initCustomMultiselect(bodySel);
+    }, 0);
   };
 
   window.saveCarRowEdit = function (rowNumber) {

@@ -489,6 +489,117 @@
     resize: vertical;
   }
 
+  /* Custom Multi-select Dropdown styling */
+  .multiselect-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .multiselect-select-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border: 1px solid #3a1f62;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #333;
+    background-color: #fcfcfc;
+    cursor: pointer;
+    user-select: none;
+    min-height: 44px;
+    transition: all 0.2s ease;
+  }
+
+  .multiselect-select-box:focus,
+  .multiselect-container.active .multiselect-select-box {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.15);
+  }
+
+  .multiselect-select-box .placeholder-text {
+    color: #858796;
+  }
+
+  .multiselect-select-box .selected-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 20px);
+    font-weight: 500;
+  }
+
+  .multiselect-select-box i.arrow-icon {
+    font-size: 0.8rem;
+    color: #858796;
+    transition: transform 0.2s ease;
+  }
+
+  .multiselect-container.active .multiselect-select-box i.arrow-icon {
+    transform: rotate(180deg);
+  }
+
+  .multiselect-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid rgba(58, 31, 98, 0.15);
+    border-radius: 6px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin-top: 5px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    padding: 8px 0;
+  }
+
+  .multiselect-container.active .multiselect-dropdown {
+    display: block;
+  }
+
+  .multiselect-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+  }
+
+  .multiselect-option:hover {
+    background-color: rgba(58, 31, 98, 0.05);
+  }
+
+  .multiselect-option input[type="checkbox"] {
+    margin-right: 12px;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .multiselect-option span {
+    font-size: 0.95rem;
+    color: #2c3e50;
+  }
+
+  .visually-hidden-select {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
   /* Drag & Drop File Upload */
   .file-upload-wrapper {
     position: relative;
