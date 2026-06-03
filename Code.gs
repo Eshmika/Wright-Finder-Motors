@@ -548,14 +548,14 @@ function saveDataInput(data) {
     data.vin || "", // 8
     "Available", // 9: Status
     data.title || "", // 10
-    "", // 11: Trim
-    "", // 12: Body Style
+    data.trim || "", // 11: Trim
+    data.bodyStyle || "", // 12: Body Style
     "", // 13: Rent or Sell
     "", // 14: Engine
     "", // 15: Engine Type/Size
     "", // 16: Transmission
     "", // 17: Driveline
-    "", // 18: Fuel Type
+    data.fuelType || "", // 18: Fuel Type
     "", // 19: Power Options
     "", // 20: Drive Condition
     "", // 21: Condition

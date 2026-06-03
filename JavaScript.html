@@ -460,96 +460,355 @@
     });
 
     // Add New Car View Logic
+    window.carReferenceRecords = [];
     window.carListData = { names: [], models: {} };
 
-    window.initAddNewCarView = function () {
-      const carNameSelect = document.getElementById("carNameSelect");
-      if (carNameSelect && carNameSelect.options.length <= 1) {
-        google.script.run
-          .withSuccessHandler(function (data) {
-            window.carListData = data;
+    window.parseYearsSold = function (yearsSoldStr) {
+      const years = new Set();
+      if (!yearsSoldStr) return [];
+      const currentYear = new Date().getFullYear();
 
-            carNameSelect.innerHTML =
-              '<option value="">Select Make...</option>';
-            data.names.forEach((name) => {
-              carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
-            });
-          })
-          .getCarListData();
-      }
+      // Split by comma or semicolon
+      const parts = yearsSoldStr.split(/[,;]/);
+      parts.forEach((part) => {
+        const trimmed = part.trim();
+        if (!trimmed) return;
+
+        // Check for range like 2018-2024 or 2018 - 2024 or 2018-present
+        const rangeMatch = trimmed.match(
+          /^(\d{4})\s*-\s*(\d{4}|present|current)?$/i,
+        );
+        if (rangeMatch) {
+          const startYear = parseInt(rangeMatch[1]);
+          let endYear = rangeMatch[2];
+          if (
+            !endYear ||
+            endYear.toLowerCase() === "present" ||
+            endYear.toLowerCase() === "current"
+          ) {
+            endYear = currentYear;
+          } else {
+            endYear = parseInt(endYear);
+          }
+          for (
+            let y = Math.min(startYear, endYear);
+            y <= Math.max(startYear, endYear);
+            y++
+          ) {
+            years.add(y);
+          }
+        } else {
+          // Just a single year
+          const singleYear = parseInt(trimmed);
+          if (!isNaN(singleYear) && singleYear >= 1900 && singleYear <= 2100) {
+            years.add(singleYear);
+          }
+        }
+      });
+      return Array.from(years).sort((a, b) => b - a); // sort descending
     };
 
-    window.initDataInputView = function () {
-      const carNameSelect = document.getElementById("dataInputCarNameSelect");
-      if (carNameSelect && carNameSelect.options.length <= 1) {
-        if (window.carListData.names && window.carListData.names.length > 0) {
-          carNameSelect.innerHTML = '<option value="">Select Make...</option>';
-          window.carListData.names.forEach((name) => {
-            carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
-          });
-        } else {
-          google.script.run
-            .withSuccessHandler(function (data) {
-              window.carListData = data;
+    window.loadCarReferenceRecords = function (callback) {
+      if (window.carReferenceRecords && window.carReferenceRecords.length > 0) {
+        if (callback) callback();
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (items) {
+          window.carReferenceRecords = items || [];
 
-              carNameSelect.innerHTML =
-                '<option value="">Select Make...</option>';
-              data.names.forEach((name) => {
-                carNameSelect.innerHTML += `<option value="${name}">${name}</option>`;
+          // Rebuild carListData for backward compatibility
+          const makes = new Set();
+          const modelsByMake = {};
+          window.carReferenceRecords.forEach((item) => {
+            const make = item.carName;
+            const model = item.model;
+            if (make) {
+              makes.add(make);
+              if (!modelsByMake[make]) modelsByMake[make] = [];
+              if (model && !modelsByMake[make].includes(model)) {
+                modelsByMake[make].push(model);
+              }
+            }
+          });
+          window.carListData = {
+            names: Array.from(makes).sort(),
+            models: modelsByMake,
+          };
+
+          if (callback) callback();
+        })
+        .withFailureHandler(function (error) {
+          console.error("Error loading reference car list:", error);
+          if (callback) callback();
+        })
+        .getCarListItems();
+    };
+
+    window.initCascadingDropdowns = function (config) {
+      const {
+        makeSelect,
+        modelSelect,
+        trimSelect,
+        yearSelect,
+        fuelSelect,
+        bodyStyleSelect,
+        initialValues,
+      } = config;
+
+      if (!makeSelect) return;
+
+      // Ensure reference records are loaded first
+      window.loadCarReferenceRecords(function () {
+        populateMakes();
+
+        makeSelect.onchange = function () {
+          onMakeChanged();
+        };
+
+        if (modelSelect) {
+          modelSelect.onchange = function () {
+            onModelChanged();
+          };
+        }
+
+        if (initialValues) {
+          setInitialValues();
+        } else {
+          updateDependentDropdowns();
+        }
+      });
+
+      function populateMakes() {
+        const selectedValue = makeSelect.value;
+        const makes = new Set();
+        window.carReferenceRecords.forEach((item) => {
+          if (item.carName) makes.add(item.carName);
+        });
+
+        makeSelect.innerHTML = '<option value="">Select Make...</option>';
+        Array.from(makes)
+          .sort()
+          .forEach((make) => {
+            makeSelect.innerHTML += `<option value="${make}">${make}</option>`;
+          });
+
+        if (selectedValue && Array.from(makes).includes(selectedValue)) {
+          makeSelect.value = selectedValue;
+        }
+      }
+
+      function onMakeChanged() {
+        if (modelSelect) modelSelect.value = "";
+        if (trimSelect) trimSelect.value = "";
+        if (yearSelect) yearSelect.value = "";
+        if (fuelSelect) fuelSelect.value = "";
+        if (bodyStyleSelect) bodyStyleSelect.value = "";
+
+        updateDependentDropdowns();
+      }
+
+      function onModelChanged() {
+        if (trimSelect) trimSelect.value = "";
+        if (yearSelect) yearSelect.value = "";
+        if (fuelSelect) fuelSelect.value = "";
+        if (bodyStyleSelect) bodyStyleSelect.value = "";
+
+        updateDependentDropdowns();
+      }
+
+      function updateDependentDropdowns() {
+        const selectedMake = makeSelect.value;
+        const selectedModel = modelSelect ? modelSelect.value : "";
+
+        let filtered = window.carReferenceRecords;
+        if (selectedMake) {
+          filtered = filtered.filter((item) => item.carName === selectedMake);
+        }
+
+        if (modelSelect) {
+          const currentVal = modelSelect.value;
+          const models = new Set();
+          modelSelect.innerHTML = selectedMake
+            ? '<option value="">Select Model...</option>'
+            : '<option value="">Select Make first...</option>';
+          modelSelect.disabled = !selectedMake;
+
+          if (selectedMake) {
+            filtered.forEach((item) => {
+              if (item.model) models.add(item.model);
+            });
+            Array.from(models)
+              .sort()
+              .forEach((model) => {
+                modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
               });
-            })
-            .getCarListData();
+            if (currentVal && models.has(currentVal)) {
+              modelSelect.value = currentVal;
+            }
+          }
+        }
+
+        let modelFiltered = filtered;
+        if (selectedModel) {
+          modelFiltered = modelFiltered.filter(
+            (item) => item.model === selectedModel,
+          );
+        }
+
+        if (trimSelect) {
+          const currentVal = trimSelect.value;
+          const trims = new Set();
+          trimSelect.innerHTML = selectedMake
+            ? '<option value="">Select Trim...</option>'
+            : '<option value="">Select Make first...</option>';
+          trimSelect.disabled = !selectedMake;
+
+          if (selectedMake) {
+            modelFiltered.forEach((item) => {
+              if (item.trim) {
+                const splitTrims = item.trim
+                  .split("/")
+                  .map((t) => t.trim())
+                  .filter(Boolean);
+                splitTrims.forEach((t) => trims.add(t));
+              }
+            });
+            Array.from(trims)
+              .sort()
+              .forEach((trim) => {
+                trimSelect.innerHTML += `<option value="${trim}">${trim}</option>`;
+              });
+            if (currentVal && trims.has(currentVal)) {
+              trimSelect.value = currentVal;
+            }
+          }
+        }
+
+        if (fuelSelect) {
+          const currentVal = fuelSelect.value;
+          const fuels = new Set();
+          fuelSelect.innerHTML = selectedMake
+            ? '<option value="">Select Fuel...</option>'
+            : '<option value="">Select Make first...</option>';
+          fuelSelect.disabled = !selectedMake;
+
+          if (selectedMake) {
+            modelFiltered.forEach((item) => {
+              if (item.fuelType) fuels.add(item.fuelType);
+            });
+            Array.from(fuels)
+              .sort()
+              .forEach((fuel) => {
+                fuelSelect.innerHTML += `<option value="${fuel}">${fuel}</option>`;
+              });
+            if (currentVal && fuels.has(currentVal)) {
+              fuelSelect.value = currentVal;
+            }
+          }
+        }
+
+        if (bodyStyleSelect) {
+          const currentVal = bodyStyleSelect.value;
+          const bodies = new Set();
+          bodyStyleSelect.innerHTML = selectedMake
+            ? '<option value="">Select Body Style...</option>'
+            : '<option value="">Select Make first...</option>';
+          bodyStyleSelect.disabled = !selectedMake;
+
+          if (selectedMake) {
+            modelFiltered.forEach((item) => {
+              if (item.bodyType) bodies.add(item.bodyType);
+            });
+            Array.from(bodies)
+              .sort()
+              .forEach((body) => {
+                bodyStyleSelect.innerHTML += `<option value="${body}">${body}</option>`;
+              });
+            if (currentVal && bodies.has(currentVal)) {
+              bodyStyleSelect.value = currentVal;
+            }
+          }
+        }
+
+        if (yearSelect) {
+          const currentVal = yearSelect.value;
+          const years = new Set();
+          yearSelect.innerHTML = selectedMake
+            ? '<option value="">Select Year...</option>'
+            : '<option value="">Select Make first...</option>';
+          yearSelect.disabled = !selectedMake;
+
+          if (selectedMake) {
+            modelFiltered.forEach((item) => {
+              if (item.yearsSold) {
+                const parsedYears = window.parseYearsSold(item.yearsSold);
+                parsedYears.forEach((y) => years.add(y));
+              }
+            });
+
+            Array.from(years)
+              .sort((a, b) => b - a)
+              .forEach((year) => {
+                yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
+              });
+            if (currentVal && years.has(parseInt(currentVal))) {
+              yearSelect.value = currentVal;
+            }
+          }
+        }
+      }
+
+      function setInitialValues() {
+        if (initialValues.make) {
+          makeSelect.value = initialValues.make;
+          updateDependentDropdowns();
+        }
+        if (modelSelect && initialValues.model) {
+          modelSelect.value = initialValues.model;
+          updateDependentDropdowns();
+        }
+        if (trimSelect && initialValues.trim) {
+          trimSelect.value = initialValues.trim;
+        }
+        if (fuelSelect && initialValues.fuel) {
+          fuelSelect.value = initialValues.fuel;
+        }
+        if (bodyStyleSelect && initialValues.bodyStyle) {
+          bodyStyleSelect.value = initialValues.bodyStyle;
+        }
+        if (yearSelect && initialValues.year) {
+          yearSelect.value = initialValues.year;
         }
       }
     };
 
-    window.updateModelDropdown = function () {
-      const carNameSelect = document.getElementById("carNameSelect");
-      const modelSelect = document.getElementById("modelSelect");
-
-      const selectedName = carNameSelect.value;
-      modelSelect.innerHTML = '<option value="">Select Model...</option>';
-
-      if (selectedName && window.carListData.models[selectedName]) {
-        window.carListData.models[selectedName].forEach((model) => {
-          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
-        });
-      }
+    window.initAddNewCarView = function () {
+      window.initCascadingDropdowns({
+        makeSelect: document.getElementById("carNameSelect"),
+        modelSelect: document.getElementById("modelSelect"),
+        trimSelect: document.getElementById("trimSelect"),
+        yearSelect: document.getElementById("yearSelect"),
+        fuelSelect: document.getElementById("fuelTypeSelect"),
+        bodyStyleSelect: document.getElementById("bodyStyleSelect"),
+      });
     };
 
-    window.updateDataInputModelDropdown = function () {
-      const carNameSelect = document.getElementById("dataInputCarNameSelect");
-      const modelSelect = document.getElementById("dataInputModelSelect");
-
-      const selectedName = carNameSelect.value;
-      modelSelect.innerHTML = '<option value="">Select Model...</option>';
-
-      if (selectedName && window.carListData.models[selectedName]) {
-        window.carListData.models[selectedName].forEach((model) => {
-          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
-        });
-      }
+    window.initDataInputView = function () {
+      window.initCascadingDropdowns({
+        makeSelect: document.getElementById("dataInputCarNameSelect"),
+        modelSelect: document.getElementById("dataInputModelSelect"),
+        trimSelect: document.getElementById("dataInputTrimSelect"),
+        yearSelect: document.getElementById("dataInputYearSelect"),
+        fuelSelect: document.getElementById("dataInputFuelTypeSelect"),
+        bodyStyleSelect: document.getElementById("dataInputBodyStyleSelect"),
+      });
     };
 
-    window.updateEditModelDropdown = function () {
-      const carNameSelect = document.getElementById("editCarNameSelect");
-      const modelSelect = document.getElementById("editModelSelect");
-
-      if (!carNameSelect || !modelSelect) return;
-
-      const selectedName = carNameSelect.value;
-      modelSelect.innerHTML = '<option value="">Select Model...</option>';
-
-      if (
-        selectedName &&
-        window.carListData &&
-        window.carListData.models[selectedName]
-      ) {
-        window.carListData.models[selectedName].forEach((model) => {
-          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
-        });
-      }
-    };
+    // Fallback wrappers for compatibility
+    window.updateModelDropdown = function () {};
+    window.updateDataInputModelDropdown = function () {};
+    window.updateEditModelDropdown = function () {};
 
     // View Cars Logic
     let allCars = [];
@@ -693,16 +952,9 @@
         editMode.style.display = "block";
         editBtn.style.display = "none"; // Hide edit button while editing
 
-        if (window.carListData.names.length === 0) {
-          google.script.run
-            .withSuccessHandler(function (data) {
-              window.carListData = data;
-              populateEditForm();
-            })
-            .getCarListData();
-        } else {
+        window.loadCarReferenceRecords(function () {
           populateEditForm();
-        }
+        });
       } else {
         viewMode.style.display = "block";
         editMode.style.display = "none";
@@ -732,18 +984,6 @@
         "Financing status": ["Paid off", "Loan Active"],
         "Tax Responsibility": ["Client", "Company", "Split"],
         Title: ["Clean", "Rebuilt", "Lien", "Salvage"],
-        "Body Style": [
-          "Crossover",
-          "Sedan",
-          "Coupe/Convertible",
-          "SUV",
-          "Minivan/Van",
-          "Sport",
-          "Wagon",
-          "Hatchback",
-          "Pickup Truck",
-          "N/a",
-        ],
         "Rent or Sell": ["Sell", "Rent", "Both"],
         "Trade status": ["Normal", "Trade"],
         Engine: ["Standard", "Sport", "Turbo", "Heavy duty"],
@@ -762,7 +1002,6 @@
         ],
         Transmission: ["Automatic", "Manual", "CVT(continuously variable)"],
         Driveline: ["FWD", "RWD", "AWD", "4WD"],
-        "Fuel Type": ["Gasoline", "Diesel", "Hybrid", "Electric"],
         "Power Options": [
           "Keyless",
           "Key entry",
@@ -957,42 +1196,24 @@
             key === "Comment"
           ) {
             inputHtml = `<textarea name="${key}" class="form-control" rows="3">${val}</textarea>`;
+          } else if (key === "Car Name") {
+            inputHtml = `<select name="${key}" id="editCarNameSelect" class="form-control" required><option value="">Select Make...</option></select>`;
+          } else if (key === "Model") {
+            inputHtml = `<select name="${key}" id="editModelSelect" class="form-control" required><option value="">Select Model...</option></select>`;
+          } else if (key === "Trim") {
+            inputHtml = `<select name="${key}" id="editTrimSelect" class="form-control"><option value="">Select Trim...</option></select>`;
           } else if (key === "Year") {
-            let options = '<option value="">Select Year...</option>';
-            for (let y = 1990; y <= 2050; y++) {
-              options += `<option value="${y}" ${val == y ? "selected" : ""}>${y}</option>`;
-            }
-            inputHtml = `<select name="${key}" class="form-control" required>${options}</select>`;
+            inputHtml = `<select name="${key}" id="editYearSelect" class="form-control" required><option value="">Select Year...</option></select>`;
+          } else if (key === "Body Style") {
+            inputHtml = `<select name="${key}" id="editBodyStyleSelect" class="form-control"><option value="">Select Body Style...</option></select>`;
+          } else if (key === "Fuel Type") {
+            inputHtml = `<select name="${key}" id="editFuelTypeSelect" class="form-control"><option value="">Select Fuel...</option></select>`;
           } else if (dropdownOptions[key]) {
             let options = `<option value="">Select ${key === "Status" ? "Availabilities" : key}...</option>`;
             dropdownOptions[key].forEach((opt) => {
               options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
             });
             inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
-          } else if (key === "Car Name") {
-            let options = '<option value="">Select Make...</option>';
-            if (window.carListData && window.carListData.names) {
-              window.carListData.names.forEach((name) => {
-                options += `<option value="${name}" ${val === name ? "selected" : ""}>${name}</option>`;
-              });
-            }
-            inputHtml = `<select name="${key}" id="editCarNameSelect" class="form-control" onchange="updateEditModelDropdown()">${options}</select>`;
-          } else if (key === "Model") {
-            let options = '<option value="">Select Model...</option>';
-            let currentCarName = currentEditableCar["Car Name"];
-            if (
-              window.carListData &&
-              window.carListData.models &&
-              currentCarName &&
-              window.carListData.models[currentCarName]
-            ) {
-              window.carListData.models[currentCarName].forEach((model) => {
-                options += `<option value="${model}" ${val === model ? "selected" : ""}>${model}</option>`;
-              });
-            } else if (val) {
-              options += `<option value="${val}" selected>${val}</option>`;
-            }
-            inputHtml = `<select name="${key}" id="editModelSelect" class="form-control">${options}</select>`;
           } else if (
             key === "All Materials Expenses" ||
             key === "TOTAL COST" ||
@@ -1106,6 +1327,24 @@
       }
 
       grid.innerHTML = categoriesHtml;
+
+      // Initialize dynamic cascading dropdowns for the edit form
+      window.initCascadingDropdowns({
+        makeSelect: document.getElementById("editCarNameSelect"),
+        modelSelect: document.getElementById("editModelSelect"),
+        trimSelect: document.getElementById("editTrimSelect"),
+        yearSelect: document.getElementById("editYearSelect"),
+        fuelSelect: document.getElementById("editFuelTypeSelect"),
+        bodyStyleSelect: document.getElementById("editBodyStyleSelect"),
+        initialValues: {
+          make: currentEditableCar["Car Name"] || "",
+          model: currentEditableCar["Model"] || "",
+          trim: currentEditableCar["Trim"] || "",
+          year: currentEditableCar["Year"] || "",
+          fuel: currentEditableCar["Fuel Type"] || "",
+          bodyStyle: currentEditableCar["Body Style"] || "",
+        },
+      });
 
       // Sync duplicated fields (Dispatcher Price and TRANSPORT FEES)
       grid
@@ -2698,6 +2937,7 @@
         btn.disabled = false;
 
         // Force dropdowns lists to refresh by wiping cash
+        window.carReferenceRecords = [];
         window.carListData = { names: [], models: {} };
 
         // Reload data
@@ -2771,9 +3011,7 @@
           <option value="Gasoline" ${item.fuelType === "Gasoline" ? "selected" : ""}>Gasoline</option>
           <option value="Diesel" ${item.fuelType === "Diesel" ? "selected" : ""}>Diesel</option>
           <option value="Hybrid" ${item.fuelType === "Hybrid" ? "selected" : ""}>Hybrid</option>
-          <option value="Electric" ${item.fuelType === "Electric" ? "selected" : ""}>Electric</option>
-          <option value="Plug-in Hybrid" ${item.fuelType === "Plug-in Hybrid" ? "selected" : ""}>Plug-in Hybrid</option>
-          <option value="Hydrogen" ${item.fuelType === "Hydrogen" ? "selected" : ""}>Hydrogen</option>
+          <option value="Electric" ${item.fuelType === "Electric" ? "selected" : ""}>Electric</option>         
         </select>
       </td>
       <td>
@@ -2848,6 +3086,7 @@
         showCreativeSuccessModal("Vehicle details updated successfully!");
 
         // Force drop-down makes & models to refresh on next load
+        window.carReferenceRecords = [];
         window.carListData = { names: [], models: {} };
 
         // Reload data
@@ -2871,6 +3110,7 @@
           showCreativeSuccessModal("Vehicle record deleted successfully!");
 
           // Force drop-down makes & models to refresh on next load
+          window.carReferenceRecords = [];
           window.carListData = { names: [], models: {} };
 
           // Reload data

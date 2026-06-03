@@ -24,7 +24,6 @@
             id="carNameSelect"
             class="form-control"
             required
-            onchange="updateModelDropdown()"
           >
             <option value="">Select Make...</option>
           </select>
@@ -33,6 +32,12 @@
           <label>Model</label>
           <select name="model" id="modelSelect" class="form-control" required>
             <option value="">Select Model...</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Trim</label>
+          <select name="trim" id="trimSelect" class="form-control">
+            <option value="">Select Trim...</option>
           </select>
         </div>
         <div class="input-group">
@@ -124,12 +129,8 @@
         </div>
         <div class="input-group">
           <label>Body Style</label>
-          <select name="bodyStyle" class="form-control">
-            <option>Sedan</option>
-            <option>SUV</option>
-            <option>Sport</option>
-            <option>Hatchback</option>
-            <option>N/a</option>
+          <select name="bodyStyle" id="bodyStyleSelect" class="form-control">
+            <option value="">Select Body Style...</option>
           </select>
         </div>
         <div class="input-group">
@@ -187,11 +188,8 @@
         </div>
         <div class="input-group">
           <label>Fuel Type</label>
-          <select name="fuelType" class="form-control">
-            <option>Gasoline</option>
-            <option>Diesel</option>
-            <option>Hybrid</option>
-            <option>Electric</option>
+          <select name="fuelType" id="fuelTypeSelect" class="form-control">
+            <option value="">Select Fuel...</option>
           </select>
         </div>
         <div class="input-group">
