@@ -958,14 +958,21 @@
       const viewMode = document.getElementById("pageCarViewMode");
       const editMode = document.getElementById("pageCarEditMode");
       const editBtn = document.getElementById("btnEditCarDetails");
+      const editForm = document.getElementById("carEditForm");
+      const editLoading = document.getElementById("editCarLoading");
 
       if (isEdit) {
         viewMode.style.display = "none";
         editMode.style.display = "block";
         editBtn.style.display = "none"; // Hide edit button while editing
 
+        if (editForm) editForm.style.display = "none";
+        if (editLoading) editLoading.style.display = "block";
+
         window.loadCarReferenceRecords(function () {
           populateEditForm();
+          if (editLoading) editLoading.style.display = "none";
+          if (editForm) editForm.style.display = "block";
         });
       } else {
         viewMode.style.display = "block";
