@@ -2919,6 +2919,9 @@
   };
 
   window.loadUpdateCarList = function () {
+    const tbody = document.getElementById("carListTableBody");
+    if (!tbody) return;
+
     tbody.innerHTML = `
       <tr>
         <td colspan="7" class="text-center" style="padding: 40px">
