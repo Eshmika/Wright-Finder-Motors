@@ -474,9 +474,9 @@
         const trimmed = part.trim();
         if (!trimmed) return;
 
-        // Check for range like 2018-2024 or 2018 - 2024 or 2018-present
+        // Check for range like 2018-2024 or 2018–2024 or 2018-present
         const rangeMatch = trimmed.match(
-          /^(\d{4})\s*-\s*(\d{4}|present|current)?$/i,
+          /^(\d{4})\s*[\-\u2013\u2014–—]\s*(\d{4}|present|current)?$/i,
         );
         if (rangeMatch) {
           const startYear = parseInt(rangeMatch[1]);
