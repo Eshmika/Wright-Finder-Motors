@@ -695,7 +695,13 @@
 
           if (selectedMake) {
             modelFiltered.forEach((item) => {
-              if (item.fuelType) fuels.add(item.fuelType);
+              if (item.fuelType) {
+                item.fuelType
+                  .split(",")
+                  .map((f) => f.trim())
+                  .filter(Boolean)
+                  .forEach((f) => fuels.add(f));
+              }
             });
             Array.from(fuels)
               .sort()
@@ -718,7 +724,13 @@
 
           if (selectedMake) {
             modelFiltered.forEach((item) => {
-              if (item.bodyType) bodies.add(item.bodyType);
+              if (item.bodyType) {
+                item.bodyType
+                  .split(",")
+                  .map((b) => b.trim())
+                  .filter(Boolean)
+                  .forEach((b) => bodies.add(b));
+              }
             });
             Array.from(bodies)
               .sort()
