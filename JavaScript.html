@@ -2863,16 +2863,38 @@
     // Toggle dropdown
     selectBox.addEventListener("click", (e) => {
       e.stopPropagation();
+
+      const isOpen = container.classList.contains("active");
+
       document.querySelectorAll(".multiselect-container").forEach((c) => {
-        if (c !== container) c.classList.remove("active");
+        if (c !== container) {
+          c.classList.remove("active");
+          c.classList.remove("open-upward");
+        }
       });
-      container.classList.toggle("active");
+
+      if (isOpen) {
+        container.classList.remove("active");
+        container.classList.remove("open-upward");
+      } else {
+        container.classList.add("active");
+
+        // Dynamic direction detection (up or down based on space)
+        const rect = selectBox.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const dropdownHeight = 250; // max-height of dropdown
+
+        if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+          container.classList.add("open-upward");
+        }
+      }
     });
 
     // Close on click outside
     document.addEventListener("click", (e) => {
       if (!container.contains(e.target)) {
         container.classList.remove("active");
+        container.classList.remove("open-upward");
       }
     });
 

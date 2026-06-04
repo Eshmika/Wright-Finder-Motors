@@ -566,6 +566,19 @@
     display: block;
   }
 
+  .multiselect-container.open-upward .multiselect-dropdown {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 5px;
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Allow table wrapper to overflow when editing a row to prevent clipping the dropdown */
+  .expenses-table-wrapper:has(tr.editing-row) {
+    overflow: visible !important;
+  }
+
   .multiselect-option {
     display: flex;
     align-items: center;
