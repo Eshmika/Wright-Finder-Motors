@@ -183,34 +183,68 @@
             </div>
           </div>
 
-          <div style="margin-top: 20px; text-align: right">
-            <button
-              type="button"
-              id="btnCancelEdit"
-              class="btn-secondary"
-              style="
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                margin-right: 10px;
-              "
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn-success"
-              style="
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                background: #232754;
-                color: white;
-                font-weight: bold;
-              "
-            >
-              <i class="fas fa-save"></i> Save Changes
-            </button>
+          <div
+            style="
+              margin-top: 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 10px;
+            "
+          >
+            <div>
+              <button
+                type="button"
+                id="btnDeleteCar"
+                class="btn-danger"
+                style="
+                  padding: 10px 20px;
+                  border: none;
+                  border-radius: 8px;
+                  background: #e74a3b;
+                  color: white;
+                  font-weight: bold;
+                  transition: background-color 0.2s;
+                  cursor: pointer;
+                "
+                onmouseover="this.style.background = '#be2617'"
+                onmouseout="this.style.background = '#e74a3b'"
+              >
+                <i class="fas fa-trash-alt"></i> Delete Car
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                id="btnCancelEdit"
+                class="btn-secondary"
+                style="
+                  padding: 10px 20px;
+                  border: none;
+                  border-radius: 8px;
+                  margin-right: 10px;
+                  cursor: pointer;
+                "
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn-success"
+                style="
+                  padding: 10px 20px;
+                  border: none;
+                  border-radius: 8px;
+                  background: #232754;
+                  color: white;
+                  font-weight: bold;
+                  cursor: pointer;
+                "
+              >
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+            </div>
           </div>
         </form>
       </div>

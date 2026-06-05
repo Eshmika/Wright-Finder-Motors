@@ -707,3 +707,24 @@ function deleteCarListItem(rowNumber) {
   sheet.deleteRow(row);
   return "Success";
 }
+
+function deleteVehicle(carId) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return "Error: Sheet not found";
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return "Error: No data";
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  if (carIdIndex === -1) return "Error: Car ID column not found";
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][carIdIndex] === carId) {
+      sheet.deleteRow(i + 1);
+      return "Success";
+    }
+  }
+  return "Error: Car ID not found";
+}

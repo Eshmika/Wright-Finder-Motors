@@ -991,6 +991,50 @@
       btnCancelEdit.onclick = () => setEditMode(false);
     }
 
+    const btnDeleteCar = document.getElementById("btnDeleteCar");
+    if (btnDeleteCar) {
+      btnDeleteCar.onclick = () => {
+        if (!currentEditableCar || !currentEditableCar["Car ID"]) return;
+
+        const carName = currentEditableCar["Car Name"] || "";
+        const carModel = currentEditableCar["Model"] || "";
+        const carYear = currentEditableCar["Year"] || "";
+
+        if (
+          confirm(
+            `Are you sure you want to permanently delete "${carYear} ${carName} ${carModel}"? This action cannot be undone.`,
+          )
+        ) {
+          btnDeleteCar.disabled = true;
+          btnDeleteCar.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+          google.script.run
+            .withSuccessHandler(function (response) {
+              if (response === "Success") {
+                showCreativeSuccessModal("Vehicle deleted successfully!");
+                setEditMode(false);
+                const backBtn = document.getElementById("btnBackToCars");
+                if (backBtn) backBtn.click();
+                loadCars(); // Reload vehicles list
+              } else {
+                alert("Error deleting vehicle: " + response);
+                btnDeleteCar.disabled = false;
+                btnDeleteCar.innerHTML =
+                  '<i class="fas fa-trash-alt"></i> Delete Car';
+              }
+            })
+            .withFailureHandler(function (err) {
+              alert("Error: " + err.message);
+              btnDeleteCar.disabled = false;
+              btnDeleteCar.innerHTML =
+                '<i class="fas fa-trash-alt"></i> Delete Car';
+            })
+            .deleteVehicle(currentEditableCar["Car ID"]);
+        }
+      };
+    }
+
     function populateEditForm() {
       if (!currentEditableCar) return;
       const grid = document.getElementById("editFormFieldsGrid");
