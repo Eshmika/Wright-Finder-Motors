@@ -767,22 +767,62 @@ function deleteCarListItem(rowNumber) {
 }
 
 function deleteVehicle(carId) {
-  var sheet =
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
-  if (!sheet) return "Error: Sheet not found";
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  var data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return "Error: No data";
-
-  var headers = data[0];
-  var carIdIndex = headers.indexOf("Car ID");
-  if (carIdIndex === -1) return "Error: Car ID column not found";
-
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][carIdIndex] === carId) {
-      sheet.deleteRow(i + 1);
-      return "Success";
+  // 1. Delete from "Vehicle details" (usually only 1 row)
+  var vehicleSheet = ss.getSheetByName("Vehicle details");
+  var vehicleDeleted = false;
+  if (vehicleSheet) {
+    var vData = vehicleSheet.getDataRange().getValues();
+    if (vData.length > 1) {
+      var vHeaders = vData[0];
+      var vCarIdIdx = vHeaders.indexOf("Car ID");
+      if (vCarIdIdx !== -1) {
+        for (var i = vData.length - 1; i >= 1; i--) {
+          if (vData[i][vCarIdIdx] === carId) {
+            vehicleSheet.deleteRow(i + 1);
+            vehicleDeleted = true;
+          }
+        }
+      }
     }
   }
-  return "Error: Car ID not found";
+
+  // 2. Delete from "All expenses" (multiple rows possible)
+  var expenseSheet = ss.getSheetByName("All expenses");
+  if (expenseSheet) {
+    var eData = expenseSheet.getDataRange().getValues();
+    if (eData.length > 1) {
+      var eHeaders = eData[0];
+      var eCarIdIdx = eHeaders.indexOf("CAR ID");
+      if (eCarIdIdx !== -1) {
+        for (var j = eData.length - 1; j >= 1; j--) {
+          if (eData[j][eCarIdIdx] === carId) {
+            expenseSheet.deleteRow(j + 1);
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Delete from "Payment" (multiple rows possible)
+  var paymentSheet = ss.getSheetByName("Payment");
+  if (paymentSheet) {
+    var pData = paymentSheet.getDataRange().getValues();
+    if (pData.length > 1) {
+      var pHeaders = pData[0];
+      var pCarIdIdx = pHeaders.findIndex(function (h) {
+        return String(h).toUpperCase() === "CAR ID";
+      });
+      if (pCarIdIdx !== -1) {
+        for (var k = pData.length - 1; k >= 1; k--) {
+          if (pData[k][pCarIdIdx] === carId) {
+            paymentSheet.deleteRow(k + 1);
+          }
+        }
+      }
+    }
+  }
+
+  return vehicleDeleted ? "Success" : "Error: Car ID not found";
 }
