@@ -280,7 +280,7 @@
           </div>
         </div>
 
-        <div class="input-group" style="grid-column: 1 / -1">
+        <div class="input-group" style="grid-column: span 2">
           <label class="required-label">Description</label>
           <div class="modern-input-wrapper">
             <input
@@ -291,6 +291,26 @@
               required
             />
             <i class="fas fa-align-left"></i>
+          </div>
+        </div>
+
+        <div class="input-group" style="grid-column: span 1">
+          <label class="required-label">Paid By</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="paidBy"
+              id="expensePaidBy"
+              list="paidByOptions"
+              class="form-control"
+              placeholder="Company, Associate, or Name..."
+              required
+            />
+            <datalist id="paidByOptions">
+              <option value="Company"></option>
+              <option value="Associate"></option>
+            </datalist>
+            <i class="fas fa-user-check"></i>
           </div>
         </div>
 
@@ -462,13 +482,14 @@
             <th><i class="fas fa-hashtag mr-2"></i> Stock #</th>
             <th><i class="fas fa-user-circle mr-2"></i> Client</th>
             <th><i class="fas fa-align-left mr-2"></i> Description</th>
+            <th><i class="fas fa-user-check mr-2"></i> Paid By</th>
             <th><i class="fas fa-money-bill-wave mr-2"></i> Amount</th>
             <th><i class="fas fa-calendar-alt mr-2"></i> Date</th>
           </tr>
         </thead>
         <tbody id="expensesTableBody">
           <tr>
-            <td colspan="6" class="text-center" style="padding: 40px">
+            <td colspan="7" class="text-center" style="padding: 40px">
               <i
                 class="fas fa-circle-notch fa-spin fa-2x text-primary"
                 style="margin-bottom: 15px; display: block"

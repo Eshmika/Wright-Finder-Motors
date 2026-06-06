@@ -321,6 +321,7 @@
         carModel: formData.get("carModel"),
         clientName: formData.get("clientName"),
         description: formData.get("description"),
+        paidBy: formData.get("paidBy"),
         amount: formData.get("amount"),
         expenseDate: formData.get("expenseDate"),
       };
@@ -353,7 +354,7 @@
     window.loadExpenses = function () {
       const tbody = document.getElementById("expensesTableBody");
       tbody.innerHTML =
-        '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading expenses...</td></tr>';
+        '<tr><td colspan="7" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading expenses...</td></tr>';
 
       google.script.run
         .withSuccessHandler(function (expenses) {
@@ -362,7 +363,7 @@
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
-            '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading expenses: ' +
+            '<tr><td colspan="7" class="text-center text-danger" style="padding: 20px;">Error loading expenses: ' +
             error.message +
             "</td></tr>";
         })
@@ -374,7 +375,7 @@
       tbody.innerHTML = "";
       if (!expensesToRender || expensesToRender.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
+          '<tr><td colspan="7" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
         return;
       }
 
@@ -403,6 +404,7 @@
           <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
           <td>${exp["Client Name"] || exp["CLIENT NAME"] || "-"}</td>
           <td>${exp["DESCRIPTION"] || "-"}</td>
+          <td>${exp["PAID BY"] || "-"}</td>
           <td>${badgeHtml}</td>
           <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
         `;
@@ -2307,10 +2309,71 @@
         parseMoney(car["Dispatcher Price"]) +
         parseMoney(car["TRANSPORT FEES"]);
 
-      // Request total expenses for this car specifically from the backend
+      function renderCarExpensesHistory(expensesList) {
+        const tbody = document.getElementById("carExpensesHistoryTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        if (!expensesList || expensesList.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="text-center" style="padding: 25px; color: #858796;">
+                <i class="fas fa-folder-open mr-2"></i> No expense records found for this car.
+              </td>
+            </tr>`;
+          return;
+        }
+
+        // Sort by date descending
+        const sorted = [...expensesList].sort((a, b) => {
+          return (
+            new Date(b["EXPENSE DATE"] || 0) - new Date(a["EXPENSE DATE"] || 0)
+          );
+        });
+
+        sorted.forEach((exp) => {
+          let dateStr = exp["EXPENSE DATE"];
+          if (dateStr) {
+            try {
+              let d = new Date(dateStr);
+              if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+            } catch (e) {}
+          }
+
+          let amt = parseFloat(exp["AMOUNT"]);
+          let formattedAmt = isNaN(amt) ? exp["AMOUNT"] : "$" + amt.toFixed(2);
+          let amountBadge = isNaN(amt)
+            ? formattedAmt
+            : `<span class="amount-badge" style="background:#e3fbef; color:#1cc88a; font-weight:700; padding:4px 8px; border-radius:6px; display:inline-block;">${formattedAmt}</span>`;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4; color: #858796;"><i class="far fa-calendar-alt mr-1"></i> ${dateStr || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4; font-weight: 500;">${exp["DESCRIPTION"] || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4;">${exp["PAID BY"] || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4; text-align: right; font-weight: bold;">${amountBadge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Request all expenses for this car specifically from the backend
       google.script.run
-        .withSuccessHandler(function (total) {
-          let materialsTotal = parseFloat(total) || 0;
+        .withSuccessHandler(function (expensesList) {
+          // Render the list first
+          renderCarExpensesHistory(expensesList);
+
+          // Calculate total from matching records
+          let materialsTotal = 0;
+          if (expensesList && expensesList.length > 0) {
+            expensesList.forEach(function (exp) {
+              let amt = parseFloat(exp["AMOUNT"]);
+              if (!isNaN(amt)) {
+                materialsTotal += amt;
+              }
+            });
+          }
+
           let badge = `<span style="font-weight: bold; font-size: 1.1em; display: inline-block;">$${materialsTotal.toFixed(2)}</span>`;
           document.getElementById("pageCarTotalExpenses").innerHTML = badge;
 
@@ -2350,8 +2413,13 @@
           let profitEl = document.getElementById("pageCarProfit");
           if (profitEl)
             profitEl.innerHTML = `<span class="text-danger">Error</span>`;
+
+          const tbody = document.getElementById("carExpensesHistoryTableBody");
+          if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error loading expense history.</td></tr>`;
+          }
         })
-        .getTotalExpenseForCar(car["Car ID"]);
+        .getExpensesForCar(car["Car ID"]);
 
       // Request total payments for this car specifically from the backend
       google.script.run

@@ -323,21 +323,52 @@ function saveExpense(data) {
       "CAR ID",
       "Client Name",
       "DESCRIPTION",
+      "PAID BY",
       "AMOUNT",
       "EXPENSE DATE",
     ]);
+  } else {
+    // Check if PAID BY header exists
+    var lastCol = sheet.getLastColumn();
+    if (lastCol > 0) {
+      var headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0];
+      if (headers.indexOf("PAID BY") === -1) {
+        // Find index of DESCRIPTION to insert right after, or append at the end
+        var descIndex = headers.indexOf("DESCRIPTION");
+        if (descIndex !== -1) {
+          sheet.insertColumnAfter(descIndex + 1);
+          sheet.getRange(1, descIndex + 2).setValue("PAID BY");
+        } else {
+          sheet.getRange(1, lastCol + 1).setValue("PAID BY");
+        }
+      }
+    }
   }
 
-  sheet.appendRow([
-    new Date(),
-    data.carModel || "",
-    data.carId || "",
-    data.clientName || "",
-    data.description || "",
-    data.amount || "",
-    data.expenseDate || "",
-  ]);
+  // Get current headers to index map to dynamically build the row array
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
 
+  // Map our keys to header indices
+  var keyMap = {
+    Timestamp: new Date(),
+    "CAR MODEL": data.carModel || "",
+    "CAR ID": data.carId || "",
+    "Client Name": data.clientName || "",
+    DESCRIPTION: data.description || "",
+    "PAID BY": data.paidBy || "",
+    AMOUNT: data.amount || "",
+    "EXPENSE DATE": data.expenseDate || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    rowValues[i] = keyMap[header] !== undefined ? keyMap[header] : "";
+  }
+
+  sheet.appendRow(rowValues);
   return "Success";
 }
 
@@ -360,6 +391,33 @@ function getExpenses() {
       expense[header] = row[j];
     }
     expenses.push(expense);
+  }
+
+  return expenses;
+}
+
+function getExpensesForCar(carId) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return [];
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("CAR ID");
+  if (carIdIndex === -1) return [];
+
+  var expenses = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][carIdIndex] === carId) {
+      var expense = {};
+      for (var j = 0; j < headers.length; j++) {
+        var header = headers[j];
+        expense[header] = data[i][j];
+      }
+      expenses.push(expense);
+    }
   }
 
   return expenses;
