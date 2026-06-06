@@ -576,7 +576,7 @@ function saveDataInput(data) {
     "", // 36: DOWN PAYMENT
     data.pickupLocation || "", // 37: CAR PICKUP LOCATION
     data.driverName || "", // 38: DRIVER NAME
-    "", // 39: DRIVER INFORMATION
+    data.driverInformation || "", // 39: DRIVER INFORMATION
     data.notes || "", // 40: NOTES
     data.iaaiPriceBeforeFees || "", // 41: IAAI Price Before Fees
     data.dispatcherName || "", // 42: Dispatcher Name

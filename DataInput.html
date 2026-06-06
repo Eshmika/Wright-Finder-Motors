@@ -168,6 +168,17 @@
             <input type="text" name="dispatcherName" class="form-control" />
           </div>
           <div class="input-group">
+            <label>Dispatcher Phone</label>
+            <input
+              type="tel"
+              name="dispatcherPhone"
+              class="form-control"
+              oninput="formatPhoneNumber(this)"
+              placeholder="(123) 456-7890"
+              maxlength="14"
+            />
+          </div>
+          <div class="input-group">
             <label>Dispatcher Price</label>
             <input
               type="number"
@@ -250,6 +261,15 @@
           <div class="input-group">
             <label>Driver Company</label>
             <input type="text" name="driverCompany" class="form-control" />
+          </div>
+          <div class="input-group" style="grid-column: 1 / -1">
+            <label>Driver Information</label>
+            <textarea
+              name="driverInformation"
+              rows="3"
+              class="form-control"
+              placeholder="Enter any additional driver details here..."
+            ></textarea>
           </div>
         </div>
       </div>
