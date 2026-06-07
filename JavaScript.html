@@ -1624,6 +1624,16 @@
       const remainLoan = loanAmount > 0 ? loanAmount - totalPayments : 0;
       const profit = soldPrice > 0 ? soldPrice - totalCost : 0;
 
+      // Auto update Financing status based on loan and remain loan
+      const fsField = form.querySelector('[name="Financing status"]');
+      if (fsField && downPayment > 0) {
+        if (remainLoan <= 0) {
+          fsField.value = "Paid off";
+        } else {
+          fsField.value = "Loan Active";
+        }
+      }
+
       // Update fields
       const tcField = form.querySelector('[name="TOTAL COST"]');
       if (tcField) tcField.value = totalCost.toFixed(2);
@@ -1891,10 +1901,13 @@
         let labelColor = color || "#858796";
         let valColor = color ? color : "#3a3b45";
 
+        let idAttr =
+          label === "Financing status" ? 'id="pageCarFinancingStatus"' : "";
+
         return `
           <div class="spec-item-card" style="background: ${bgColor}; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
             <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: ${labelColor}; font-weight:700;"><i class="fas ${icon || "fa-check"}" style="color:${color || "var(--primary)"}; margin-right:5px;"></i> ${label}</div>
-            <div class="spec-value" style="font-size: 1rem; color: ${valColor}; font-weight:600; word-break: break-word;">${value}</div>
+            <div class="spec-value" ${idAttr} style="font-size: 1rem; color: ${valColor}; font-weight:600; word-break: break-word;">${value}</div>
           </div>
         `;
       };
@@ -2263,7 +2276,7 @@
         let soldPriceVal =
           parseFloat(car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, "")) ||
           0;
-        let loanAmount = soldPriceVal - downPaymentVal;
+        let loanAmount = downPaymentVal > 0 ? soldPriceVal - downPaymentVal : 0;
 
         financialsHtml += `
           <div class="spec-item-card" style="background: rgba(0, 0, 0, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.15)';">
@@ -2513,8 +2526,18 @@
           if (remainEl) {
             const loan =
               parseFloat(remainEl.getAttribute("data-loan-amount")) || 0;
-            const remain = loan - parseFloat(totalPayments || 0);
+            const remain =
+              loan > 0 ? Math.max(0, loan - parseFloat(totalPayments || 0)) : 0;
             remainEl.innerHTML = `$${remain.toFixed(2)}`;
+
+            const fsEl = document.getElementById("pageCarFinancingStatus");
+            if (fsEl && loan > 0) {
+              if (remain <= 0) {
+                fsEl.textContent = "Paid off";
+              } else {
+                fsEl.textContent = "Loan Active";
+              }
+            }
           }
         })
         .withFailureHandler(function (e) {
