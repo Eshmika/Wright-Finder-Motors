@@ -237,7 +237,11 @@
         </div>
         <div class="input-group">
           <label>Interior Color</label>
-          <select name="interiorColor" class="form-control">
+          <select
+            name="interiorColor"
+            id="addInteriorColor"
+            class="form-control"
+          >
             <option>Black</option>
             <option>White</option>
             <option>Gray</option>
@@ -249,10 +253,21 @@
             <option>Multi-color</option>
             <option>Other(Name)</option>
           </select>
+          <input
+            type="text"
+            id="addInteriorColorCustom"
+            class="form-control mt-2"
+            placeholder="Enter custom interior color"
+            style="display: none"
+          />
         </div>
         <div class="input-group">
           <label>Exterior Color</label>
-          <select name="exteriorColor" class="form-control">
+          <select
+            name="exteriorColor"
+            id="addExteriorColor"
+            class="form-control"
+          >
             <option>White</option>
             <option>Black</option>
             <option>Silver</option>
@@ -267,6 +282,13 @@
             <option>Multi-color</option>
             <option>Other(Name)</option>
           </select>
+          <input
+            type="text"
+            id="addExteriorColorCustom"
+            class="form-control mt-2"
+            placeholder="Enter custom exterior color"
+            style="display: none"
+          />
         </div>
       </div>
 

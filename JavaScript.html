@@ -806,6 +806,36 @@
         fuelSelect: document.getElementById("fuelTypeSelect"),
         bodyStyleSelect: document.getElementById("bodyStyleSelect"),
       });
+
+      const addIntSelect = document.getElementById("addInteriorColor");
+      const addIntCustom = document.getElementById("addInteriorColorCustom");
+      if (addIntSelect && addIntCustom) {
+        addIntSelect.addEventListener("change", function () {
+          if (this.value === "Other(Name)") {
+            addIntCustom.style.display = "block";
+            addIntCustom.required = true;
+          } else {
+            addIntCustom.style.display = "none";
+            addIntCustom.required = false;
+            addIntCustom.value = "";
+          }
+        });
+      }
+
+      const addExtSelect = document.getElementById("addExteriorColor");
+      const addExtCustom = document.getElementById("addExteriorColorCustom");
+      if (addExtSelect && addExtCustom) {
+        addExtSelect.addEventListener("change", function () {
+          if (this.value === "Other(Name)") {
+            addExtCustom.style.display = "block";
+            addExtCustom.required = true;
+          } else {
+            addExtCustom.style.display = "none";
+            addExtCustom.required = false;
+            addExtCustom.value = "";
+          }
+        });
+      }
     };
 
     window.initDataInputView = function () {
@@ -817,6 +847,22 @@
         fuelSelect: document.getElementById("dataInputFuelTypeSelect"),
         bodyStyleSelect: document.getElementById("dataInputBodyStyleSelect"),
       });
+    };
+
+    window.toggleCustomColorInput = function (select) {
+      const customInput = select.parentNode.querySelector(
+        `input[name="${select.name}_custom"]`,
+      );
+      if (customInput) {
+        if (select.value === "Other(Name)") {
+          customInput.style.display = "block";
+          customInput.required = true;
+        } else {
+          customInput.style.display = "none";
+          customInput.required = false;
+          customInput.value = "";
+        }
+      }
     };
 
     // Fallback wrappers for compatibility
@@ -1319,11 +1365,27 @@
           } else if (key === "Fuel Type") {
             inputHtml = `<select name="${key}" id="editFuelTypeSelect" class="form-control"><option value="">Select Fuel...</option></select>`;
           } else if (dropdownOptions[key]) {
-            let options = `<option value="">Select ${key === "Status" ? "Availabilities" : key}...</option>`;
-            dropdownOptions[key].forEach((opt) => {
-              options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
-            });
-            inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
+            if (key === "Interior Color" || key === "Exterior Color") {
+              const isCustom = val && !dropdownOptions[key].includes(val);
+              let options = `<option value="">Select ${key}...</option>`;
+              dropdownOptions[key].forEach((opt) => {
+                const isSelected =
+                  (isCustom && opt === "Other(Name)") || val === opt;
+                options += `<option value="${opt}" ${isSelected ? "selected" : ""}>${opt}</option>`;
+              });
+              inputHtml = `
+                <select name="${key}" class="form-control" onchange="toggleCustomColorInput(this)">
+                  ${options}
+                </select>
+                <input type="text" name="${key}_custom" value="${isCustom ? val : ""}" class="form-control mt-2" placeholder="Enter custom ${key.toLowerCase()}" style="display: ${isCustom ? "block" : "none"};" ${isCustom ? "required" : ""}>
+              `;
+            } else {
+              let options = `<option value="">Select ${key === "Status" ? "Availabilities" : key}...</option>`;
+              dropdownOptions[key].forEach((opt) => {
+                options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
+              });
+              inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
+            }
           } else if (
             key === "All Materials Expenses" ||
             key === "TOTAL COST" ||
@@ -1621,6 +1683,17 @@
           }
         });
 
+        if (formDataObj["Interior Color"] === "Other(Name)") {
+          formDataObj["Interior Color"] =
+            formDataObj["Interior Color_custom"] || "";
+        }
+        if (formDataObj["Exterior Color"] === "Other(Name)") {
+          formDataObj["Exterior Color"] =
+            formDataObj["Exterior Color_custom"] || "";
+        }
+        delete formDataObj["Interior Color_custom"];
+        delete formDataObj["Exterior Color_custom"];
+
         // Add Car ID manually if needed (it might not be in the form fields)
         if (currentEditableCar && currentEditableCar["Car ID"]) {
           formDataObj["Car ID"] = currentEditableCar["Car ID"];
@@ -1662,6 +1735,17 @@
             elements.forEach((el) => {
               if (el.name) newTextData[el.name] = el.value;
             });
+
+            if (newTextData["Interior Color"] === "Other(Name)") {
+              newTextData["Interior Color"] =
+                newTextData["Interior Color_custom"] || "";
+            }
+            if (newTextData["Exterior Color"] === "Other(Name)") {
+              newTextData["Exterior Color"] =
+                newTextData["Exterior Color_custom"] || "";
+            }
+            delete newTextData["Interior Color_custom"];
+            delete newTextData["Exterior Color_custom"];
 
             // If images were uploaded, the local currentEditableCar might be out of date for images
             // For now, let's just reload the list or update text fields
@@ -2807,6 +2891,15 @@
           formDataObj[el.name] = el.value;
         }
       });
+
+      if (formDataObj.interiorColor === "Other(Name)") {
+        const customField = document.getElementById("addInteriorColorCustom");
+        if (customField) formDataObj.interiorColor = customField.value;
+      }
+      if (formDataObj.exteriorColor === "Other(Name)") {
+        const customField = document.getElementById("addExteriorColorCustom");
+        if (customField) formDataObj.exteriorColor = customField.value;
+      }
 
       // Handle Main Image
       const mainImageBase64 = [];
