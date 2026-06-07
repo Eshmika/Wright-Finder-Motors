@@ -1619,7 +1619,8 @@
       const totalPayments =
         parseFloat(form.getAttribute("data-total-payments")) || 0;
 
-      const loanAmount = soldPrice > 0 ? soldPrice - downPayment : 0;
+      const loanAmount =
+        soldPrice > 0 && downPayment > 0 ? soldPrice - downPayment : 0;
       const remainLoan = loanAmount > 0 ? loanAmount - totalPayments : 0;
       const profit = soldPrice > 0 ? soldPrice - totalCost : 0;
 
@@ -2211,7 +2212,7 @@
         let soldPriceVal =
           parseFloat(car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, "")) ||
           0;
-        let loanAmount = soldPriceVal - downPaymentVal;
+        let loanAmount = downPaymentVal > 0 ? soldPriceVal - downPaymentVal : 0;
 
         financialsHtml += `
           <div class="spec-item-card" style="background: rgba(127, 29, 29, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(127, 29, 29, 0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(127, 29, 29, 0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(127, 29, 29, 0.15)';">
