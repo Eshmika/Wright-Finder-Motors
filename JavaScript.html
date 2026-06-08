@@ -1994,6 +1994,45 @@
                 .join("")}
             </ul>
           `;
+        } else {
+          // Check if it's a financial label to prepend $ sign if not already present
+          const financialLabels = [
+            "price",
+            "selling price",
+            "discount",
+            "sold price",
+            "down payment",
+            "all materials expenses",
+            "pape price",
+            "iaai price before fees",
+            "iaai total price w/ fees",
+            "iaai total price",
+            "loan amount",
+            "total cost",
+            "profit",
+            "tax amount",
+            "price on title",
+            "remain loan",
+            "dispatcher price",
+            "transport fees",
+            "trade value",
+          ];
+          if (financialLabels.includes(label.toLowerCase())) {
+            let strVal = String(value).trim();
+            if (
+              strVal !== "" &&
+              !strVal.startsWith("$") &&
+              !strVal.startsWith("+$") &&
+              !strVal.startsWith("-$")
+            ) {
+              let num = parseFloat(strVal.replace(/[^0-9.-]+/g, ""));
+              if (!isNaN(num)) {
+                displayValue = "$" + num.toFixed(2);
+              } else {
+                displayValue = "$" + strVal;
+              }
+            }
+          }
         }
 
         return `
