@@ -1345,8 +1345,15 @@
 
           if (key === "Car ID") {
             inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control" readonly style="background:#e9ecef; cursor:not-allowed;">`;
+          } else if (key === "Interior Features") {
+            inputHtml = `
+              <div class="tags-input-container" style="width: 100%;">
+                <ul id="editFeaturesList" class="tags-list"></ul>
+                <input type="text" id="editFeatureInput" class="tag-input" placeholder="Type comma to add multiple" style="border: none; outline: none; background: transparent; flex: 1; min-width: 150px;">
+                <input type="hidden" name="${key}" id="editHiddenFeatures" value="${val}">
+              </div>
+            `;
           } else if (
-            key === "Interior Features" ||
             key === "NOTES" ||
             key === "DRIVER INFORMATION" ||
             key === "Comment"
@@ -1517,6 +1524,67 @@
           bodyStyle: currentEditableCar["Body Style"] || "",
         },
       });
+
+      // Initialize dynamic tags for Interior Features edit field
+      const editFeatureInput = document.getElementById("editFeatureInput");
+      const editFeaturesList = document.getElementById("editFeaturesList");
+      const editHiddenFeatures = document.getElementById("editHiddenFeatures");
+      let editFeatures = [];
+
+      if (editHiddenFeatures && editHiddenFeatures.value) {
+        editFeatures = editHiddenFeatures.value
+          .split(",")
+          .map((f) => f.trim())
+          .filter((f) => f !== "");
+      }
+
+      function renderEditFeatures() {
+        if (!editFeaturesList) return;
+        editFeaturesList.innerHTML = "";
+        editFeatures.forEach((feat, index) => {
+          const li = document.createElement("li");
+          li.innerHTML = `${feat} <i class="fas fa-times" onclick="removeEditFeature(${index})"></i>`;
+          editFeaturesList.appendChild(li);
+        });
+        if (editHiddenFeatures) {
+          editHiddenFeatures.value = editFeatures.join(", ");
+        }
+      }
+
+      window.removeEditFeature = function (index) {
+        editFeatures.splice(index, 1);
+        renderEditFeatures();
+      };
+
+      if (editFeatureInput) {
+        editFeatureInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            const val = this.value.trim().replace(/,/g, "");
+            if (val && !editFeatures.includes(val)) {
+              editFeatures.push(val);
+              renderEditFeatures();
+            }
+            this.value = "";
+          }
+        });
+
+        editFeatureInput.addEventListener("input", function (e) {
+          if (this.value.includes(",")) {
+            const parts = this.value.split(",");
+            parts.forEach((p) => {
+              const val = p.trim();
+              if (val && !editFeatures.includes(val)) {
+                editFeatures.push(val);
+              }
+            });
+            renderEditFeatures();
+            this.value = "";
+          }
+        });
+      }
+
+      renderEditFeatures();
 
       // Sync duplicated fields (Dispatcher Price and TRANSPORT FEES)
       grid
@@ -1904,10 +1972,34 @@
         let idAttr =
           label === "Financing status" ? 'id="pageCarFinancingStatus"' : "";
 
+        let isFeatures = label === "Features";
+        let cardStyle = isFeatures ? "grid-column: 1 / -1; width: 100%;" : "";
+        let displayValue = value;
+
+        if (isFeatures) {
+          const feats = value
+            .split(",")
+            .map((f) => f.trim())
+            .filter((f) => f !== "");
+          displayValue = `
+            <ul style="display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin: 10px 0 0 0; width: 100%;">
+              ${feats
+                .map(
+                  (f) => `
+                <li style="background: rgba(58, 31, 98, 0.08); color: #3a1f62; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; border: 1px solid rgba(58, 31, 98, 0.15);">
+                  <i class="fas fa-check" style="color: var(--primary); margin-right: 6px; font-size: 0.8rem;"></i>${f}
+                </li>
+              `,
+                )
+                .join("")}
+            </ul>
+          `;
+        }
+
         return `
-          <div class="spec-item-card" style="background: ${bgColor}; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
+          <div class="spec-item-card" style="background: ${bgColor}; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px; ${cardStyle}" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
             <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: ${labelColor}; font-weight:700;"><i class="fas ${icon || "fa-check"}" style="color:${color || "var(--primary)"}; margin-right:5px;"></i> ${label}</div>
-            <div class="spec-value" ${idAttr} style="font-size: 1rem; color: ${valColor}; font-weight:600; word-break: break-word;">${value}</div>
+            <div class="spec-value" ${idAttr} style="font-size: 1rem; color: ${valColor}; font-weight:600; word-break: break-word;">${displayValue}</div>
           </div>
         `;
       };
