@@ -1296,15 +1296,15 @@
           },
           "PAPE PRICE": { color: "#64748B", bg: "rgba(100, 116, 139, 0.08)" },
           "IAAI Price Before Fees": {
-            color: "#6B7280",
-            bg: "rgba(229, 231, 235, 0.2)",
+            color: "#87CEEB",
+            bg: "rgba(135, 206, 235, 0.08)",
           },
           "IAAI TOTAL PRICE W/ FEES": {
             color: "#06B6D4",
             bg: "rgba(6, 182, 212, 0.08)",
           },
           "LOAN AMOUNT": { color: "#7F1D1D", bg: "rgba(127, 29, 29, 0.08)" },
-          "TOTAL COST": { color: "#9CA3AF", bg: "rgba(156, 163, 175, 0.08)" },
+          "TOTAL COST": { color: "#fd2a29", bg: "rgba(253, 42, 41, 0.08)" },
           PROFIT: { color: "#FF00FF", bg: "rgba(255, 0, 255, 0.1)" },
           "Tax Amount": { color: "#f6c23e", bg: "rgba(246, 194, 62, 0.08)" },
           "Price on title": {
@@ -2344,8 +2344,8 @@
         "IAAI Price Before Fees",
         car["IAAI Price Before Fees"],
         "fa-money-check-alt",
-        "#E5E7EB",
-        "rgba(229, 231, 235, 0.1)",
+        "#87CEEB",
+        "rgba(135, 206, 235, 0.08)",
       );
 
       // 8. IAAI Total Price
@@ -2374,9 +2374,9 @@
 
       // 10. TOTAL COST
       financialsHtml += `
-          <div class="spec-item-card" style="background: rgba(156, 163, 175, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.03)';">
-            <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: #9CA3AF; font-weight:700;"><i class="fas fa-calculator" style="margin-right:5px;"></i> TOTAL COST</div>
-            <div class="spec-value" id="pageCarTotalCost" style="color: #9CA3AF; font-weight:600;"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+          <div class="spec-item-card" style="background: rgba(253, 42, 41, 0.08); padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(253, 42, 41, 0.15); transition: transform 0.2s ease, box-shadow 0.2s ease; display:flex; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(253, 42, 41, 0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(253, 42, 41, 0.15)';">
+            <div class="spec-label" style="font-size: 0.8rem; text-transform: uppercase; color: #fd2a29; font-weight:700;"><i class="fas fa-calculator" style="margin-right:5px;"></i> TOTAL COST</div>
+            <div class="spec-value" id="pageCarTotalCost" style="color: #fd2a29; font-weight:600;"><i class="fas fa-spinner fa-spin" style="color: #fd2a29;"></i></div>
           </div>
       `;
 
