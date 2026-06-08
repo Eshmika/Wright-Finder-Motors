@@ -1804,7 +1804,7 @@
 
       // Set Header and Subtitle
       document.getElementById("pageCarTitle").innerHTML =
-        `<i class="fas fa-car title-icon"></i> ${car["Car Name"] || "Car Details"} ${car["Model"] ? "- " + car["Model"] : ""}`;
+        `<i class="fas fa-car title-icon"></i> ${car["Car Name"] || "Car Details"}${car["Model"] ? " - " + car["Model"] : ""}${car["Year"] ? " " + car["Year"] : ""}`;
       document.getElementById("pageCarSubtitle").textContent =
         `Stock #: ${car["Car ID"] || "N/A"}`;
 
