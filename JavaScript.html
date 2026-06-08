@@ -2024,9 +2024,15 @@
         "#6B7280",
       );
       performanceHtml += createSpecItem(
-        "Condition / Drive",
-        `${car["Condition"] || ""} ${car["Drive Condition"] ? "/ " + car["Drive Condition"] : ""}`,
+        "Condition",
+        car["Condition"],
         "fa-clipboard-check",
+        "#6B7280",
+      );
+      performanceHtml += createSpecItem(
+        "Drive Condition",
+        car["Drive Condition"],
+        "fa-car-side",
         "#6B7280",
       );
 
