@@ -2894,6 +2894,7 @@
         paymentOption: formData.get("payOption"),
         amount: formData.get("payAmount"),
         paymentDate: formData.get("payDate"),
+        notes: formData.get("payNotes"),
       };
 
       google.script.run
@@ -2926,7 +2927,7 @@
       if (!tbody) return;
 
       tbody.innerHTML =
-        '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading payments...</td></tr>';
+        '<tr><td colspan="7" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading payments...</td></tr>';
 
       google.script.run
         .withSuccessHandler(function (payments) {
@@ -2935,7 +2936,7 @@
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
-            '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading payments: ' +
+            '<tr><td colspan="7" class="text-center text-danger" style="padding: 20px;">Error loading payments: ' +
             error.message +
             "</td></tr>";
         })
@@ -2949,7 +2950,7 @@
       tbody.innerHTML = "";
       if (!paymentsToRender || paymentsToRender.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
+          '<tr><td colspan="7" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
         return;
       }
 
@@ -2973,11 +2974,15 @@
           } catch (e) {}
         }
 
+        // Notes fallback: support either "NOTES" or "Notes" column name
+        let notesText = pay["NOTES"] || pay["Notes"] || "-";
+
         tr.innerHTML = `
         <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
         <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
         <td>${pay["Client Name"] || pay["CLIENT NAME"] || "-"}</td>
-        <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || "-"}</span></td>
+        <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || pay["PAYMENT OPTION"] || pay["Payment Option"] || "-"}</span></td>
+        <td><span style="color: #6c757d; font-size: 0.9em;">${notesText}</span></td>
         <td>${badgeHtml}</td>
         <td style="color: #6c757d;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
       `;

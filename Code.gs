@@ -493,19 +493,46 @@ function savePayment(data) {
       "PAYMENT OPTION / NOTES",
       "AMOUNT",
       "PAYMENT DATE",
+      "NOTES",
     ]);
+  } else {
+    // Check if NOTES header exists
+    var lastCol = sheet.getLastColumn();
+    if (lastCol > 0) {
+      var headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0];
+      if (headers.indexOf("NOTES") === -1 && headers.indexOf("Notes") === -1) {
+        sheet.getRange(1, lastCol + 1).setValue("NOTES");
+      }
+    }
   }
 
-  sheet.appendRow([
-    new Date(),
-    data.carModel || "",
-    data.carId || "",
-    data.clientName || "",
-    data.paymentOption || "",
-    data.amount || "",
-    data.paymentDate || "",
-  ]);
+  // Get current headers to dynamically build row values
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
 
+  var keyMap = {
+    Timestamp: new Date(),
+    "CAR MODEL": data.carModel || "",
+    "CAR ID": data.carId || "",
+    "Client Name": data.clientName || "",
+    "CLIENT NAME": data.clientName || "",
+    "PAYMENT OPTION / NOTES": data.paymentOption || "",
+    "PAYMENT OPTION": data.paymentOption || "",
+    "Payment Option": data.paymentOption || "",
+    AMOUNT: data.amount || "",
+    "PAYMENT DATE": data.paymentDate || "",
+    NOTES: data.notes || "",
+    Notes: data.notes || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    rowValues[i] = keyMap[header] !== undefined ? keyMap[header] : "";
+  }
+
+  sheet.appendRow(rowValues);
   return "Success";
 }
 
