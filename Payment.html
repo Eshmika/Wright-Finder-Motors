@@ -94,14 +94,24 @@
         <div class="input-group">
           <label class="required-label">Payment Option</label>
           <div class="modern-input-wrapper">
-            <input
-              type="text"
+            <select
               name="payOption"
               id="pay-option"
               class="form-control"
-              placeholder="E.g., Cash, Credit Card, Bank Transfer, Check, etc."
               required
-            />
+            >
+              <option value="">Select Option...</option>
+              <option value="Bank deposit">Bank deposit</option>
+              <option value="In person cash">In person cash</option>
+              <option value="Zelle/Cashapp/Apple Pay etc">
+                Zelle/Cashapp/Apple Pay etc
+              </option>
+              <option value="Check">Check</option>
+              <option value="Cashier check/Money order">
+                Cashier check/Money order
+              </option>
+              <option value="Credit card">Credit card</option>
+            </select>
             <i class="fas fa-credit-card"></i>
           </div>
         </div>
