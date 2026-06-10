@@ -128,6 +128,10 @@
             else if (targetView === "payment") {
               initPaymentView();
             }
+            // If WFM Business Expenses is opened, load business expenses data
+            else if (targetView === "wfm-expenses") {
+              initWfmExpensesView();
+            }
             // If Add New Car is opened, load car list
             else if (targetView === "buy-add-new") {
               initAddNewCarView();
@@ -438,6 +442,185 @@
           return matchesClient && matchesModel && matchesId;
         });
         renderExpensesTable(filtered);
+      }
+    };
+
+    // =============================================
+    // WFM Business Expenses Logic
+    // =============================================
+    window.initWfmExpensesView = function () {
+      // Set default date to today
+      const today = new Date().toISOString().split("T")[0];
+      const wfmDateInput = document.getElementById("wfm-date");
+      if (wfmDateInput && !wfmDateInput.value) {
+        wfmDateInput.value = today;
+      }
+      window.loadWfmExpenses();
+    };
+
+    window.calculateWfmTax = function () {
+      const beforeTax = parseFloat(
+        document.getElementById("wfm-value-before-tax").value,
+      );
+      const afterTaxInput = document.getElementById("wfm-value-after-tax");
+      if (!isNaN(beforeTax)) {
+        // Default: copy before-tax value to after-tax value if after-tax is empty
+        if (!afterTaxInput.value) {
+          afterTaxInput.value = beforeTax.toFixed(2);
+        }
+      }
+    };
+
+    window.handleWfmExpenseSubmit = function (e) {
+      e.preventDefault();
+
+      const form = document.getElementById("addWfmExpenseForm");
+      const btn = document.getElementById("btnSubmitWfmExpense");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      const formData = new FormData(form);
+      const data = {
+        details: formData.get("wfmDetails"),
+        valueBeforeTax: formData.get("wfmValueBeforeTax"),
+        valueAfterTax: formData.get("wfmValueAfterTax"),
+        date: formData.get("wfmDate"),
+        paidBy: formData.get("wfmPaidBy"),
+      };
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          showCreativeSuccessModal("Business Expense added successfully!");
+          form.reset();
+          // Keep today's date
+          document.getElementById("wfm-date").value = new Date()
+            .toISOString()
+            .split("T")[0];
+
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+
+          // Reload business expenses table
+          window.loadWfmExpenses();
+        })
+        .withFailureHandler(function (error) {
+          alert("Error: " + error.message);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .saveWfmExpense(data);
+    };
+
+    let cachedWfmExpenses = [];
+
+    window.loadWfmExpenses = function () {
+      const tbody = document.getElementById("wfmExpensesTableBody");
+      if (tbody) {
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading business expenses...</td></tr>';
+      }
+
+      google.script.run
+        .withSuccessHandler(function (expenses) {
+          cachedWfmExpenses = expenses || [];
+          renderWfmExpensesTable(cachedWfmExpenses);
+        })
+        .withFailureHandler(function (error) {
+          if (tbody) {
+            tbody.innerHTML =
+              '<tr><td colspan="5" class="text-center text-danger" style="padding: 20px;">Error loading business expenses: ' +
+              error.message +
+              "</td></tr>";
+          }
+        })
+        .getWfmExpenses();
+    };
+
+    function renderWfmExpensesTable(expensesToRender) {
+      const tbody = document.getElementById("wfmExpensesTableBody");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      if (!expensesToRender || expensesToRender.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No business expense records found.</td></tr>';
+        return;
+      }
+
+      // Clone and reverse to show latest first
+      [...expensesToRender].reverse().forEach((exp) => {
+        const tr = document.createElement("tr");
+
+        let valBefore = parseFloat(exp["VALUE BEFORE TAX"]);
+        let formattedBefore = isNaN(valBefore)
+          ? exp["VALUE BEFORE TAX"]
+          : "$" + valBefore.toFixed(2);
+
+        let valAfter = parseFloat(exp["VALUE AFTER TAX"]);
+        let formattedAfter = isNaN(valAfter)
+          ? exp["VALUE AFTER TAX"]
+          : "$" + valAfter.toFixed(2);
+        let badgeHtml = isNaN(valAfter)
+          ? formattedAfter
+          : `<span class="amount-badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-block;">${formattedAfter}</span>`;
+
+        let dateStr = exp["DATE"];
+        if (dateStr) {
+          try {
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+          } catch (e) {}
+        }
+
+        tr.innerHTML = `
+          <td><strong>${exp["DETAILS"] || "-"}</strong></td>
+          <td>${formattedBefore}</td>
+          <td>${badgeHtml}</td>
+          <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
+          <td>${exp["PAID BY"] || "-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.filterWfmExpenses = function () {
+      const nameInput = document.getElementById("wfmNameFilter");
+      const dateInput = document.getElementById("wfmDateFilter");
+      const payerInput = document.getElementById("wfmPayerFilter");
+
+      const nameTerm = nameInput ? nameInput.value.toLowerCase().trim() : "";
+      const dateTerm = dateInput ? dateInput.value.trim() : "";
+      const payerTerm = payerInput ? payerInput.value.toLowerCase().trim() : "";
+
+      if (!nameTerm && !dateTerm && !payerTerm) {
+        renderWfmExpensesTable(cachedWfmExpenses);
+      } else {
+        const filtered = cachedWfmExpenses.filter((exp) => {
+          const details = exp["DETAILS"] || "";
+          const paidBy = exp["PAID BY"] || "";
+          const expDate = exp["DATE"] || "";
+
+          const matchesName = details.toLowerCase().includes(nameTerm);
+          const matchesPayer = paidBy.toLowerCase().includes(payerTerm);
+
+          let matchesDate = true;
+          if (dateTerm) {
+            let formattedExpDate = "";
+            try {
+              let d = new Date(expDate);
+              if (!isNaN(d.getTime())) {
+                formattedExpDate = d.toISOString().split("T")[0];
+              }
+            } catch (e) {}
+
+            matchesDate =
+              formattedExpDate === dateTerm || expDate.includes(dateTerm);
+          }
+
+          return matchesName && matchesPayer && matchesDate;
+        });
+        renderWfmExpensesTable(filtered);
       }
     };
 

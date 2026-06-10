@@ -1,0 +1,289 @@
+<!-- WFM Business Expenses View -->
+<div id="view-wfm-expenses" class="view form-view">
+  <style>
+    /* Custom specific styling if any */
+  </style>
+
+  <div
+    class="creative-expenses-header"
+    style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)"
+  >
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
+    <div class="expenses-header-content">
+      <h1><i class="fas fa-briefcase"></i> WFM Business Expenses</h1>
+      <p>Log, track, and monitor general business expenditures.</p>
+    </div>
+  </div>
+
+  <!-- Add Expenses Card -->
+  <div class="expenses-card">
+    <div class="expenses-card-header">
+      <h3>
+        <span class="icon-square" style="background: #dbeafe; color: #1e40af"
+          ><i class="fas fa-plus"></i
+        ></span>
+        Log New Business Expense
+      </h3>
+    </div>
+
+    <form
+      id="addWfmExpenseForm"
+      class="creative-form"
+      onsubmit="handleWfmExpenseSubmit(event)"
+    >
+      <div class="grid-responsive" style="gap: 25px">
+        <div class="input-group" style="grid-column: span 2">
+          <label class="required-label">Details</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="wfmDetails"
+              id="wfm-details"
+              class="form-control"
+              placeholder="E.g., Office utilities, software subscriptions, marketing..."
+              required
+            />
+            <i class="fas fa-align-left"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Value Before Tax ($)</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="wfmValueBeforeTax"
+              id="wfm-value-before-tax"
+              class="form-control"
+              placeholder="0.00"
+              required
+              oninput="calculateWfmTax()"
+            />
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Value After Tax ($)</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="wfmValueAfterTax"
+              id="wfm-value-after-tax"
+              class="form-control"
+              placeholder="0.00"
+              required
+            />
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Date</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="date"
+              name="wfmDate"
+              id="wfm-date"
+              class="form-control"
+              required
+            />
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="required-label">Paid By</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="wfmPaidBy"
+              id="wfm-paid-by"
+              list="wfmPaidByOptions"
+              class="form-control"
+              placeholder="Name or entity..."
+              required
+            />
+            <datalist id="wfmPaidByOptions">
+              <option value="Company"></option>
+              <option value="Associate"></option>
+            </datalist>
+            <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+      </div>
+
+      <div
+        style="
+          display: flex;
+          justify-content: flex-end;
+          gap: 15px;
+          margin-top: 35px;
+        "
+      >
+        <button
+          type="reset"
+          class="btn-secondary"
+          style="padding: 14px 25px; border-radius: 30px"
+        >
+          <i class="fas fa-undo"></i> Clear
+        </button>
+        <button
+          type="submit"
+          class="btn-gradient-submit"
+          id="btnSubmitWfmExpense"
+          style="background: linear-gradient(to right, #1e3c72, #2a5298)"
+        >
+          <i class="fas fa-check-circle"></i> Save Business Expense
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- View WFM Expenses Card -->
+  <div class="expenses-card">
+    <div
+      class="expenses-card-header"
+      style="
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        justify-content: space-between;
+      "
+    >
+      <h3 style="margin: 0">
+        <span class="icon-square" style="background: #d1fae5; color: #065f46"
+          ><i class="fas fa-list-ul"></i
+        ></span>
+        Business Expense History
+      </h3>
+      <div
+        style="
+          display: flex;
+          gap: 10px;
+          flex-grow: 1;
+          justify-content: flex-end;
+          align-items: center;
+        "
+      >
+        <div style="position: relative; max-width: 200px; width: 100%">
+          <i
+            class="fas fa-search"
+            style="
+              position: absolute;
+              left: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #aaa;
+            "
+          ></i>
+          <input
+            type="text"
+            id="wfmNameFilter"
+            class="form-control"
+            placeholder="Filter by name/details..."
+            onkeyup="filterWfmExpenses()"
+            style="
+              padding-left: 35px;
+              border-radius: 20px;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            "
+          />
+        </div>
+        <div style="position: relative; max-width: 180px; width: 100%">
+          <i
+            class="fas fa-calendar-alt"
+            style="
+              position: absolute;
+              left: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #aaa;
+              z-index: 5;
+            "
+          ></i>
+          <input
+            type="date"
+            id="wfmDateFilter"
+            class="form-control"
+            onchange="filterWfmExpenses()"
+            style="
+              padding-left: 35px;
+              border-radius: 20px;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            "
+          />
+        </div>
+        <div style="position: relative; max-width: 180px; width: 100%">
+          <i
+            class="fas fa-user"
+            style="
+              position: absolute;
+              left: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #aaa;
+            "
+          ></i>
+          <input
+            type="text"
+            id="wfmPayerFilter"
+            class="form-control"
+            placeholder="Filter by payer..."
+            onkeyup="filterWfmExpenses()"
+            style="
+              padding-left: 35px;
+              border-radius: 20px;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            "
+          />
+        </div>
+        <button
+          onclick="loadWfmExpenses()"
+          class="btn-secondary"
+          style="
+            border-radius: 20px;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            background-color: #717384;
+          "
+        >
+          <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <div class="expenses-table-wrapper">
+      <table class="creative-table">
+        <thead>
+          <tr>
+            <th><i class="fas fa-align-left mr-2"></i> Details</th>
+            <th><i class="fas fa-dollar-sign mr-2"></i> Value Before Tax</th>
+            <th>
+              <i class="fas fa-file-invoice-dollar mr-2"></i> Value After Tax
+            </th>
+            <th><i class="fas fa-calendar-alt mr-2"></i> Date</th>
+            <th><i class="fas fa-user-check mr-2"></i> Paid By</th>
+          </tr>
+        </thead>
+        <tbody id="wfmExpensesTableBody">
+          <tr>
+            <td colspan="5" class="text-center" style="padding: 40px">
+              <i
+                class="fas fa-circle-notch fa-spin fa-2x text-primary"
+                style="margin-bottom: 15px; display: block"
+              ></i>
+              Loading business expenses...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
