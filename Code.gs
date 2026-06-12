@@ -1024,3 +1024,15 @@ function sendAgreementEmailToServer(carId) {
     return { success: false, message: "Failed to send email: " + e.toString() };
   }
 }
+
+/**
+ * Run this function from the Apps Script editor toolbar (select 'getPermission' and click 'Run')
+ * to trigger the authorization prompt for sending emails.
+ */
+function getPermission() {
+  MailApp.sendEmail({
+    to: Session.getActiveUser().getEmail(),
+    subject: "Permission Verification",
+    body: "If you are reading this, the MailApp permission has been successfully granted.",
+  });
+}
