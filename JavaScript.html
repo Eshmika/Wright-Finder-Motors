@@ -3205,6 +3205,152 @@
         renderPaymentsTable(filtered);
       }
     };
+
+    // =============================================
+    // Communication Logic
+    // =============================================
+    window.initCommunicationView = function () {
+      if (allCars.length === 0) {
+        const tbody = document.getElementById("commTableBody");
+        if (tbody) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center" style="padding: 30px; color: #858796;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: #512b81;"></i>
+                <div style="margin-top: 10px;">Loading client agreement details...</div>
+              </td>
+            </tr>`;
+        }
+        google.script.run
+          .withSuccessHandler(function (vehicles) {
+            allCars = vehicles;
+            window.renderCommunicationTable();
+          })
+          .getVehicles();
+      } else {
+        window.renderCommunicationTable();
+      }
+    };
+
+    window.renderCommunicationTable = function () {
+      const tbody = document.getElementById("commTableBody");
+      const searchInput = document.getElementById("commSearchInput");
+      if (!tbody) return;
+
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+      tbody.innerHTML = "";
+
+      // Filter active loan vehicles
+      const loanVehicles = allCars.filter((car) => {
+        const dp = (car["DOWN PAYMENT"] || "").toString().trim();
+        const hasDownPayment =
+          dp !== "" &&
+          dp !== "0" &&
+          dp !== "0.00" &&
+          dp !== "$0.00" &&
+          dp !== "$0" &&
+          parseFloat(dp.replace(/[^0-9.-]+/g, "")) > 0;
+        const hasClient = (car["CLIENT NAME"] || "").toString().trim() !== "";
+        return hasDownPayment && hasClient;
+      });
+
+      const filtered = loanVehicles.filter((car) => {
+        if (!query) return true;
+        const stockId = (car["Car ID"] || "").toLowerCase();
+        const name = (car["Car Name"] || "").toLowerCase();
+        const model = (car["Model"] || "").toLowerCase();
+        const client = (car["CLIENT NAME"] || "").toLowerCase();
+        const email = (car["Client Email"] || "").toLowerCase();
+        return (
+          stockId.includes(query) ||
+          name.includes(query) ||
+          model.includes(query) ||
+          client.includes(query) ||
+          email.includes(query)
+        );
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center" style="padding: 20px; color: #858796;">
+              No matching loan vehicles found.
+            </td>
+          </tr>`;
+      } else {
+        filtered.forEach((car) => {
+          const email = (car["Client Email"] || "").toString().trim();
+          const hasEmail =
+            email !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+          const btnDisabled = !hasEmail ? "disabled" : "";
+          const btnStyle = !hasEmail
+            ? "background: #eaecf4; color: #a6a8b6; border: none; cursor: not-allowed; opacity: 0.7;"
+            : "background: #512b81; color: white; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(81, 43, 129, 0.2);";
+
+          const tr = document.createElement("tr");
+          tr.id = "comm-row-" + car["Car ID"];
+
+          tr.innerHTML = `
+            <td class="stock-col"><strong>${car["Car ID"] || "-"}</strong></td>
+            <td>
+              <div style="color: black; font-weight: bold;">${car["Car Name"] || "-"} ${car["Year"] || ""}</div>
+              <div style="color: gray; font-size: 0.9em;">${car["Model"] || "-"}</div>
+            </td>
+            <td><strong>${car["CLIENT NAME"] || "-"}</strong></td>
+            <td>${email ? email : '<span style="color: #e74a3b; font-style: italic;"><i class="fas fa-exclamation-triangle"></i> Not Set</span>'}</td>
+            <td style="text-align: center;" class="action-col">
+              <button 
+                class="action-btn" 
+                style="padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; ${btnStyle}" 
+                ${btnDisabled}
+                onclick="sendAgreementEmail('${car["Car ID"]}')"
+              >
+                <i class="fas fa-paper-plane"></i> Send Email
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    };
+
+    window.filterCommunicationTable = function () {
+      window.renderCommunicationTable();
+    };
+
+    window.sendAgreementEmail = function (carId) {
+      const row = document.getElementById("comm-row-" + carId);
+      if (!row) return;
+
+      const btn = row.querySelector("button");
+      if (!btn) return;
+
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+      btn.disabled = true;
+      btn.style.opacity = "0.7";
+
+      google.script.run
+        .withSuccessHandler(function (result) {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          if (result && result.success) {
+            showCreativeSuccessModal(result.message);
+          } else {
+            alert("Error: " + (result ? result.message : "Unknown error"));
+          }
+        })
+        .withFailureHandler(function (error) {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          alert("Failed to send email: " + error.message);
+        })
+        .sendAgreementEmailToServer(carId);
+    };
   });
 
   function fileToBase64(file) {
@@ -4070,179 +4216,6 @@
         })
         .deleteCarListItem(rowNumber);
     }
-  };
-
-  // =============================================
-  // Communication Logic
-  // =============================================
-  window.initCommunicationView = function () {
-    if (allCars.length === 0) {
-      // Show loading spinner
-      const tbody = document.getElementById("commTableBody");
-      if (tbody) {
-        tbody.innerHTML = `
-            <tr>
-              <td colspan="7" class="text-center" style="padding: 30px; color: #858796;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color: #512b81;"></i>
-                <div style="margin-top: 10px;">Loading client agreement details...</div>
-              </td>
-            </tr>`;
-      }
-      google.script.run
-        .withSuccessHandler(function (vehicles) {
-          allCars = vehicles;
-          window.renderCommunicationTable();
-        })
-        .getVehicles();
-    } else {
-      window.renderCommunicationTable();
-    }
-  };
-
-  window.renderCommunicationTable = function () {
-    const tbody = document.getElementById("commTableBody");
-    const searchInput = document.getElementById("commSearchInput");
-    if (!tbody) return;
-
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
-
-    let totalLoans = 0;
-    let readyToEmail = 0;
-    let missingEmail = 0;
-
-    tbody.innerHTML = "";
-
-    // Filter and count active loan vehicles
-    const loanVehicles = allCars.filter((car) => {
-      const dp = (car["DOWN PAYMENT"] || "").toString().trim();
-      const hasDownPayment =
-        dp !== "" &&
-        dp !== "0" &&
-        dp !== "0.00" &&
-        dp !== "$0.00" &&
-        dp !== "$0" &&
-        parseFloat(dp.replace(/[^0-9.-]+/g, "")) > 0;
-      const hasClient = (car["CLIENT NAME"] || "").toString().trim() !== "";
-      return hasDownPayment && hasClient;
-    });
-
-    totalLoans = loanVehicles.length;
-
-    const filtered = loanVehicles.filter((car) => {
-      if (!query) return true;
-      const stockId = (car["Car ID"] || "").toLowerCase();
-      const name = (car["Car Name"] || "").toLowerCase();
-      const model = (car["Model"] || "").toLowerCase();
-      const client = (car["CLIENT NAME"] || "").toLowerCase();
-      const email = (car["Client Email"] || "").toLowerCase();
-      return (
-        stockId.includes(query) ||
-        name.includes(query) ||
-        model.includes(query) ||
-        client.includes(query) ||
-        email.includes(query)
-      );
-    });
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="text-center" style="padding: 20px; color: #858796;">
-              No matching loan vehicles found.
-            </td>
-          </tr>`;
-    } else {
-      filtered.forEach((car) => {
-        const email = (car["Client Email"] || "").toString().trim();
-        const hasEmail =
-          email !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-        if (hasEmail) {
-          readyToEmail++;
-        } else {
-          missingEmail++;
-        }
-
-        const statusText = hasEmail ? "Ready to Send" : "Missing Email";
-        const statusStyle = hasEmail
-          ? "background: #d4f8eb; color: #1cc88a; font-weight: 600; padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; display: inline-block;"
-          : "background: #fde8e7; color: #e74a3b; font-weight: 600; padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; display: inline-block;";
-
-        const btnDisabled = !hasEmail ? "disabled" : "";
-        const btnStyle = !hasEmail
-          ? "background: #eaecf4; color: #a6a8b6; border: none; cursor: not-allowed; opacity: 0.7;"
-          : "background: #512b81; color: white; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(81, 43, 129, 0.2);";
-
-        const tr = document.createElement("tr");
-        tr.id = "comm-row-" + car["Car ID"];
-
-        const dpFormatted = car["DOWN PAYMENT"];
-
-        tr.innerHTML = `
-            <td class="stock-col"><strong>${car["Car ID"] || "-"}</strong></td>
-            <td>
-              <div style="color: black; font-weight: bold;">${car["Car Name"] || "-"} ${car["Year"] || ""}</div>
-              <div style="color: gray; font-size: 0.9em;">${car["Model"] || "-"}</div>
-            </td>
-            <td><strong>${car["CLIENT NAME"] || "-"}</strong></td>
-            <td><span style="font-weight: 600; color: #2c1a4d;">${dpFormatted || "-"}</span></td>
-            <td>${email ? email : '<span style="color: #e74a3b; font-style: italic;"><i class="fas fa-exclamation-triangle"></i> Not Set</span>'}</td>
-            <td style="text-align: center;"><span style="${statusStyle}">${statusText}</span></td>
-            <td style="text-align: center;" class="action-col">
-              <button 
-                class="action-btn" 
-                style="padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; ${btnStyle}" 
-                ${btnDisabled}
-                onclick="sendAgreementEmail('${car["Car ID"]}')"
-              >
-                <i class="fas fa-paper-plane"></i> Send Email
-              </button>
-            </td>
-          `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Update counters
-    document.getElementById("comm-stat-total").textContent = totalLoans;
-    document.getElementById("comm-stat-ready").textContent = readyToEmail;
-    document.getElementById("comm-stat-missing").textContent = missingEmail;
-  };
-
-  window.filterCommunicationTable = function () {
-    window.renderCommunicationTable();
-  };
-
-  window.sendAgreementEmail = function (carId) {
-    const row = document.getElementById("comm-row-" + carId);
-    if (!row) return;
-
-    const btn = row.querySelector("button");
-    if (!btn) return;
-
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-    btn.disabled = true;
-    btn.style.opacity = "0.7";
-
-    google.script.run
-      .withSuccessHandler(function (result) {
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        if (result && result.success) {
-          showCreativeSuccessModal(result.message);
-        } else {
-          alert("Error: " + (result ? result.message : "Unknown error"));
-        }
-      })
-      .withFailureHandler(function (error) {
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        alert("Failed to send email: " + error.message);
-      })
-      .sendAgreementEmailToServer(carId);
   };
 
   function openLightbox(src) {
