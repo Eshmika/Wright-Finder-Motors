@@ -1075,11 +1075,8 @@ function ensureAgreementColumns() {
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   var required = [
     "Agreement Status",
-    "Buyer Signature",
-    "Buyer Signature Date",
     "Installment Frequency",
-    "Witness Name",
-    "Witness Signature",
+    "Agreement PDF Link",
   ];
 
   for (var i = 0; i < required.length; i++) {
@@ -1187,13 +1184,13 @@ function submitSignedAgreement(carId, data) {
     if (rowIndex === -1)
       return { success: false, message: "Vehicle " + carId + " not found" };
 
+    // Generate and save the agreement PDF in Google Drive
+    var pdfUrl = generateAndSaveAgreementPdf(carId, data);
+
     var updates = {
       "Agreement Status": "Signed",
-      "Buyer Signature": data.buyerSignature,
-      "Buyer Signature Date": new Date(),
       "Installment Frequency": data.installmentFrequency,
-      "Witness Name": data.witnessName || "",
-      "Witness Signature": data.witnessSignature || "",
+      "Agreement PDF Link": pdfUrl,
     };
 
     for (var key in updates) {
@@ -1213,4 +1210,87 @@ function submitSignedAgreement(carId, data) {
       message: "Error signing agreement: " + e.toString(),
     };
   }
+}
+
+function generateAndSaveAgreementPdf(carId, data) {
+  var agreementData = getAgreementData(carId);
+  if (!agreementData) {
+    throw new Error("Agreement data not found for Car ID: " + carId);
+  }
+
+  var car = agreementData.car;
+  var clientName = (car["CLIENT NAME"] || "").toString().trim() || "Client";
+  var make = (car["Car Name"] || "").toString().trim();
+  var model = (car["Model"] || "").toString().trim();
+  var year = (car["Year"] || "").toString().trim();
+
+  // Create template from the HTML file
+  var template = HtmlService.createTemplateFromFile("AgreementPdfTemplate");
+
+  // Bind template variables
+  template.car = car;
+  template.todayDate = agreementData.todayDate;
+  template.todayDayName = agreementData.todayDayName;
+  template.soldPrice = agreementData.soldPrice;
+  template.downPayment = agreementData.downPayment;
+  template.remainLoan = agreementData.remainLoan;
+
+  template.installmentFrequency = data.installmentFrequency || "weekly";
+  template.installmentEndDate = formatDateString(data.installmentEndDate);
+
+  template.buyerName = data.buyerName || clientName;
+  template.buyerSignature = data.buyerSignature || "";
+  template.witnessName = data.witnessName || "";
+  template.witnessSignature = data.witnessSignature || "";
+
+  var htmlContent = template.evaluate().getContent();
+
+  // Get target Google Drive folder
+  var folderId = "1Fwz36bo6jnGhC072SxTO3KaoeSN7jmMp";
+  var folder = DriveApp.getFolderById(folderId);
+
+  // Convert HTML to PDF by saving a temporary HTML file and converting it
+  var tempFile = DriveApp.createFile(
+    "temp_agreement_" + carId + ".html",
+    htmlContent,
+    "text/html",
+  );
+  var pdfBlob = tempFile.getAs("application/pdf");
+
+  // Rename PDF to: Client name + Make + Model + Year
+  var fileName =
+    [clientName, make, model, year].filter(Boolean).join(" ") + ".pdf";
+  pdfBlob.setName(fileName);
+
+  // Save the PDF file in Google Drive folder
+  var pdfFile = folder.createFile(pdfBlob);
+
+  // Delete the temporary file
+  tempFile.setTrashed(true);
+
+  // Share file publicly so it can be viewed by anyone with the link
+  try {
+    pdfFile.setSharing(
+      DriveApp.Access.ANYONE_WITH_LINK,
+      DriveApp.Permission.VIEW,
+    );
+  } catch (e) {
+    Logger.log("Could not set sharing permissions on PDF: " + e);
+  }
+
+  return pdfFile.getUrl();
+}
+
+function formatDateString(dateStr) {
+  if (!dateStr) return "";
+  try {
+    var parts = dateStr.split("-");
+    if (parts.length === 3) {
+      // Parts: [YYYY, MM, DD]
+      var d = new Date(parts[0], parts[1] - 1, parts[2]);
+      var options = { year: "numeric", month: "long", day: "numeric" };
+      return d.toLocaleDateString("en-US", options);
+    }
+  } catch (e) {}
+  return dateStr;
 }

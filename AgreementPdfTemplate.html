@@ -1,0 +1,450 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Purchase Agreement - Wright Finder Motors</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Inter:wght@400;600;700&display=swap");
+
+      body {
+        font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        line-height: 1.6;
+        margin: 0;
+        padding: 40px;
+        background-color: #ffffff;
+        font-size: 13px;
+      }
+
+      .document-container {
+        border-left: 6px solid #3a1f62;
+        padding-left: 30px;
+        position: relative;
+      }
+
+      .doc-header {
+        text-align: center;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+      }
+
+      .doc-logo {
+        font-size: 18px;
+        font-weight: 800;
+        color: #170a3d;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+
+      .doc-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+        text-transform: uppercase;
+      }
+
+      .contract-p {
+        margin-bottom: 15px;
+        text-align: justify;
+      }
+
+      .clause-num {
+        font-weight: 700;
+        color: #3a1f62;
+        margin-right: 5px;
+      }
+
+      .bold {
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      /* Specs Table */
+      .specs-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: #f8fafc;
+      }
+
+      .specs-table td {
+        border: 1px solid #cbd5e1;
+        padding: 8px 12px;
+        vertical-align: top;
+      }
+
+      .spec-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .spec-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      /* Signature Area */
+      .signatures-section {
+        border-top: 2px solid #e2e8f0;
+        margin-top: 35px;
+        padding-top: 20px;
+      }
+
+      .signatures-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+
+      .signatures-table td {
+        width: 48%;
+        vertical-align: top;
+        padding: 0;
+      }
+
+      .signatures-table td.spacer {
+        width: 4%;
+      }
+
+      .sig-block {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #f8fafc;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+
+      .sig-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #3a1f62;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+      }
+
+      .sig-field {
+        margin-bottom: 8px;
+      }
+
+      .sig-field-label {
+        font-size: 10px;
+        color: #64748b;
+        font-weight: 600;
+        display: block;
+      }
+
+      .sig-field-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      .digital-signature-preview {
+        font-family: "Caveat", "Brush Script MT", cursive;
+        font-size: 24px;
+        color: #1e3a8a;
+        border-bottom: 1px solid #94a3b8;
+        padding: 2px 5px;
+        display: inline-block;
+        min-width: 180px;
+        margin-top: 5px;
+      }
+
+      .sig-date-time {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 8px;
+      }
+
+      .witness-container {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #f8fafc;
+        padding: 15px;
+        margin-top: 20px;
+      }
+
+      .legal-disclaimer {
+        font-size: 11px;
+        color: #64748b;
+        background: #f8fafc;
+        padding: 10px;
+        border-radius: 6px;
+        border-left: 3px solid #cbd5e1;
+        line-height: 1.4;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="document-container">
+      <div class="doc-header">
+        <div class="doc-logo">Wright Finder Motors</div>
+        <div class="doc-title">Purchase Agreement</div>
+      </div>
+
+      <div class="contract-body">
+        <p class="contract-p">
+          This purchase agreement (the "Agreement") dated this
+          <span class="bold"><?= todayDate ?></span> BETWEEN:
+          <br />
+          <span class="bold">WRIGHT FINDER MOTORS LLC</span> (the "Seller") and
+          <span class="bold"><?= car["CLIENT NAME"] || "-" ?></span> (the
+          "Buyer").
+        </p>
+
+        <p
+          class="contract-p"
+          style="
+            font-weight: 600;
+            color: #0f172a;
+            margin-top: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+          "
+        >
+          The parties agree to the following agreements: Sale of Goods
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">1.</span>
+          The Seller will sell, transfer today, the following goods (Vehicle
+          details):
+        </p>
+
+        <!-- Specifications Table -->
+        <table class="specs-table">
+          <tr>
+            <td>
+              <span class="spec-label">New/Used</span>
+              <span class="spec-value"><?= car["Condition"] || "Used" ?></span>
+            </td>
+            <td>
+              <span class="spec-label">Title Status</span>
+              <span class="spec-value"><?= car["Title"] || "Clean" ?></span>
+            </td>
+            <td>
+              <span class="spec-label">Make</span>
+              <span class="spec-value"><?= car["Car Name"] || "-" ?></span>
+            </td>
+            <td>
+              <span class="spec-label">Model</span>
+              <span class="spec-value"><?= car["Model"] || "-" ?></span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="spec-label">Year</span>
+              <span class="spec-value"><?= car["Year"] || "-" ?></span>
+            </td>
+            <td>
+              <span class="spec-label">Color</span>
+              <span class="spec-value"
+                ><?= car["Exterior Color"] || "-" ?></span
+              >
+            </td>
+            <td colspan="2">
+              <span class="spec-label">VIN</span>
+              <span
+                class="spec-value"
+                style="font-family: monospace; letter-spacing: 0.5px"
+                ><?= car["VIN"] || "-" ?></span
+              >
+            </td>
+          </tr>
+        </table>
+
+        <p class="contract-p">
+          <span class="clause-num">2.</span>
+          The Buyer will accept the Goods and pay for the Goods with the sum of
+          <span class="bold"><?= soldPrice ?></span> (USD) (the "Purchase
+          Price"), paid as, a non-refundable downpayment of
+          <span class="bold"><?= downPayment ?></span> on, (<?= todayDayName ?>)
+          <span class="bold"><?= todayDate ?></span> and the remaining balance
+          of <span class="bold"><?= remainLoan ?></span> (USD). The remainder of
+          the Purchase Price is payable by cash, E-transfer, Check, Cashier’s
+          check, or Bank transfer.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">3.</span>
+          The Purchase Price is inclusive of sales tax and is payable by the
+          Buyer unless the Buyer provides the Seller with a tax exemption
+          certificate acceptable to the applicable taxing authorities, in which
+          case the amount of sales tax will be subtracted from the Purchase
+          Price payable by the Buyer. The Purchase Price will be paid in
+          consecutive <span class="bold"><?= installmentFrequency ?></span>
+          installments commencing on
+          <span class="bold"><?= todayDate ?></span> (Today) and continuing
+          towards the remaining balance of
+          <span class="bold"><?= remainLoan ?></span> (USD) until
+          <span class="bold"><?= installmentEndDate ?></span>.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">4.</span>
+          Should the Buyer fail to make payment; each missing payment will be
+          charged the amount interest of $100 for the first payment, $200 for
+          the second payment. On the third missing payment, the Seller will take
+          back the goods with a written notice via e-mail or text/call to the
+          Buyer. On the fourth missing payment, the Seller will submit the issue
+          first before a non-binding mediator and to an arbitrator in the event
+          that mediation fails. If any dispute relating to this Agreement
+          between the Seller and the Buyer is not resolved through informal
+          discussion within 14 days from the date a dispute arises, the parties
+          agree to submit the issue first before a non-binding mediator and to
+          an arbitrator in the event that mediation fails. The decision of the
+          arbitrator will be binding on the parties. Any mediator or arbitrator
+          must be a neutral party acceptable to both the Seller and the Buyer.
+          The cost of any mediations or arbitration will be paid by the Buyer.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">5.</span>
+          Except as otherwise provided in this Agreement, the deposit is not
+          refunded to the Buyer if this transaction is not completed.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">6.</span>
+          The goods are sold 'as is' and the Seller expressly disclaims all
+          warranties, whether express or implied, including but not limited to,
+          any implied warranty of merchantability or fitness for a particular
+          purpose. The Seller does not assume or authorize any other person to
+          assume, on behalf of the Seller, any liability in connection with the
+          sale of the Goods. The Seller's above disclaimer of warranties does
+          not, in any way, affect the terms of any applicable warranties from
+          the manufacturer of the Goods.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">7.</span>
+          The Buyer has been given the opportunity to inspect the Goods or to
+          have it inspected and the Buyer has accepted the Goods in its existing
+          condition. Further, the Seller disclaims any warranty as to the
+          condition of the Goods.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">8.</span>
+          Title to the Goods will remain with the Seller until the car has been
+          paid off.
+        </p>
+
+        <p class="contract-p">
+          <span class="clause-num">9.</span>
+          This is a brief of our terms and conditions, please visit us on our
+          website at www.wrightfindermotors.com to read our full T&C prior to
+          signing. Signing this means you have read and understand our full T&C.
+          Your signature on this paper will count on both.
+        </p>
+
+        <p
+          class="contract-p"
+          style="
+            margin-top: 25px;
+            font-weight: 600;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+          "
+        >
+          IN WITNESS WHEREOF the parties have executed this Purchase Agreement.
+        </p>
+
+        <div class="legal-disclaimer">
+          By electronically typing my name below, I acknowledge and agree that
+          this electronic representation of my name constitutes my legal
+          signature. This electronic signature has the same validity, force, and
+          effect as a handwritten signature under applicable state and federal
+          law, including the ESIGN Act and the Uniform Electronic Transactions
+          Act.
+        </div>
+
+        <!-- Signatures Table -->
+        <div class="signatures-section">
+          <table class="signatures-table">
+            <tr>
+              <!-- Buyer Block -->
+              <td>
+                <div class="sig-block">
+                  <div class="sig-label">Buyer Signature</div>
+                  <div class="sig-field">
+                    <span class="sig-field-label">Full Name</span>
+                    <span class="sig-field-value"><?= buyerName ?></span>
+                  </div>
+                  <div class="sig-field">
+                    <span class="sig-field-label">Electronic Signature</span>
+                    <span class="digital-signature-preview"
+                      ><?= buyerSignature ?></span
+                    >
+                  </div>
+                  <div class="sig-date-time">Date/Time: <?= todayDate ?></div>
+                </div>
+              </td>
+
+              <!-- Spacer -->
+              <td class="spacer"></td>
+
+              <!-- Seller Block -->
+              <td>
+                <div class="sig-block" style="border-color: #cbd5e1">
+                  <div class="sig-label">Seller Signature</div>
+                  <div class="sig-field">
+                    <span class="sig-field-label">Company Name</span>
+                    <span class="sig-field-value"
+                      >WRIGHT FINDER MOTORS LLC</span
+                    >
+                  </div>
+                  <div class="sig-field">
+                    <span class="sig-field-label">Seller Signature</span>
+                    <span class="digital-signature-preview"
+                      >Wright Finder Motors LLC</span
+                    >
+                  </div>
+                  <div class="sig-date-time">Date/Time: <?= todayDate ?></div>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Witness Block (Conditional) -->
+          <? if (witnessName || witnessSignature) { ?>
+          <div class="witness-container">
+            <div class="sig-label" style="color: #475569">
+              Witness Signature
+            </div>
+            <table class="signatures-table" style="margin-top: 0">
+              <tr>
+                <td>
+                  <div class="sig-field">
+                    <span class="sig-field-label">Witness Full Name</span>
+                    <span class="sig-field-value"><?= witnessName ?></span>
+                  </div>
+                </td>
+                <td class="spacer"></td>
+                <td>
+                  <div class="sig-field">
+                    <span class="sig-field-label">Witness Signature</span>
+                    <span class="digital-signature-preview"
+                      ><?= witnessSignature ?></span
+                    >
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <? } ?>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

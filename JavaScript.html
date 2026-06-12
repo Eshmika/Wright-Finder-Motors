@@ -3215,7 +3215,7 @@
         if (tbody) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="5" class="text-center" style="padding: 30px; color: #858796;">
+              <td colspan="7" class="text-center" style="padding: 30px; color: #858796;">
                 <i class="fas fa-spinner fa-spin fa-2x" style="color: #512b81;"></i>
                 <div style="margin-top: 10px;">Loading client agreement details...</div>
               </td>
@@ -3274,7 +3274,7 @@
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center" style="padding: 20px; color: #858796;">
+            <td colspan="7" class="text-center" style="padding: 20px; color: #858796;">
               No matching loan vehicles found.
             </td>
           </tr>`;
@@ -3311,6 +3311,22 @@
               ? "fa-redo"
               : "fa-paper-plane";
 
+          const pdfLink = car["Agreement PDF Link"] || "";
+          let pdfHtml = "";
+          if (pdfLink) {
+            pdfHtml = `
+              <a 
+                href="${pdfLink}" 
+                target="_blank" 
+                class="action-btn" 
+                style="padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; background: #10b981; color: white; border: none; cursor: pointer; text-decoration: none; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);"
+              >
+                <i class="fas fa-file-pdf"></i> View
+              </a>`;
+          } else {
+            pdfHtml = `<span style="color: #64748b; font-style: italic; font-size: 0.85rem;">No PDF</span>`;
+          }
+
           tr.innerHTML = `
             <td class="stock-col"><strong>${car["Car ID"] || "-"}</strong></td>
             <td>
@@ -3320,6 +3336,7 @@
             <td><strong>${car["CLIENT NAME"] || "-"}</strong></td>
             <td>${email ? email : '<span style="color: #e74a3b; font-style: italic;"><i class="fas fa-exclamation-triangle"></i> Not Set</span>'}</td>
             <td style="text-align: center;">${statusHtml}</td>
+            <td style="text-align: center;">${pdfHtml}</td>
             <td style="text-align: center;" class="action-col">
               <button 
                 class="action-btn" 
