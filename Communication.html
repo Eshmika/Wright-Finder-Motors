@@ -1,0 +1,87 @@
+<!-- Communication View -->
+<div id="view-communication" class="view">
+  <div
+    class="creative-expenses-header"
+    style="background: linear-gradient(135deg, #2c1a4d 0%, #512b81 100%)"
+  >
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
+    <div class="expenses-header-content">
+      <h1>
+        <i class="fas fa-envelope-open-text"></i>
+        Client Communications
+      </h1>
+      <p>
+        Manage financing agreements and email notifications to loan clients.
+      </p>
+    </div>
+  </div>
+
+  <div class="expenses-card">
+    <div
+      class="expenses-card-header"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      "
+    >
+      <h3>
+        <span class="icon-square" style="background: #ece8f6; color: #512b81">
+          <i class="fas fa-paper-plane"></i>
+        </span>
+        Agreement Dispatcher
+      </h3>
+      <div style="display: flex; gap: 10px; flex-grow: 1; max-width: 400px">
+        <div class="modern-input-wrapper" style="margin: 0">
+          <input
+            type="text"
+            id="commSearchInput"
+            class="form-control"
+            placeholder="Filter by Stock #, Client, or Email..."
+            style="height: 38px; font-size: 0.9rem"
+            oninput="filterCommunicationTable()"
+          />
+          <i class="fas fa-filter" style="font-size: 0.9rem"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive" style="margin-top: 15px">
+      <table class="cars-table" id="commTable">
+        <thead>
+          <tr>
+            <th style="width: 100px">Stock #</th>
+            <th>Vehicle Details</th>
+            <th>Client Name</th>
+            <th style="width: 130px">Down Payment</th>
+            <th>Client Email</th>
+            <th style="width: 140px; text-align: center">Status</th>
+            <th style="width: 180px; text-align: center" class="action-col">
+              Action
+            </th>
+          </tr>
+        </thead>
+        <tbody id="commTableBody">
+          <tr>
+            <td
+              colspan="7"
+              class="text-center"
+              style="padding: 30px; color: #858796"
+            >
+              <i
+                class="fas fa-spinner fa-spin fa-2x"
+                style="color: #512b81"
+              ></i>
+              <div style="margin-top: 10px">
+                Loading client agreement details...
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

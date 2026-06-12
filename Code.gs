@@ -921,3 +921,106 @@ function getWfmExpenses() {
 
   return wfmExpenses;
 }
+
+function sendAgreementEmailToServer(carId) {
+  try {
+    var vehicles = getVehicles();
+    var car = null;
+    for (var i = 0; i < vehicles.length; i++) {
+      if (vehicles[i]["Car ID"] === carId) {
+        car = vehicles[i];
+        break;
+      }
+    }
+
+    if (!car) {
+      return { success: false, message: "Vehicle " + carId + " not found." };
+    }
+
+    var clientName = car["CLIENT NAME"]
+      ? car["CLIENT NAME"].toString().trim()
+      : "";
+    var clientEmail = car["Client Email"]
+      ? car["Client Email"].toString().trim()
+      : "";
+    var carName = car["Car Name"] || "";
+    var model = car["Model"] || "";
+    var year = car["Year"] || "";
+    var downPayment = car["DOWN PAYMENT"] || "$0.00";
+
+    if (!clientEmail) {
+      return {
+        success: false,
+        message: "Client email is missing for this vehicle.",
+      };
+    }
+
+    // Creative, premium HTML Email Template
+    var htmlBody =
+      "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e1e1; border-radius: 12px; background-color: #faf9fd;\">" +
+      '<div style="text-align: center; background: linear-gradient(135deg, #170a3d 0%, #3a1f62 100%); padding: 30px; border-radius: 10px 10px 0 0; color: #ffffff;">' +
+      '<h1 style="margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">WRIGHT FINDER MOTORS</h1>' +
+      '<p style="margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Secure Financing & Agreement Center</p>' +
+      "</div>" +
+      '<div style="padding: 30px 20px; background-color: #ffffff; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">' +
+      '<h2 style="color: #3a1f62; margin-top: 0; font-size: 20px;">Financing Agreement Ready for Signature</h2>' +
+      '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Dear ' +
+      clientName +
+      ",</p>" +
+      '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Thank you for purchasing your vehicle through Wright Finder Motors. We are pleased to inform you that your financing agreement for the vehicle listed below is ready to sign.</p>' +
+      '<div style="background-color: #f6f4fa; border-left: 4px solid #3a1f62; padding: 15px; margin: 20px 0; border-radius: 4px;">' +
+      '<table style="width: 100%; font-size: 14px; border-collapse: collapse; color: #4a4a4a;">' +
+      '<tr><td style="padding: 5px 0; font-weight: bold; width: 40%;">Vehicle:</td><td style="padding: 5px 0;">' +
+      year +
+      " " +
+      carName +
+      " " +
+      model +
+      "</td></tr>" +
+      '<tr><td style="padding: 5px 0; font-weight: bold;">Stock Number:</td><td style="padding: 5px 0;">' +
+      carId +
+      "</td></tr>" +
+      '<tr><td style="padding: 5px 0; font-weight: bold;">Down Payment:</td><td style="padding: 5px 0; color: #2e7d32; font-weight: bold;">' +
+      downPayment +
+      "</td></tr>" +
+      "</table>" +
+      "</div>" +
+      '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Please review the agreement and execute the signature using the link below to finalize the purchasing process:</p>' +
+      '<div style="text-align: center; margin: 30px 0;">' +
+      '<a href="https://example.com/sign-agreement?id=' +
+      carId +
+      '" style="background: linear-gradient(135deg, #3a1f62 0%, #170a3d 100%); color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(58, 31, 98, 0.3); display: inline-block;">Review & Sign Agreement</a>' +
+      "</div>" +
+      '<hr style="border: 0; border-top: 1px solid #eeeeee; margin: 30px 0;">' +
+      '<p style="color: #888888; font-size: 12px; line-height: 1.5; text-align: center;">If you have any questions or require assistance, please feel free to reach out to our support team.</p>' +
+      '<p style="color: #888888; font-size: 12px; text-align: center; margin: 5px 0 0 0;">&copy; ' +
+      new Date().getFullYear() +
+      " Wright Finder Motors. All rights reserved.</p>" +
+      "</div>" +
+      "</div>";
+
+    MailApp.sendEmail({
+      to: clientEmail,
+      subject:
+        "Action Required: Sign Your Vehicle Financing Agreement - " +
+        year +
+        " " +
+        carName +
+        " " +
+        model,
+      htmlBody: htmlBody,
+    });
+
+    return {
+      success: true,
+      message:
+        "Financing agreement email sent successfully to " +
+        clientName +
+        " (" +
+        clientEmail +
+        ").",
+    };
+  } catch (e) {
+    return { success: false, message: "Failed to send email: " + e.toString() };
+  }
+}
