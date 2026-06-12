@@ -29,6 +29,17 @@ function testCreate() {
 }
 
 function doGet(e) {
+  var id = e.parameter.id || e.parameter.carId;
+  if (id) {
+    var template = HtmlService.createTemplateFromFile("SignAgreement");
+    template.data = getAgreementData(id);
+    template.carId = id;
+    return template
+      .evaluate()
+      .setTitle("Sign Purchase Agreement - Wright Finder Motors")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag("viewport", "width=device-width, initial-scale=1");
+  }
   return HtmlService.createTemplateFromFile("Index")
     .evaluate()
     .setTitle("Wright Finder Motors App")
@@ -288,6 +299,7 @@ function updateVehicleData(updatedData) {
 }
 
 function getVehicles() {
+  ensureAgreementColumns();
   var sheet =
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
   if (!sheet) return [];
@@ -946,7 +958,6 @@ function sendAgreementEmailToServer(carId) {
     var carName = car["Car Name"] || "";
     var model = car["Model"] || "";
     var year = car["Year"] || "";
-    var downPayment = car["DOWN PAYMENT"] || "$0.00";
 
     if (!clientEmail) {
       return {
@@ -954,6 +965,17 @@ function sendAgreementEmailToServer(carId) {
         message: "Client email is missing for this vehicle.",
       };
     }
+
+    var scriptUrl = "";
+    try {
+      scriptUrl = ScriptApp.getService().getUrl();
+    } catch (e) {
+      Logger.log("Error getting script URL: " + e);
+    }
+    if (!scriptUrl) {
+      scriptUrl = "https://script.google.com/macros/s/AKfycbz_placeholder/exec";
+    }
+    var signLink = scriptUrl + "?id=" + carId;
 
     // Creative, premium HTML Email Template
     var htmlBody =
@@ -963,11 +985,11 @@ function sendAgreementEmailToServer(carId) {
       '<p style="margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Secure Financing & Agreement Center</p>' +
       "</div>" +
       '<div style="padding: 30px 20px; background-color: #ffffff; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">' +
-      '<h2 style="color: #3a1f62; margin-top: 0; font-size: 20px;">Financing Agreement Ready for Signature</h2>' +
+      '<h2 style="color: #3a1f62; margin-top: 0; font-size: 20px;">Purchase Agreement Ready for Signature</h2>' +
       '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Dear ' +
       clientName +
       ",</p>" +
-      '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Thank you for purchasing your vehicle through Wright Finder Motors. We are pleased to inform you that your financing agreement for the vehicle listed below is ready to sign.</p>' +
+      '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Thank you for purchasing your vehicle through Wright Finder Motors. We are pleased to inform you that your purchasing agreement for the vehicle listed below is ready to sign.</p>' +
       '<div style="background-color: #f6f4fa; border-left: 4px solid #3a1f62; padding: 15px; margin: 20px 0; border-radius: 4px;">' +
       '<table style="width: 100%; font-size: 14px; border-collapse: collapse; color: #4a4a4a;">' +
       '<tr><td style="padding: 5px 0; font-weight: bold; width: 40%;">Vehicle:</td><td style="padding: 5px 0;">' +
@@ -980,15 +1002,12 @@ function sendAgreementEmailToServer(carId) {
       '<tr><td style="padding: 5px 0; font-weight: bold;">Stock Number:</td><td style="padding: 5px 0;">' +
       carId +
       "</td></tr>" +
-      '<tr><td style="padding: 5px 0; font-weight: bold;">Down Payment:</td><td style="padding: 5px 0; color: #2e7d32; font-weight: bold;">' +
-      downPayment +
-      "</td></tr>" +
       "</table>" +
       "</div>" +
       '<p style="color: #4a4a4a; font-size: 15px; line-height: 1.6;">Please review the agreement and execute the signature using the link below to finalize the purchasing process:</p>' +
       '<div style="text-align: center; margin: 30px 0;">' +
-      '<a href="https://example.com/sign-agreement?id=' +
-      carId +
+      '<a href="' +
+      signLink +
       '" style="background: linear-gradient(135deg, #3a1f62 0%, #170a3d 100%); color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(58, 31, 98, 0.3); display: inline-block;">Review & Sign Agreement</a>' +
       "</div>" +
       '<hr style="border: 0; border-top: 1px solid #eeeeee; margin: 30px 0;">' +
@@ -1002,7 +1021,7 @@ function sendAgreementEmailToServer(carId) {
     MailApp.sendEmail({
       to: clientEmail,
       subject:
-        "Action Required: Sign Your Vehicle Financing Agreement - " +
+        "Action Required: Sign Your Vehicle Purchase Agreement - " +
         year +
         " " +
         carName +
@@ -1011,10 +1030,12 @@ function sendAgreementEmailToServer(carId) {
       htmlBody: htmlBody,
     });
 
+    updateAgreementStatus(carId, "Pending");
+
     return {
       success: true,
       message:
-        "Financing agreement email sent successfully to " +
+        "Purchase agreement email sent successfully to " +
         clientName +
         " (" +
         clientEmail +
@@ -1035,4 +1056,161 @@ function getPermission() {
     subject: "Permission Verification",
     body: "If you are reading this, the MailApp permission has been successfully granted.",
   });
+}
+
+function getVehicleById(carId) {
+  var vehicles = getVehicles();
+  for (var i = 0; i < vehicles.length; i++) {
+    if (vehicles[i]["Car ID"] === carId) {
+      return vehicles[i];
+    }
+  }
+  return null;
+}
+
+function ensureAgreementColumns() {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return;
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var required = [
+    "Agreement Status",
+    "Buyer Signature",
+    "Buyer Signature Date",
+    "Installment Frequency",
+    "Witness Name",
+    "Witness Signature",
+  ];
+
+  for (var i = 0; i < required.length; i++) {
+    if (headers.indexOf(required[i]) === -1) {
+      sheet.getRange(1, sheet.getLastColumn() + 1).setValue(required[i]);
+      headers.push(required[i]); // update headers array
+    }
+  }
+}
+
+function getAgreementData(carId) {
+  var car = getVehicleById(carId);
+  if (!car) return null;
+
+  var soldPriceVal =
+    parseFloat(
+      (car["SOLD PRICE"] || "").toString().replace(/[^0-9.-]+/g, ""),
+    ) || 0;
+  var downPaymentVal =
+    parseFloat(
+      (car["DOWN PAYMENT"] || "").toString().replace(/[^0-9.-]+/g, ""),
+    ) || 0;
+  var remainLoanVal = soldPriceVal - downPaymentVal;
+
+  var formatMoney = function (num) {
+    return (
+      "$" +
+      num.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
+  };
+
+  var today = new Date();
+  var options = { year: "numeric", month: "long", day: "numeric" };
+  var formattedDate = today.toLocaleDateString("en-US", options);
+
+  var days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  var todayDayName = days[today.getDay()];
+
+  return {
+    car: car,
+    todayDate: formattedDate,
+    todayDayName: todayDayName,
+    soldPrice: formatMoney(soldPriceVal),
+    downPayment: formatMoney(downPaymentVal),
+    remainLoan: formatMoney(remainLoanVal),
+  };
+}
+
+function updateAgreementStatus(carId, status) {
+  try {
+    var sheet =
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+    if (!sheet) return;
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    var carIdIndex = headers.indexOf("Car ID");
+    var statusIndex = headers.indexOf("Agreement Status");
+
+    if (carIdIndex !== -1 && statusIndex !== -1) {
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][carIdIndex] === carId) {
+          sheet.getRange(i + 1, statusIndex + 1).setValue(status);
+          break;
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log("Error updating agreement status: " + e);
+  }
+}
+
+function submitSignedAgreement(carId, data) {
+  try {
+    var sheet =
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+    if (!sheet)
+      return { success: false, message: "Sheet 'Vehicle details' not found" };
+
+    var values = sheet.getDataRange().getValues();
+    var headers = values[0];
+
+    var carIdIndex = headers.indexOf("Car ID");
+    if (carIdIndex === -1)
+      return { success: false, message: "Car ID column not found" };
+
+    var rowIndex = -1;
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][carIdIndex] === carId) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (rowIndex === -1)
+      return { success: false, message: "Vehicle " + carId + " not found" };
+
+    var updates = {
+      "Agreement Status": "Signed",
+      "Buyer Signature": data.buyerSignature,
+      "Buyer Signature Date": new Date(),
+      "Installment Frequency": data.installmentFrequency,
+      "Witness Name": data.witnessName || "",
+      "Witness Signature": data.witnessSignature || "",
+    };
+
+    for (var key in updates) {
+      var colIndex = headers.indexOf(key);
+      if (colIndex !== -1) {
+        sheet.getRange(rowIndex, colIndex + 1).setValue(updates[key]);
+      }
+    }
+
+    return {
+      success: true,
+      message: "Agreement successfully signed and verified!",
+    };
+  } catch (e) {
+    return {
+      success: false,
+      message: "Error signing agreement: " + e.toString(),
+    };
+  }
 }

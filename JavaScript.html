@@ -3274,7 +3274,7 @@
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="text-center" style="padding: 20px; color: #858796;">
+            <td colspan="6" class="text-center" style="padding: 20px; color: #858796;">
               No matching loan vehicles found.
             </td>
           </tr>`;
@@ -3292,6 +3292,25 @@
           const tr = document.createElement("tr");
           tr.id = "comm-row-" + car["Car ID"];
 
+          const status = (car["Agreement Status"] || "").toString().trim();
+          let statusHtml = "";
+          if (status === "Signed") {
+            statusHtml = `<span style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-check-circle"></i> Signed</span>`;
+          } else if (status === "Pending") {
+            statusHtml = `<span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-clock"></i> Pending</span>`;
+          } else {
+            statusHtml = `<span style="background: rgba(100, 116, 139, 0.1); color: #64748b; border: 1px solid rgba(100, 116, 139, 0.2); padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-question-circle"></i> Not Sent</span>`;
+          }
+
+          const btnText =
+            status === "Signed" || status === "Pending"
+              ? "Resend Email"
+              : "Send Email";
+          const btnIcon =
+            status === "Signed" || status === "Pending"
+              ? "fa-redo"
+              : "fa-paper-plane";
+
           tr.innerHTML = `
             <td class="stock-col"><strong>${car["Car ID"] || "-"}</strong></td>
             <td>
@@ -3300,6 +3319,7 @@
             </td>
             <td><strong>${car["CLIENT NAME"] || "-"}</strong></td>
             <td>${email ? email : '<span style="color: #e74a3b; font-style: italic;"><i class="fas fa-exclamation-triangle"></i> Not Set</span>'}</td>
+            <td style="text-align: center;">${statusHtml}</td>
             <td style="text-align: center;" class="action-col">
               <button 
                 class="action-btn" 
@@ -3307,7 +3327,7 @@
                 ${btnDisabled}
                 onclick="sendAgreementEmail('${car["Car ID"]}')"
               >
-                <i class="fas fa-paper-plane"></i> Send Email
+                <i class="fas ${btnIcon}"></i> ${btnText}
               </button>
             </td>
           `;
@@ -3338,6 +3358,12 @@
           btn.disabled = false;
           btn.style.opacity = "1";
           if (result && result.success) {
+            // Update local cache
+            const localCar = allCars.find((c) => c["Car ID"] === carId);
+            if (localCar) {
+              localCar["Agreement Status"] = "Pending";
+              window.renderCommunicationTable();
+            }
             showCreativeSuccessModal(result.message);
           } else {
             alert("Error: " + (result ? result.message : "Unknown error"));

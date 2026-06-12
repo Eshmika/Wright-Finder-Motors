@@ -1,0 +1,1008 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <title>Sign Purchase Agreement - Wright Finder Motors</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
+
+      :root {
+        --primary-color: #3a1f62;
+        --primary-dark: #170a3d;
+        --accent-color: #10b981;
+        --bg-dark: #090514;
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --border-color: rgba(255, 255, 255, 0.08);
+        --text-main: #ffffff;
+        --text-muted: #94a3b8;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: radial-gradient(
+          circle at top right,
+          #1a0f30 0%,
+          var(--bg-dark) 100%
+        );
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 900px;
+        margin: 20px auto;
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Portal Header */
+      .portal-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .portal-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #e0b0ff 0%, #a855f7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 5px;
+      }
+
+      .portal-header p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      /* Paper Document Card */
+      .document-paper {
+        background: #ffffff;
+        color: #1e293b;
+        border-radius: 12px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        padding: 50px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+      }
+
+      /* Document Watermark / Decorative side strip */
+      .document-paper::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          var(--primary-color),
+          var(--primary-dark)
+        );
+      }
+
+      .doc-header {
+        text-align: center;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 25px;
+        margin-bottom: 35px;
+      }
+
+      .doc-logo {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      .doc-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f172a;
+        text-transform: uppercase;
+        margin-top: 10px;
+      }
+
+      /* Contract Content Styling */
+      .contract-body {
+        font-size: 0.95rem;
+        color: #334155;
+        text-align: justify;
+      }
+
+      .contract-p {
+        margin-bottom: 20px;
+        line-height: 1.7;
+      }
+
+      .contract-p strong {
+        color: #0f172a;
+      }
+
+      .clause-num {
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-right: 5px;
+      }
+
+      /* Embedded Inline Inputs */
+      .inline-select,
+      .inline-input {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        padding: 4px 8px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: #0f172a;
+        font-weight: 600;
+        border-radius: 4px;
+        outline: none;
+        transition: all 0.2s;
+      }
+
+      .inline-select:focus,
+      .inline-input:focus {
+        background: #f1f5f9;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(58, 31, 98, 0.1);
+      }
+
+      /* Specs Highlight Grid */
+      .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+
+      .spec-cell {
+        font-size: 0.9rem;
+      }
+
+      .spec-cell strong {
+        color: #0f172a;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 2px;
+        opacity: 0.8;
+      }
+
+      /* Signatures Section */
+      .signatures-section {
+        border-top: 2px solid #e2e8f0;
+        margin-top: 40px;
+        padding-top: 30px;
+      }
+
+      .signature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 30px;
+      }
+
+      .sig-block {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+      }
+
+      .sig-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .sig-input-wrapper {
+        margin-bottom: 12px;
+      }
+
+      .sig-field {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s;
+      }
+
+      .sig-field:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(58, 31, 98, 0.1);
+      }
+
+      /* Cursive Digital Signature Font representation */
+      .digital-signature-preview {
+        font-family: "Caveat", cursive;
+        font-size: 1.8rem;
+        color: #1e3a8a;
+        min-height: 45px;
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid #94a3b8;
+        padding: 0 10px 5px 10px;
+        margin-top: 15px;
+        user-select: none;
+        letter-spacing: 1px;
+      }
+
+      .sig-date-time {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 8px;
+      }
+
+      /* Action bar */
+      .action-bar {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .btn {
+        padding: 14px 35px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          var(--primary-dark) 100%
+        );
+        color: white;
+        box-shadow: 0 10px 20px -5px rgba(58, 31, 98, 0.4);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px -5px rgba(58, 31, 98, 0.5);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        background: #cbd5e1;
+        color: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      /* Loaders / Success Modal */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(9, 5, 20, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+
+      .overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .status-card {
+        background: #ffffff;
+        color: #1e293b;
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transform: scale(0.9);
+        transition: transform 0.3s;
+      }
+
+      .overlay.active .status-card {
+        transform: scale(1);
+      }
+
+      .status-icon {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+      }
+
+      .status-icon.success {
+        color: var(--accent-color);
+      }
+
+      .status-icon.loading {
+        color: var(--primary-color);
+      }
+
+      .status-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 10px;
+      }
+
+      .status-card p {
+        color: #64748b;
+        font-size: 0.95rem;
+      }
+
+      /* Error UI */
+      .error-container {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        max-width: 500px;
+        margin: 40px auto;
+      }
+
+      .error-container i {
+        font-size: 3rem;
+        color: #ef4444;
+        margin-bottom: 15px;
+      }
+
+      .error-container h2 {
+        font-size: 1.3rem;
+        color: white;
+        margin-bottom: 10px;
+      }
+
+      .error-container p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 768px) {
+        .document-paper {
+          padding: 30px 20px;
+        }
+        .sig-block {
+          padding: 15px;
+        }
+        body {
+          padding: 10px;
+        }
+        .portal-header h1 {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="portal-header">
+        <h1>Wright Finder Motors</h1>
+        <p>Secure Electronic Signature Portal</p>
+      </div>
+
+      <? if (!data) { ?>
+      <div class="error-container">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>Agreement Link Invalid or Expired</h2>
+        <p>
+          We could not find a matching vehicle agreement for this link. Please
+          request a new link from Wright Finder Motors.
+        </p>
+      </div>
+      <? } else { ?>
+      <form id="agreementForm">
+        <div class="document-paper">
+          <div class="doc-header">
+            <div class="doc-logo">
+              <i class="fas fa-car-side"></i> WRIGHT FINDER MOTORS
+            </div>
+            <div class="doc-title">Purchase Agreement</div>
+          </div>
+
+          <div class="contract-body">
+            <p class="contract-p">
+              This purchase agreement (the "Agreement") dated this
+              <strong><?= data.todayDate ?></strong> BETWEEN:
+              <br />
+              <strong>WRIGHT FINDER MOTORS LLC</strong> (the "Seller") and
+              <strong><?= data.car["CLIENT NAME"] ?></strong> (the "Buyer").
+            </p>
+
+            <p
+              class="contract-p"
+              style="
+                font-weight: 500;
+                color: #0f172a;
+                margin-top: 15px;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 5px;
+              "
+            >
+              The parties agree to the following agreements: Sale of Goods
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">1.</span>
+              The Seller will sell, transfer today, the following goods (Vehicle
+              details):
+            </p>
+
+            <div class="specs-grid">
+              <div class="spec-cell">
+                <strong>New/Used</strong>
+                <span><?= data.car["Condition"] || "Used" ?></span>
+              </div>
+              <div class="spec-cell">
+                <strong>Title Status</strong>
+                <span><?= data.car["Title"] || "Clean" ?></span>
+              </div>
+              <div class="spec-cell">
+                <strong>Make</strong>
+                <span><?= data.car["Car Name"] || "-" ?></span>
+              </div>
+              <div class="spec-cell">
+                <strong>Model</strong>
+                <span><?= data.car["Model"] || "-" ?></span>
+              </div>
+              <div class="spec-cell">
+                <strong>Year</strong>
+                <span><?= data.car["Year"] || "-" ?></span>
+              </div>
+              <div class="spec-cell">
+                <strong>Color</strong>
+                <span><?= data.car["Exterior Color"] || "-" ?></span>
+              </div>
+              <div class="spec-cell" style="grid-column: span 2">
+                <strong>VIN</strong>
+                <span style="font-family: monospace; letter-spacing: 0.5px"
+                  ><?= data.car["VIN"] || "-" ?></span
+                >
+              </div>
+            </div>
+
+            <p class="contract-p">
+              <span class="clause-num">2.</span>
+              The Buyer will accept the Goods and pay for the Goods with the sum
+              of <strong><?= data.soldPrice ?></strong> (USD) (the "Purchase
+              Price"), paid as, a non-refundable downpayment of
+              <strong><?= data.downPayment ?></strong> on, (<?=
+              data.todayDayName ?>) <strong><?= data.todayDate ?></strong> and
+              the remaining balance of
+              <strong><?= data.remainLoan ?></strong> (USD). The remainder of
+              the Purchase Price is payable by cash, E-transfer, Check,
+              Cashier’s check, or Bank transfer.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">3.</span>
+              The Purchase Price is inclusive of sales tax and is payable by the
+              Buyer unless the Buyer provides the Seller with a tax exemption
+              certificate acceptable to the applicable taxing authorities, in
+              which case the amount of sales tax will be subtracted from the
+              Purchase Price payable by the Buyer. The Purchase Price will be
+              paid in consecutive
+              <select class="inline-select" id="installmentFrequency" required>
+                <option value="weekly">weekly</option>
+                <option value="biweekly">biweekly</option>
+                <option value="monthly">monthly</option>
+              </select>
+              installments commencing on
+              <strong><?= data.todayDate ?></strong> (Today) and continuing
+              towards the remaining balance of
+              <strong><?= data.remainLoan ?></strong> (USD) until
+              <input
+                type="date"
+                class="inline-input"
+                id="installmentEndDate"
+                required
+                style="width: 150px"
+              />.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">4.</span>
+              Should the Buyer fail to make payment; each missing payment will
+              be charged the amount interest of $100 for the first payment, $200
+              for the second payment. On the third missing payment, the Seller
+              will take back the goods with a written notice via e-mail or
+              text/call to the Buyer. On the fourth missing payment, the Seller
+              will submit the issue first before a non-binding mediator and to
+              an arbitrator in the event that mediation fails. If any dispute
+              relating to this Agreement between the Seller and the Buyer is not
+              resolved through informal discussion within 14 days from the date
+              a dispute arises, the parties agree to submit the issue first
+              before a non-binding mediator and to an arbitrator in the event
+              that mediation fails. The decision of the arbitrator will be
+              binding on the parties. Any mediator or arbitrator must be a
+              neutral party acceptable to both the Seller and the Buyer. The
+              cost of any mediations or arbitration will be paid by the Buyer.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">5.</span>
+              Except as otherwise provided in this Agreement, the deposit is not
+              refunded to the Buyer if this transaction is not completed.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">6.</span>
+              The goods are sold 'as is' and the Seller expressly disclaims all
+              warranties, whether express or implied, including but not limited
+              to, any implied warranty of merchantability or fitness for a
+              particular purpose. The Seller does not assume or authorize any
+              other person to assume, on behalf of the Seller, any liability in
+              connection with the sale of the Goods. The Seller's above
+              disclaimer of warranties does not, in any way, affect the terms of
+              any applicable warranties from the manufacturer of the Goods.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">7.</span>
+              The Buyer has been given the opportunity to inspect the Goods or
+              to have it inspected and the Buyer has accepted the Goods in its
+              existing condition. Further, the Seller disclaims any warranty as
+              to the condition of the Goods.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">8.</span>
+              Title to the Goods will remain with the Seller until the car has
+              been paid off.
+            </p>
+
+            <p class="contract-p">
+              <span class="clause-num">9.</span>
+              This is a brief of our terms and conditions, please visit us on
+              our website at
+              <a
+                href="https://www.wrightfindermotors.com"
+                target="_blank"
+                style="
+                  color: var(--primary-color);
+                  text-decoration: underline;
+                  font-weight: 600;
+                "
+                >www.wrightfindermotors.com</a
+              >
+              to read our full T&C prior to signing. Signing this means you have
+              read and understand our full T&C. Your signature on this paper
+              will count on both.
+            </p>
+
+            <p
+              class="contract-p"
+              style="
+                margin-top: 30px;
+                font-weight: 500;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 20px;
+              "
+            >
+              IN WITNESS WHEREOF the parties have executed this Purchase
+              Agreement.
+            </p>
+
+            <p
+              class="contract-p"
+              style="
+                font-size: 0.85rem;
+                color: #64748b;
+                background: #f8fafc;
+                padding: 12px;
+                border-radius: 6px;
+                border-left: 3px solid #cbd5e1;
+                line-height: 1.5;
+              "
+            >
+              By electronically typing or signing my name below, I acknowledge
+              and agree that this electronic representation of my name
+              constitutes my legal signature. This electronic signature has the
+              same validity, force, and effect as a handwritten signature under
+              applicable state and federal law, including the ESIGN Act and the
+              Uniform Electronic Transactions Act.
+            </p>
+
+            <!-- Signatures Fields Grid -->
+            <div class="signatures-section">
+              <div class="signature-grid">
+                <!-- Buyer Block -->
+                <div class="sig-block">
+                  <div class="sig-label">
+                    <i class="fas fa-user-edit"></i> Buyer Signature
+                  </div>
+
+                  <div class="sig-input-wrapper">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 0.75rem;
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                        color: #475569;
+                      "
+                      >Full Name</label
+                    >
+                    <input
+                      type="text"
+                      id="buyerName"
+                      class="sig-field"
+                      value="<?= data.car['CLIENT NAME'] ?>"
+                      required
+                      placeholder="Type your full name"
+                    />
+                  </div>
+
+                  <div class="sig-input-wrapper">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 0.75rem;
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                        color: #475569;
+                      "
+                      >Electronic Signature</label
+                    >
+                    <input
+                      type="text"
+                      id="buyerSignatureInput"
+                      class="sig-field"
+                      required
+                      placeholder="Type full name to sign"
+                      oninput="updateSignaturePreview('buyer')"
+                    />
+                  </div>
+
+                  <div
+                    class="digital-signature-preview"
+                    id="buyerSignaturePreview"
+                  >
+                    Cursive Signature Preview
+                  </div>
+
+                  <div class="sig-date-time" id="buyerDateTime">
+                    Date/Time: --/--/---- --:--
+                  </div>
+                </div>
+
+                <!-- Seller Block -->
+                <div
+                  class="sig-block"
+                  style="background: #faf5ff; border-color: #e9d5ff"
+                >
+                  <div class="sig-label" style="color: #6b21a8">
+                    <i class="fas fa-building"></i> Seller Signature
+                  </div>
+
+                  <div class="sig-input-wrapper">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 0.75rem;
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                        color: #475569;
+                      "
+                      >Company Name</label
+                    >
+                    <input
+                      type="text"
+                      class="sig-field"
+                      value="WRIGHT FINDER MOTORS LLC"
+                      disabled
+                      style="background: #f1f5f9; color: #64748b"
+                    />
+                  </div>
+
+                  <div class="sig-input-wrapper">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 0.75rem;
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                        color: #475569;
+                      "
+                      >Seller Signature</label
+                    >
+                    <input
+                      type="text"
+                      class="sig-field"
+                      value="Wright Finder Motors LLC"
+                      disabled
+                      style="background: #f1f5f9; color: #64748b"
+                    />
+                  </div>
+
+                  <div
+                    class="digital-signature-preview"
+                    style="color: #6b21a8; border-color: #d8b4fe"
+                  >
+                    Wright Finder Motors LLC
+                  </div>
+
+                  <div class="sig-date-time">
+                    Date/Time: <?= data.todayDate ?>
+                  </div>
+                </div>
+
+                <!-- Witness Block -->
+                <div class="sig-block" style="grid-column: 1 / -1">
+                  <div class="sig-label" style="color: #475569">
+                    <i class="fas fa-signature"></i> Witness Signature
+                    (Optional)
+                  </div>
+
+                  <div
+                    class="signature-grid"
+                    style="
+                      grid-template-columns: repeat(
+                        auto-fit,
+                        minmax(200px, 1fr)
+                      );
+                      gap: 15px;
+                      margin-top: 10px;
+                    "
+                  >
+                    <div class="sig-input-wrapper">
+                      <label
+                        style="
+                          display: block;
+                          font-size: 0.75rem;
+                          margin-bottom: 4px;
+                          font-weight: 600;
+                          color: #475569;
+                        "
+                        >Witness Full Name</label
+                      >
+                      <input
+                        type="text"
+                        id="witnessName"
+                        class="sig-field"
+                        placeholder="Full name of witness (if any)"
+                      />
+                    </div>
+
+                    <div class="sig-input-wrapper">
+                      <label
+                        style="
+                          display: block;
+                          font-size: 0.75rem;
+                          margin-bottom: 4px;
+                          font-weight: 600;
+                          color: #475569;
+                        "
+                        >Witness Signature</label
+                      >
+                      <input
+                        type="text"
+                        id="witnessSignatureInput"
+                        class="sig-field"
+                        placeholder="Type name to sign"
+                        oninput="updateSignaturePreview('witness')"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        style="
+                          display: block;
+                          font-size: 0.75rem;
+                          margin-bottom: 4px;
+                          font-weight: 600;
+                          color: #475569;
+                        "
+                        >Digital Signature</label
+                      >
+                      <div
+                        class="digital-signature-preview"
+                        id="witnessSignaturePreview"
+                        style="
+                          font-size: 1.5rem;
+                          min-height: 40px;
+                          color: #475569;
+                        "
+                      >
+                        Cursive Witness Signature
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-check-double"></i> Sign & Submit Agreement
+          </button>
+        </div>
+      </form>
+      <? } ?>
+    </div>
+
+    <!-- Fullscreen Overlay for Loading and Success states -->
+    <div class="overlay" id="statusOverlay">
+      <!-- Loading Card -->
+      <div class="status-card" id="loadingCard">
+        <div class="status-icon loading">
+          <i class="fas fa-circle-notch fa-spin"></i>
+        </div>
+        <h2>Submitting Agreement</h2>
+        <p>
+          Please wait while we secure your digital signature and update the
+          records...
+        </p>
+      </div>
+
+      <!-- Success Card -->
+      <div class="status-card" id="successCard" style="display: none">
+        <div class="status-icon success">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Agreement Signed!</h2>
+        <p>
+          Thank you. Your digital purchase agreement has been signed and
+          verified. You may close this tab now.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // Live update signature previews
+      function updateSignaturePreview(role) {
+        if (role === "buyer") {
+          const val = document.getElementById("buyerSignatureInput").value;
+          const preview = document.getElementById("buyerSignaturePreview");
+          preview.textContent = val || "Cursive Signature Preview";
+        } else if (role === "witness") {
+          const val = document.getElementById("witnessSignatureInput").value;
+          const preview = document.getElementById("witnessSignaturePreview");
+          preview.textContent = val || "Cursive Witness Signature";
+        }
+      }
+
+      // Set dynamic timestamps
+      function updateTimestamps() {
+        const now = new Date();
+        const formatted =
+          now.toLocaleDateString() +
+          " " +
+          now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const buyerTime = document.getElementById("buyerDateTime");
+        if (buyerTime) {
+          buyerTime.textContent = "Date/Time: " + formatted;
+        }
+      }
+
+      // Initialize page details
+      window.addEventListener("DOMContentLoaded", () => {
+        updateTimestamps();
+        // Set interval to update buyer timestamp if they haven't typed yet, or keep it fresh
+        setInterval(updateTimestamps, 30000);
+
+        const form = document.getElementById("agreementForm");
+        if (form) {
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            submitAgreement();
+          });
+        }
+      });
+
+      function submitAgreement() {
+        const overlay = document.getElementById("statusOverlay");
+        const loadingCard = document.getElementById("loadingCard");
+        const successCard = document.getElementById("successCard");
+        const submitBtn = document.getElementById("submitBtn");
+
+        // Disable button
+        if (submitBtn) submitBtn.disabled = true;
+
+        // Show loading screen
+        overlay.classList.add("active");
+        loadingCard.style.display = "block";
+        successCard.style.display = "none";
+
+        const carId = "<?= carId ?>";
+        const payload = {
+          buyerName: document.getElementById("buyerName").value,
+          buyerSignature: document.getElementById("buyerSignatureInput").value,
+          installmentFrequency: document.getElementById("installmentFrequency")
+            .value,
+          installmentEndDate:
+            document.getElementById("installmentEndDate").value,
+          witnessName: document.getElementById("witnessName").value,
+          witnessSignature: document.getElementById("witnessSignatureInput")
+            .value,
+        };
+
+        google.script.run
+          .withSuccessHandler(function (response) {
+            if (response && response.success) {
+              // Show success animation
+              loadingCard.style.display = "none";
+              successCard.style.display = "block";
+            } else {
+              overlay.classList.remove("active");
+              if (submitBtn) submitBtn.disabled = false;
+              alert(
+                "Error: " +
+                  (response
+                    ? response.message
+                    : "Submission failed. Please try again."),
+              );
+            }
+          })
+          .withFailureHandler(function (error) {
+            overlay.classList.remove("active");
+            if (submitBtn) submitBtn.disabled = false;
+            alert("Submission failed: " + error.message);
+          })
+          .submitSignedAgreement(carId, payload);
+      }
+    </script>
+  </body>
+</html>
