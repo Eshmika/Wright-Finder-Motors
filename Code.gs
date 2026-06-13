@@ -1195,7 +1195,6 @@ function submitSignedAgreement(carId, data) {
 
     var updates = {
       "Agreement Status": "Signed",
-      "Installment Frequency": data.installmentFrequency,
       "Agreement PDF Link": pdfUrl,
     };
 
