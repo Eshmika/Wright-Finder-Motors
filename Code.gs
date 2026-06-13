@@ -1076,6 +1076,7 @@ function ensureAgreementColumns() {
   var required = [
     "Agreement Status",
     "Installment Frequency",
+    "Installment End Date",
     "Agreement PDF Link",
   ];
 
@@ -1137,6 +1138,7 @@ function getAgreementData(carId, ignoreSignedCheck) {
     soldPrice: formatMoney(soldPriceVal),
     downPayment: formatMoney(downPaymentVal),
     remainLoan: formatMoney(remainLoanVal),
+    installmentEndDateFormatted: formatDateString(car["Installment End Date"]),
   };
 }
 
@@ -1239,8 +1241,8 @@ function generateAndSaveAgreementPdf(carId, data) {
   template.downPayment = agreementData.downPayment;
   template.remainLoan = agreementData.remainLoan;
 
-  template.installmentFrequency = data.installmentFrequency || "weekly";
-  template.installmentEndDate = formatDateString(data.installmentEndDate);
+  template.installmentFrequency = car["Installment Frequency"] || "weekly";
+  template.installmentEndDate = formatDateString(car["Installment End Date"]);
 
   template.buyerName = data.buyerName || clientName;
   template.buyerSignature = data.buyerSignature || "";
@@ -1308,13 +1310,71 @@ function generateAndSaveAgreementPdf(carId, data) {
 function formatDateString(dateStr) {
   if (!dateStr) return "";
   try {
-    var parts = dateStr.split("-");
+    // Check if it's already a Date object
+    if (dateStr instanceof Date) {
+      var options = { year: "numeric", month: "long", day: "numeric" };
+      return dateStr.toLocaleDateString("en-US", options);
+    }
+    // Check for string date format YYYY-MM-DD
+    var parts = dateStr.toString().split("-");
     if (parts.length === 3) {
       // Parts: [YYYY, MM, DD]
       var d = new Date(parts[0], parts[1] - 1, parts[2]);
       var options = { year: "numeric", month: "long", day: "numeric" };
       return d.toLocaleDateString("en-US", options);
     }
+    // If it's a standard Date string representation from Apps Script / Google Sheets
+    var d2 = new Date(dateStr);
+    if (!isNaN(d2.getTime())) {
+      var options = { year: "numeric", month: "long", day: "numeric" };
+      return d2.toLocaleDateString("en-US", options);
+    }
   } catch (e) {}
-  return dateStr;
+  return dateStr.toString();
+}
+
+function saveInstallmentDetails(carId, frequency, endDate) {
+  try {
+    ensureAgreementColumns();
+    var sheet =
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+    if (!sheet)
+      return { success: false, message: "Sheet 'Vehicle details' not found" };
+
+    var values = sheet.getDataRange().getValues();
+    var headers = values[0];
+    var carIdIndex = headers.indexOf("Car ID");
+    if (carIdIndex === -1)
+      return { success: false, message: "Car ID column not found" };
+
+    var rowIndex = -1;
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][carIdIndex] === carId) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (rowIndex === -1)
+      return { success: false, message: "Vehicle " + carId + " not found" };
+
+    var updates = {
+      "Installment Frequency": frequency,
+      "Installment End Date": endDate,
+    };
+
+    for (var key in updates) {
+      var colIndex = headers.indexOf(key);
+      if (colIndex !== -1) {
+        sheet.getRange(rowIndex, colIndex + 1).setValue(updates[key]);
+      }
+    }
+
+    return {
+      success: true,
+      message: "Installment terms updated successfully!",
+    };
+  } catch (e) {
+    return { success: false, message: "Error saving details: " + e.toString() };
+  }
 }

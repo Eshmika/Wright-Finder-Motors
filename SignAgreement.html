@@ -556,22 +556,14 @@
               which case the amount of sales tax will be subtracted from the
               Purchase Price payable by the Buyer. The Purchase Price will be
               paid in consecutive
-              <select class="inline-select" id="installmentFrequency" required>
-                <option value="weekly">weekly</option>
-                <option value="biweekly">biweekly</option>
-                <option value="monthly">monthly</option>
-              </select>
+              <strong
+                ><?= data.car["Installment Frequency"] || "weekly" ?></strong
+              >
               installments commencing on
               <strong><?= data.todayDate ?></strong> (Today) and continuing
               towards the remaining balance of
               <strong><?= data.remainLoan ?></strong> (USD) until
-              <input
-                type="date"
-                class="inline-input"
-                id="installmentEndDate"
-                required
-                style="width: 150px"
-              />.
+              <strong><?= data.installmentEndDateFormatted || "-" ?></strong>.
             </p>
 
             <p class="contract-p">
@@ -995,10 +987,6 @@
         const payload = {
           buyerName: document.getElementById("buyerName").value,
           buyerSignature: document.getElementById("buyerSignatureInput").value,
-          installmentFrequency: document.getElementById("installmentFrequency")
-            .value,
-          installmentEndDate:
-            document.getElementById("installmentEndDate").value,
           witnessName: document.getElementById("witnessName").value,
           witnessSignature: document.getElementById("witnessSignatureInput")
             .value,
