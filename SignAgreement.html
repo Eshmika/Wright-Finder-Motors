@@ -13,10 +13,10 @@
       @import url("https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
 
       :root {
-        --primary-color: #3a1f62;
-        --primary-dark: #170a3d;
+        --primary-color: #fd2a29;
+        --primary-dark: #9a1615;
         --accent-color: #10b981;
-        --bg-dark: #090514;
+        --bg-dark: #0f0505;
         --card-bg: rgba(255, 255, 255, 0.03);
         --border-color: rgba(255, 255, 255, 0.08);
         --text-main: #ffffff;
@@ -33,7 +33,7 @@
         font-family: "Inter", sans-serif;
         background: radial-gradient(
           circle at top right,
-          #1a0f30 0%,
+          #3a1010 0%,
           var(--bg-dark) 100%
         );
         color: var(--text-main);
@@ -73,7 +73,7 @@
         font-size: 2rem;
         font-weight: 700;
         letter-spacing: 1px;
-        background: linear-gradient(135deg, #e0b0ff 0%, #a855f7 100%);
+        background: linear-gradient(135deg, #ff9b9b 0%, #fd2a29 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 5px;
@@ -450,6 +450,22 @@
           request a new link from Wright Finder Motors.
         </p>
       </div>
+      <? } else if (data.alreadySigned) { ?>
+      <div class="error-container">
+        <i
+          class="fas fa-check-circle"
+          style="
+            color: var(--accent-color);
+            font-size: 3rem;
+            margin-bottom: 15px;
+          "
+        ></i>
+        <h2>Agreement Already Signed</h2>
+        <p>
+          This purchase agreement has already been signed and completed. This
+          signature link has now expired.
+        </p>
+      </div>
       <? } else { ?>
       <form id="agreementForm">
         <div class="document-paper">
@@ -617,7 +633,7 @@
                 href="https://www.wrightfindermotors.com"
                 target="_blank"
                 style="
-                  color: var(--primary-color);
+                  color: #000000;
                   text-decoration: underline;
                   font-weight: 600;
                 "
@@ -666,7 +682,7 @@
               <div class="signature-grid">
                 <!-- Buyer Block -->
                 <div class="sig-block">
-                  <div class="sig-label">
+                  <div class="sig-label" style="color: #000000">
                     <i class="fas fa-user-edit"></i> Buyer Signature
                   </div>
 
@@ -727,9 +743,9 @@
                 <!-- Seller Block -->
                 <div
                   class="sig-block"
-                  style="background: #faf5ff; border-color: #e9d5ff"
+                  style="background: #fff5f5; border-color: #fee2e2"
                 >
-                  <div class="sig-label" style="color: #6b21a8">
+                  <div class="sig-label" style="color: #000000">
                     <i class="fas fa-building"></i> Seller Signature
                   </div>
 
@@ -775,19 +791,19 @@
 
                   <div
                     class="digital-signature-preview"
-                    style="color: #6b21a8; border-color: #d8b4fe"
+                    style="color: #fd2a29; border-color: #fca5a5"
                   >
                     Wright Finder Motors LLC
                   </div>
 
-                  <div class="sig-date-time">
-                    Date/Time: <?= data.todayDate ?>
+                  <div class="sig-date-time" id="sellerDateTime">
+                    Date/Time: --/--/---- --:--
                   </div>
                 </div>
 
                 <!-- Witness Block -->
                 <div class="sig-block" style="grid-column: 1 / -1">
-                  <div class="sig-label" style="color: #475569">
+                  <div class="sig-label" style="color: #000000">
                     <i class="fas fa-signature"></i> Witness Signature
                     (Optional)
                   </div>
@@ -865,6 +881,9 @@
                         Cursive Witness Signature
                       </div>
                     </div>
+                    <div class="sig-date-time" id="witnessDateTime">
+                      Date/Time: --/--/---- --:--
+                    </div>
                   </div>
                 </div>
               </div>
@@ -932,6 +951,14 @@
         const buyerTime = document.getElementById("buyerDateTime");
         if (buyerTime) {
           buyerTime.textContent = "Date/Time: " + formatted;
+        }
+        const sellerTime = document.getElementById("sellerDateTime");
+        if (sellerTime) {
+          sellerTime.textContent = "Date/Time: " + formatted;
+        }
+        const witnessTime = document.getElementById("witnessDateTime");
+        if (witnessTime) {
+          witnessTime.textContent = "Date/Time: " + formatted;
         }
       }
 

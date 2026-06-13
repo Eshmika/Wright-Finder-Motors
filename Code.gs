@@ -1087,9 +1087,13 @@ function ensureAgreementColumns() {
   }
 }
 
-function getAgreementData(carId) {
+function getAgreementData(carId, ignoreSignedCheck) {
   var car = getVehicleById(carId);
   if (!car) return null;
+
+  if (!ignoreSignedCheck && car["Agreement Status"] === "Signed") {
+    return { alreadySigned: true };
+  }
 
   var soldPriceVal =
     parseFloat(
@@ -1213,7 +1217,7 @@ function submitSignedAgreement(carId, data) {
 }
 
 function generateAndSaveAgreementPdf(carId, data) {
-  var agreementData = getAgreementData(carId);
+  var agreementData = getAgreementData(carId, true);
   if (!agreementData) {
     throw new Error("Agreement data not found for Car ID: " + carId);
   }
@@ -1242,6 +1246,26 @@ function generateAndSaveAgreementPdf(carId, data) {
   template.buyerSignature = data.buyerSignature || "";
   template.witnessName = data.witnessName || "";
   template.witnessSignature = data.witnessSignature || "";
+
+  var now = new Date();
+  var signatureDateTime = "";
+  try {
+    signatureDateTime = Utilities.formatDate(
+      now,
+      Session.getScriptTimeZone(),
+      "MMMM d, yyyy h:mm a",
+    );
+  } catch (e) {
+    var options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    signatureDateTime = now.toLocaleString("en-US", options);
+  }
+  template.signatureDateTime = signatureDateTime;
 
   var htmlContent = template.evaluate().getContent();
 

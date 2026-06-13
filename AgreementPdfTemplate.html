@@ -387,7 +387,9 @@
                       ><?= buyerSignature ?></span
                     >
                   </div>
-                  <div class="sig-date-time">Date/Time: <?= todayDate ?></div>
+                  <div class="sig-date-time">
+                    Date/Time: <?= signatureDateTime ?>
+                  </div>
                 </div>
               </td>
 
@@ -410,7 +412,9 @@
                       >Wright Finder Motors LLC</span
                     >
                   </div>
-                  <div class="sig-date-time">Date/Time: <?= todayDate ?></div>
+                  <div class="sig-date-time">
+                    Date/Time: <?= signatureDateTime ?>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -441,6 +445,16 @@
                 </td>
               </tr>
             </table>
+            <div
+              class="sig-date-time"
+              style="
+                margin-top: 10px;
+                padding-top: 5px;
+                border-top: 1px dashed #cbd5e1;
+              "
+            >
+              Date/Time: <?= signatureDateTime ?>
+            </div>
           </div>
           <? } ?>
         </div>
