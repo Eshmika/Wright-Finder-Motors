@@ -96,13 +96,22 @@
           </div>
           <div class="input-group">
             <label>Title</label>
-            <select name="title" class="form-control">
+            <select name="title" id="dataInputTitleSelect" class="form-control">
               <option value="">Select Title...</option>
               <option>Clean</option>
               <option>Rebuilt</option>
               <option>Lien</option>
               <option>Salvage</option>
+              <option>None</option>
+              <option>Other</option>
             </select>
+            <input
+              type="text"
+              id="dataInputTitleCustom"
+              class="form-control mt-2"
+              placeholder="Enter custom title"
+              style="display: none"
+            />
           </div>
           <div class="input-group">
             <label>VIN</label>
@@ -324,6 +333,24 @@
 </div>
 
 <script>
+  // Dynamic Title selection toggle
+  document.addEventListener("DOMContentLoaded", function () {
+    const titleSelect = document.getElementById("dataInputTitleSelect");
+    const customTitleInput = document.getElementById("dataInputTitleCustom");
+    if (titleSelect && customTitleInput) {
+      titleSelect.addEventListener("change", function () {
+        if (this.value === "Other") {
+          customTitleInput.style.display = "block";
+          customTitleInput.required = true;
+        } else {
+          customTitleInput.style.display = "none";
+          customTitleInput.required = false;
+          customTitleInput.value = "";
+        }
+      });
+    }
+  });
+
   function formatPhoneNumber(input) {
     // Strip all characters from the input except digits
     let val = input.value.replace(/\D/g, "");
@@ -361,6 +388,12 @@
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
+    // Handle custom Title value if "Other" is selected
+    if (data.title === "Other") {
+      const customField = document.getElementById("dataInputTitleCustom");
+      if (customField) data.title = customField.value;
+    }
+
     google.script.run
       .withSuccessHandler(function (response) {
         if (response === "Success") {
@@ -371,6 +404,13 @@
             alert("Data Input saved successfully!");
           }
           form.reset();
+          const customTitleInput = document.getElementById(
+            "dataInputTitleCustom",
+          );
+          if (customTitleInput) {
+            customTitleInput.style.display = "none";
+            customTitleInput.required = false;
+          }
         } else {
           alert("Error: " + response);
         }

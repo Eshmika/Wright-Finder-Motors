@@ -113,12 +113,21 @@
       <div class="grid-responsive">
         <div class="input-group">
           <label>Title</label>
-          <select name="title" class="form-control">
+          <select name="title" id="addTitleSelect" class="form-control">
             <option>Clean</option>
             <option>Rebuilt</option>
             <option>Lien</option>
             <option>Salvage</option>
+            <option>None</option>
+            <option>Other</option>
           </select>
+          <input
+            type="text"
+            id="addTitleCustom"
+            class="form-control mt-2"
+            placeholder="Enter custom title"
+            style="display: none"
+          />
         </div>
         <div class="input-group">
           <label>Style of Car</label>

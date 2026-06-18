@@ -994,6 +994,21 @@
         bodyStyleSelect: document.getElementById("bodyStyleSelect"),
       });
 
+      const addTitleSelect = document.getElementById("addTitleSelect");
+      const addTitleCustom = document.getElementById("addTitleCustom");
+      if (addTitleSelect && addTitleCustom) {
+        addTitleSelect.addEventListener("change", function () {
+          if (this.value === "Other") {
+            addTitleCustom.style.display = "block";
+            addTitleCustom.required = true;
+          } else {
+            addTitleCustom.style.display = "none";
+            addTitleCustom.required = false;
+            addTitleCustom.value = "";
+          }
+        });
+      }
+
       const addIntSelect = document.getElementById("addInteriorColor");
       const addIntCustom = document.getElementById("addInteriorColorCustom");
       if (addIntSelect && addIntCustom) {
@@ -1041,7 +1056,7 @@
         `input[name="${select.name}_custom"]`,
       );
       if (customInput) {
-        if (select.value === "Other(Name)") {
+        if (select.value === "Other(Name)" || select.value === "Other") {
           customInput.style.display = "block";
           customInput.required = true;
         } else {
@@ -1281,7 +1296,7 @@
         Status: ["Available", "Sold", "Pending"],
         "Financing status": ["Paid off", "Loan Active"],
         "Tax Responsibility": ["Client", "Company", "Split"],
-        Title: ["Clean", "Rebuilt", "Lien", "Salvage"],
+        Title: ["Clean", "Rebuilt", "Lien", "Salvage", "None", "Other"],
         "Rent or Sell": ["Sell", "Rent", "Both"],
         "Trade status": ["Normal", "Trade"],
         Engine: ["Standard", "Sport", "Turbo", "Heavy duty"],
@@ -1559,12 +1574,17 @@
           } else if (key === "Fuel Type") {
             inputHtml = `<select name="${key}" id="editFuelTypeSelect" class="form-control"><option value="">Select Fuel...</option></select>`;
           } else if (dropdownOptions[key]) {
-            if (key === "Interior Color" || key === "Exterior Color") {
+            if (
+              key === "Interior Color" ||
+              key === "Exterior Color" ||
+              key === "Title"
+            ) {
+              const otherVal = key === "Title" ? "Other" : "Other(Name)";
               const isCustom = val && !dropdownOptions[key].includes(val);
               let options = `<option value="">Select ${key}...</option>`;
               dropdownOptions[key].forEach((opt) => {
                 const isSelected =
-                  (isCustom && opt === "Other(Name)") || val === opt;
+                  (isCustom && opt === otherVal) || val === opt;
                 options += `<option value="${opt}" ${isSelected ? "selected" : ""}>${opt}</option>`;
               });
               inputHtml = `
@@ -1957,8 +1977,12 @@
           formDataObj["Exterior Color"] =
             formDataObj["Exterior Color_custom"] || "";
         }
+        if (formDataObj["Title"] === "Other") {
+          formDataObj["Title"] = formDataObj["Title_custom"] || "";
+        }
         delete formDataObj["Interior Color_custom"];
         delete formDataObj["Exterior Color_custom"];
+        delete formDataObj["Title_custom"];
 
         // Add Car ID manually if needed (it might not be in the form fields)
         if (currentEditableCar && currentEditableCar["Car ID"]) {
@@ -2010,8 +2034,12 @@
               newTextData["Exterior Color"] =
                 newTextData["Exterior Color_custom"] || "";
             }
+            if (newTextData["Title"] === "Other") {
+              newTextData["Title"] = newTextData["Title_custom"] || "";
+            }
             delete newTextData["Interior Color_custom"];
             delete newTextData["Exterior Color_custom"];
+            delete newTextData["Title_custom"];
 
             // If images were uploaded, the local currentEditableCar might be out of date for images
             // For now, let's just reload the list or update text fields
@@ -3613,6 +3641,10 @@
         const customField = document.getElementById("addExteriorColorCustom");
         if (customField) formDataObj.exteriorColor = customField.value;
       }
+      if (formDataObj.title === "Other") {
+        const customField = document.getElementById("addTitleCustom");
+        if (customField) formDataObj.title = customField.value;
+      }
 
       // Handle Main Image
       const mainImageBase64 = [];
@@ -3644,6 +3676,11 @@
         .withSuccessHandler(function (response) {
           showCreativeSuccessModal("Car Details Saved Successfully!");
           e.target.reset();
+          const addTitleCustom = document.getElementById("addTitleCustom");
+          if (addTitleCustom) {
+            addTitleCustom.style.display = "none";
+            addTitleCustom.required = false;
+          }
           if (window.removeFeature) {
             document.getElementById("featuresList").innerHTML = "";
             document.getElementById("hiddenFeatures").value = "[]";
