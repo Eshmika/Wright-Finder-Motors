@@ -136,11 +136,43 @@
       <div class="form-section shadow-sm">
         <h3 class="section-title">
           <span class="icon-wrap"><i class="fas fa-dollar-sign"></i></span>
-          Pricing Information
+          Pricing & Purchase Information
         </h3>
-        <div class="grid-responsive">
+
+        <!-- Source Type Selector -->
+        <div class="grid-responsive" style="margin-bottom: 25px">
           <div class="input-group">
-            <label>IAAI Price Before Fees</label>
+            <label class="required-label">Source Type</label>
+            <div class="modern-input-wrapper" style="position: relative">
+              <select
+                name="sourceType"
+                id="dataInputSourceType"
+                class="form-control"
+                required
+                onchange="window.toggleSourceFields()"
+              >
+                <option value="IAAI">IAAI</option>
+                <option value="Private/Partner">Private/Partner</option>
+                <option value="Trade">Trade</option>
+              </select>
+              <i
+                class="fas fa-shopping-cart"
+                style="
+                  position: absolute;
+                  left: 16px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  color: #b7b9cc;
+                "
+              ></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- IAAI Fields Group -->
+        <div id="source-iaai-fields" class="grid-responsive">
+          <div class="input-group">
+            <label>IAAI Price Before Fees / Tax</label>
             <input
               type="number"
               name="iaaiPriceBeforeFees"
@@ -165,6 +197,91 @@
               class="form-control"
               step="0.01"
             />
+          </div>
+        </div>
+
+        <!-- Private/Partner Fields Group -->
+        <div
+          id="source-private-fields"
+          class="grid-responsive"
+          style="display: none"
+        >
+          <div class="input-group">
+            <label>Seller Name</label>
+            <input
+              type="text"
+              name="sellerName"
+              class="form-control"
+              placeholder="e.g. John Doe, Partner Co."
+            />
+          </div>
+          <div class="input-group">
+            <label>Acquisition Date</label>
+            <input type="date" name="acquisitionDate" class="form-control" />
+          </div>
+          <div class="input-group">
+            <label>Purchase Price ($)</label>
+            <input
+              type="number"
+              name="purchasePrice"
+              class="form-control"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="input-group" style="grid-column: 1 / -1">
+            <label>Notes</label>
+            <textarea
+              name="privateNotes"
+              class="form-control"
+              rows="2"
+              placeholder="Private purchase details or agreements..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Trade Fields Group -->
+        <div
+          id="source-trade-fields"
+          class="grid-responsive"
+          style="display: none"
+        >
+          <div class="input-group">
+            <label>Car Name (Purchased Vehicle)</label>
+            <input
+              type="text"
+              name="tradeCarName"
+              class="form-control"
+              placeholder="e.g. 2018 Toyota Camry"
+            />
+          </div>
+          <div class="input-group">
+            <label>Trade Value ($)</label>
+            <input
+              type="number"
+              name="tradeValue"
+              class="form-control"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="input-group">
+            <label>Traded Car Description</label>
+            <input
+              type="text"
+              name="tradeIn"
+              class="form-control"
+              placeholder="e.g. 2015 Honda Civic (Trade-In)"
+            />
+          </div>
+          <div class="input-group" style="grid-column: 1 / -1">
+            <label>Comment / Notes</label>
+            <textarea
+              name="tradeComment"
+              class="form-control"
+              rows="2"
+              placeholder="Add trade details here..."
+            ></textarea>
           </div>
         </div>
       </div>
@@ -310,7 +427,10 @@
         <button
           type="button"
           class="btn-secondary"
-          onclick="document.getElementById('dataInputForm').reset()"
+          onclick="
+            document.getElementById('dataInputForm').reset();
+            window.toggleSourceFields();
+          "
           style="padding: 10px 20px; border-radius: 8px; font-weight: bold"
         >
           <i class="fas fa-eraser"></i> Clear all
@@ -354,6 +474,28 @@
       });
     }
   });
+
+  window.toggleSourceFields = function () {
+    const sourceType = document.getElementById("dataInputSourceType").value;
+
+    const iaaiFields = document.getElementById("source-iaai-fields");
+    const privateFields = document.getElementById("source-private-fields");
+    const tradeFields = document.getElementById("source-trade-fields");
+
+    // Hide all first
+    iaaiFields.style.display = "none";
+    privateFields.style.display = "none";
+    tradeFields.style.display = "none";
+
+    // Show correct section
+    if (sourceType === "IAAI") {
+      iaaiFields.style.display = "grid";
+    } else if (sourceType === "Private/Partner") {
+      privateFields.style.display = "grid";
+    } else if (sourceType === "Trade") {
+      tradeFields.style.display = "grid";
+    }
+  };
 
   function formatPhoneNumber(input) {
     // Strip all characters from the input except digits
@@ -401,7 +543,6 @@
     google.script.run
       .withSuccessHandler(function (response) {
         if (response === "Success") {
-          // You might have a showCreativeSuccessModal function in JavaScript.html
           if (typeof showCreativeSuccessModal === "function") {
             showCreativeSuccessModal("Data Input saved successfully!");
           } else {
@@ -415,6 +556,8 @@
             customTitleInput.style.display = "none";
             customTitleInput.required = false;
           }
+          // Reset fields visibility
+          window.toggleSourceFields();
         } else {
           alert("Error: " + response);
         }

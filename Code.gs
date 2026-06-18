@@ -728,7 +728,17 @@ function saveDataInput(data) {
   var currentHeaders = sheet
     .getRange(1, 1, 1, sheet.getLastColumn())
     .getValues()[0];
-  var requiredHeaders = ["Trade Value", "Trade In", "Comment"];
+  var requiredHeaders = [
+    "Trade Value",
+    "Trade In",
+    "Comment",
+    "Source Type",
+    "Seller Name",
+    "Acquisition Date",
+    "Purchase Price",
+    "Private Notes",
+    "Purchased Car Name",
+  ];
   requiredHeaders.forEach(function (h) {
     if (currentHeaders.indexOf(h) === -1) {
       sheet.getRange(1, currentHeaders.length + 1).setValue(h);
@@ -736,64 +746,101 @@ function saveDataInput(data) {
     }
   });
 
-  sheet.appendRow([
-    new Date(), // 0: Timestamp
-    carId, // 1: Car ID
-    data.carName || "", // 2
-    data.model || "", // 3
-    data.year || "", // 4
-    data.mileage || "", // 5
-    "", // 6: Price
-    "", // 7: Discount
-    data.vin || "", // 8
-    "Available", // 9: Status
-    data.title || "", // 10
-    data.trim || "", // 11: Trim
-    data.bodyStyle || "", // 12: Body Style
-    "", // 13: Rent or Sell
-    "", // 14: Engine
-    "", // 15: Engine Type/Size
-    "", // 16: Transmission
-    "", // 17: Driveline
-    data.fuelType || "", // 18: Fuel Type
-    "", // 19: Power Options
-    "", // 20: Drive Condition
-    "", // 21: Condition
-    "", // 22: Seat Material
-    "", // 23: Interior Color
-    "", // 24: Exterior Color
-    "", // 25: Interior Features
-    "", // 26: Main Image URLs
-    "", // 27: Sub Image URLs
-    data.clientName || "", // 28: CLIENT NAME
-    data.purchaseDate || "", // 29: PURCHASE DATE
-    "", // 30: SOLD DATE
-    data.tradeStatus || "", // 31: Trade status
-    data.iaaiTotalPrice || "", // 32: IAAI TOTAL PRICE W/ FEES
-    data.papePrice || "", // 33: PAPE PRICE
-    data.transportFees || "", // 34: TRANSPORT FEES
-    "", // 35: SOLD PRICE
-    "", // 36: DOWN PAYMENT
-    data.pickupLocation || "", // 37: CAR PICKUP LOCATION
-    data.driverName || "", // 38: DRIVER NAME
-    data.driverInformation || "", // 39: DRIVER INFORMATION
-    data.notes || "", // 40: NOTES
-    data.iaaiPriceBeforeFees || "", // 41: IAAI Price Before Fees
-    data.dispatcherName || "", // 42: Dispatcher Name
-    data.dispatcherPrice || "", // 43: Dispatcher Price
-    data.dispatcherPhone || "", // 44: Dispatcher Phone number
-    data.clientPhone || "", // 45: Client Phone
-    data.clientEmail || "", // 46: Client Email
-    data.driverPhone || "", // 47: Driver Phone
-    data.driverCompany || "", // 48: Driver Company
-    data["Tax Amount"] || "",
-    data["Price on title"] || "",
-    data["Financing status"] || "",
-    data["Tax Responsibility"] || "",
-    data["Trade Value"] || "",
-    data["Trade In"] || "",
-    data["Comment"] || "",
-  ]);
+  var rowValues = new Array(currentHeaders.length);
+
+  // Set tradeStatus based on sourceType
+  var tradeStatusVal =
+    data.sourceType === "Trade" ? "Trade" : data.tradeStatus || "";
+  var tradeValueVal =
+    data.sourceType === "Trade"
+      ? data.tradeValue || ""
+      : data["Trade Value"] || "";
+  var tradeInVal =
+    data.sourceType === "Trade" ? data.tradeIn || "" : data["Trade In"] || "";
+  var commentVal =
+    data.sourceType === "Trade"
+      ? data.tradeComment || ""
+      : data["Comment"] || "";
+
+  // Base map of columns to data input values
+  var keyMap = {
+    Timestamp: new Date(),
+    "Car ID": carId,
+    "Car Name": data.carName || "",
+    Model: data.model || "",
+    Year: data.year || "",
+    Mileage: data.mileage || "",
+    Price: "",
+    Discount: "",
+    VIN: data.vin || "",
+    Status: "Available",
+    Title: data.title || "",
+    Trim: data.trim || "",
+    "Body Style": data.bodyStyle || "",
+    "Rent or Sell": "",
+    Engine: "",
+    "Engine Type/Size": "",
+    Transmission: "",
+    Driveline: "",
+    "Fuel Type": data.fuelType || "",
+    "Power Options": "",
+    "Drive Condition": "",
+    Condition: "",
+    "Seat Material": "",
+    "Interior Color": "",
+    "Exterior Color": "",
+    "Interior Features": "",
+    "Main Image URLs": "",
+    "Sub Image URLs": "",
+    "CLIENT NAME": data.clientName || "",
+    "PURCHASE DATE": data.purchaseDate || "",
+    "SOLD DATE": "",
+    "Trade status": tradeStatusVal,
+    "IAAI TOTAL PRICE W/ FEES":
+      data.sourceType === "IAAI" ? data.iaaiTotalPrice || "" : "",
+    "PAPE PRICE": data.sourceType === "IAAI" ? data.papePrice || "" : "",
+    "TRANSPORT FEES": data.transportFees || "",
+    "SOLD PRICE": "",
+    "DOWN PAYMENT": "",
+    "CAR PICKUP LOCATION": data.pickupLocation || "",
+    "DRIVER NAME": data.driverName || "",
+    "DRIVER INFORMATION": data.driverInformation || "",
+    NOTES: data.notes || "",
+    "IAAI Price Before Fees":
+      data.sourceType === "IAAI" ? data.iaaiPriceBeforeFees || "" : "",
+    "Dispatcher Name": data.dispatcherName || "",
+    "Dispatcher Price": data.dispatcherPrice || "",
+    "Dispatcher Phone number": data.dispatcherPhone || "",
+    "Client Phone": data.clientPhone || "",
+    "Client Email": data.clientEmail || "",
+    "Driver Phone": data.driverPhone || "",
+    "Driver Company": data.driverCompany || "",
+    "Tax Amount": data["Tax Amount"] || "",
+    "Price on title": data["Price on title"] || "",
+    "Financing status": data["Financing status"] || "",
+    "Tax Responsibility": data["Tax Responsibility"] || "",
+    "Trade Value": tradeValueVal,
+    "Trade In": tradeInVal,
+    Comment: commentVal,
+    "Source Type": data.sourceType || "IAAI",
+    "Seller Name":
+      data.sourceType === "Private/Partner" ? data.sellerName || "" : "",
+    "Acquisition Date":
+      data.sourceType === "Private/Partner" ? data.acquisitionDate || "" : "",
+    "Purchase Price":
+      data.sourceType === "Private/Partner" ? data.purchasePrice || "" : "",
+    "Private Notes":
+      data.sourceType === "Private/Partner" ? data.privateNotes || "" : "",
+    "Purchased Car Name":
+      data.sourceType === "Trade" ? data.tradeCarName || "" : "",
+  };
+
+  for (var i = 0; i < currentHeaders.length; i++) {
+    var header = currentHeaders[i];
+    rowValues[i] = keyMap[header] !== undefined ? keyMap[header] : "";
+  }
+
+  sheet.appendRow(rowValues);
 
   return "Success";
 }

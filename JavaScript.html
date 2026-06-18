@@ -1086,6 +1086,9 @@
         fuelSelect: document.getElementById("dataInputFuelTypeSelect"),
         bodyStyleSelect: document.getElementById("dataInputBodyStyleSelect"),
       });
+      if (typeof window.loadActiveCarsForTrade === "function") {
+        window.loadActiveCarsForTrade();
+      }
     };
 
     window.toggleCustomColorInput = function (select) {
