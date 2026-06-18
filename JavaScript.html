@@ -320,7 +320,11 @@
       const form = document.getElementById("addExpenseForm");
       const btn = document.getElementById("btnSubmitExpense");
       const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      const isEditing = window.editingExpenseRow !== null;
+
+      btn.innerHTML = isEditing
+        ? '<i class="fas fa-spinner fa-spin"></i> Updating...'
+        : '<i class="fas fa-spinner fa-spin"></i> Saving...';
       btn.disabled = true;
 
       const formData = new FormData(form);
@@ -334,27 +338,44 @@
         expenseDate: formData.get("expenseDate"),
       };
 
-      google.script.run
-        .withSuccessHandler(function (response) {
-          showCreativeSuccessModal("Expense added successfully!");
-          form.reset();
-          // Keep today's date
-          document.getElementById("expenseDate").value = new Date()
-            .toISOString()
-            .split("T")[0];
+      if (isEditing) {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Expense record updated successfully!");
+            window.cancelExpenseEdit();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            window.loadExpenses();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error updating expense: " + error.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          })
+          .updateExpense(window.editingExpenseRow, data);
+      } else {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Expense added successfully!");
+            form.reset();
+            // Keep today's date
+            document.getElementById("expenseDate").value = new Date()
+              .toISOString()
+              .split("T")[0];
 
-          btn.innerHTML = originalText;
-          btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
 
-          // Reload expenses table
-          window.loadExpenses();
-        })
-        .withFailureHandler(function (error) {
-          alert("Error: " + error.message);
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        })
-        .saveExpense(data);
+            // Reload expenses table
+            window.loadExpenses();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error: " + error.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          })
+          .saveExpense(data);
+      }
     };
 
     let cachedExpenses = [];
@@ -362,7 +383,7 @@
     window.loadExpenses = function () {
       const tbody = document.getElementById("expensesTableBody");
       tbody.innerHTML =
-        '<tr><td colspan="7" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading expenses...</td></tr>';
+        '<tr><td colspan="8" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading expenses...</td></tr>';
 
       google.script.run
         .withSuccessHandler(function (expenses) {
@@ -371,7 +392,7 @@
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
-            '<tr><td colspan="7" class="text-center text-danger" style="padding: 20px;">Error loading expenses: ' +
+            '<tr><td colspan="8" class="text-center text-danger" style="padding: 20px;">Error loading expenses: ' +
             error.message +
             "</td></tr>";
         })
@@ -383,7 +404,7 @@
       tbody.innerHTML = "";
       if (!expensesToRender || expensesToRender.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="7" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
+          '<tr><td colspan="8" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No expense records found.</td></tr>';
         return;
       }
 
@@ -407,6 +428,16 @@
           } catch (e) {}
         }
 
+        let escClient = (
+          exp["Client Name"] ||
+          exp["CLIENT NAME"] ||
+          ""
+        ).replace(/'/g, "\\'");
+        let escDesc = (exp["DESCRIPTION"] || "").replace(/'/g, "\\'");
+        let escPaidBy = (exp["PAID BY"] || "").replace(/'/g, "\\'");
+        let escModel = (exp["CAR MODEL"] || "").replace(/'/g, "\\'");
+        let rawDate = exp["EXPENSE DATE"] || "";
+
         tr.innerHTML = `
           <td><strong>${exp["CAR MODEL"] || "-"}</strong></td>
           <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
@@ -415,6 +446,12 @@
           <td>${exp["PAID BY"] || "-"}</td>
           <td>${badgeHtml}</td>
           <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-action edit" onclick="window.editExpenseRow(${exp.rowNumber}, '${exp["CAR ID"]}', '${escModel}', '${escClient}', '${rawDate}', '${escDesc}', '${escPaidBy}', '${exp["AMOUNT"] || 0}')" title="Edit" style="border: none; background: #eef2ff; color: #4f46e5; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-edit"></i></button>
+              <button class="btn-action delete" onclick="window.deleteExpenseRow(${exp.rowNumber})" title="Delete" style="border: none; background: #fef2f2; color: #ef4444; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -3094,11 +3131,15 @@
     function submitPayment(e) {
       e.preventDefault();
       const form = e.target;
-      const btn = form.querySelector('button[type="submit"]');
+      const btn =
+        document.getElementById("btnSubmitPayment") ||
+        form.querySelector('button[type="submit"]');
       const originalText = btn.innerHTML;
+      const isEditing = window.editingPaymentRow !== null;
 
-      btn.innerHTML =
-        '<span class="btn-text">Submitting...</span> <i class="fas fa-spinner fa-spin"></i>';
+      btn.innerHTML = isEditing
+        ? '<span class="btn-text">Updating...</span> <i class="fas fa-spinner fa-spin"></i>'
+        : '<span class="btn-text">Submitting...</span> <i class="fas fa-spinner fa-spin"></i>';
       btn.disabled = true;
 
       const formData = new FormData(form);
@@ -3112,27 +3153,44 @@
         notes: formData.get("payNotes"),
       };
 
-      google.script.run
-        .withSuccessHandler(function (response) {
-          showCreativeSuccessModal("Payment added successfully!");
-          form.reset();
-          // Keep today's date
-          document.getElementById("pay-date").value = new Date()
-            .toISOString()
-            .split("T")[0];
+      if (isEditing) {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Payment record updated successfully!");
+            window.cancelPaymentEdit();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            window.loadPayments();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error updating payment: " + error.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          })
+          .updatePayment(window.editingPaymentRow, data);
+      } else {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Payment added successfully!");
+            form.reset();
+            // Keep today's date
+            document.getElementById("pay-date").value = new Date()
+              .toISOString()
+              .split("T")[0];
 
-          btn.innerHTML = originalText;
-          btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
 
-          // Reload payments table
-          window.loadPayments();
-        })
-        .withFailureHandler(function (error) {
-          alert("Error: " + error.message);
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        })
-        .savePayment(data);
+            // Reload payments table
+            window.loadPayments();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error: " + error.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          })
+          .savePayment(data);
+      }
     }
 
     let cachedPayments = [];
@@ -3142,7 +3200,7 @@
       if (!tbody) return;
 
       tbody.innerHTML =
-        '<tr><td colspan="7" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading payments...</td></tr>';
+        '<tr><td colspan="8" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading payments...</td></tr>';
 
       google.script.run
         .withSuccessHandler(function (payments) {
@@ -3151,7 +3209,7 @@
         })
         .withFailureHandler(function (error) {
           tbody.innerHTML =
-            '<tr><td colspan="7" class="text-center text-danger" style="padding: 20px;">Error loading payments: ' +
+            '<tr><td colspan="8" class="text-center text-danger" style="padding: 20px;">Error loading payments: ' +
             error.message +
             "</td></tr>";
         })
@@ -3165,7 +3223,7 @@
       tbody.innerHTML = "";
       if (!paymentsToRender || paymentsToRender.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="7" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
+          '<tr><td colspan="8" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-credit-card" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No payment records found.</td></tr>';
         return;
       }
 
@@ -3189,18 +3247,42 @@
           } catch (e) {}
         }
 
-        // Notes fallback: support either "NOTES" or "Notes" column name
+        // Notes fallback
         let notesText = pay["NOTES"] || pay["Notes"] || "-";
 
+        let escClient = (
+          pay["Client Name"] ||
+          pay["CLIENT NAME"] ||
+          ""
+        ).replace(/'/g, "\\'");
+        let escNotes = (pay["NOTES"] || pay["Notes"] || "").replace(
+          /'/g,
+          "\\'",
+        );
+        let escOption = (
+          pay["PAYMENT OPTION / NOTES"] ||
+          pay["PAYMENT OPTION"] ||
+          pay["Payment Option"] ||
+          ""
+        ).replace(/'/g, "\\'");
+        let escModel = (pay["CAR MODEL"] || "").replace(/'/g, "\\'");
+        let rawDate = pay["PAYMENT DATE"] || "";
+
         tr.innerHTML = `
-        <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
-        <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
-        <td>${pay["Client Name"] || pay["CLIENT NAME"] || "-"}</td>
-        <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || pay["PAYMENT OPTION"] || pay["Payment Option"] || "-"}</span></td>
-        <td><span style="color: #6c757d; font-size: 0.9em;">${notesText}</span></td>
-        <td>${badgeHtml}</td>
-        <td style="color: #6c757d;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
-      `;
+          <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
+          <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
+          <td>${pay["Client Name"] || pay["CLIENT NAME"] || "-"}</td>
+          <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || pay["PAYMENT OPTION"] || pay["Payment Option"] || "-"}</span></td>
+          <td><span style="color: #6c757d; font-size: 0.9em;">${notesText}</span></td>
+          <td>${badgeHtml}</td>
+          <td style="color: #6c757d;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-action edit" onclick="window.editPaymentRow(${pay.rowNumber}, '${pay["CAR ID"]}', '${escModel}', '${escClient}', '${rawDate}', '${escOption}', '${escNotes}', '${pay["AMOUNT"] || 0}')" title="Edit" style="border: none; background: #eef2ff; color: #4f46e5; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-edit"></i></button>
+              <button class="btn-action delete" onclick="window.deletePaymentRow(${pay.rowNumber})" title="Delete" style="border: none; background: #fef2f2; color: #ef4444; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
+        `;
         tbody.appendChild(tr);
       });
     }
@@ -4468,6 +4550,420 @@
         .deleteCarListItem(rowNumber);
     }
   };
+
+  window.editingExpenseRow = null;
+  window.editingPaymentRow = null;
+
+  window.editExpenseRow = function (
+    rowNumber,
+    carId,
+    carModel,
+    clientName,
+    dateStr,
+    description,
+    paidBy,
+    amount,
+  ) {
+    window.editingExpenseRow = rowNumber;
+
+    const title = document.getElementById("expenseFormTitle");
+    if (title) title.innerText = "Edit Expense Record (Row " + rowNumber + ")";
+
+    const icon = document.getElementById("expenseFormIcon");
+    if (icon) {
+      icon.innerHTML = '<i class="fas fa-edit"></i>';
+      icon.className = "icon-square bg-indigo-light";
+    }
+
+    const badge = document.getElementById("expenseFormBadge");
+    if (badge) {
+      badge.innerHTML = '<i class="fas fa-edit"></i> Editing Mode Active';
+      badge.style.background = "#fff3cd";
+      badge.style.color = "#856404";
+      badge.style.border = "1px solid #ffeeba";
+    }
+
+    const cancelBtn = document.getElementById("btnCancelExpenseEdit");
+    if (cancelBtn) cancelBtn.style.display = "inline-flex";
+
+    const submitBtn = document.getElementById("btnSubmitExpense");
+    if (submitBtn)
+      submitBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> Update Expense Record';
+
+    const form = document.getElementById("addExpenseForm");
+    if (form) {
+      const carIdSelect = document.getElementById("expenseCarId");
+      const modelSelect = document.getElementById("expenseCarModel");
+      const clientSelect = document.getElementById("expenseClientName");
+
+      if (carIdSelect && carId) {
+        if (
+          !Array.from(carIdSelect.options).some((opt) => opt.value === carId)
+        ) {
+          carIdSelect.innerHTML += `<option value="${carId}">${carId}</option>`;
+        }
+        carIdSelect.value = carId;
+      }
+      if (modelSelect && carModel) {
+        if (
+          !Array.from(modelSelect.options).some((opt) => opt.value === carModel)
+        ) {
+          modelSelect.innerHTML += `<option value="${carModel}">${carModel}</option>`;
+        }
+        modelSelect.value = carModel;
+      }
+      if (clientSelect) {
+        if (
+          clientName &&
+          !Array.from(clientSelect.options).some(
+            (opt) => opt.value === clientName,
+          )
+        ) {
+          clientSelect.innerHTML += `<option value="${clientName}">${clientName}</option>`;
+        }
+        clientSelect.value = clientName || "";
+      }
+
+      if (dateStr) {
+        try {
+          let d = new Date(dateStr);
+          if (!isNaN(d.getTime())) {
+            let yyyy = d.getFullYear();
+            let mm = String(d.getMonth() + 1).padStart(2, "0");
+            let dd = String(d.getDate()).padStart(2, "0");
+            form.querySelector('[name="expenseDate"]').value =
+              `${yyyy}-${mm}-${dd}`;
+          } else {
+            form.querySelector('[name="expenseDate"]').value = dateStr;
+          }
+        } catch (e) {
+          form.querySelector('[name="expenseDate"]').value = dateStr;
+        }
+      }
+      form.querySelector('[name="description"]').value = description || "";
+      form.querySelector('[name="paidBy"]').value = paidBy || "";
+      form.querySelector('[name="amount"]').value = amount || "";
+    }
+
+    const card = document
+      .getElementById("addExpenseForm")
+      .closest(".expenses-card");
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+      card.style.transition = "all 0.3s";
+      card.style.boxShadow = "0 0 20px rgba(58, 31, 98, 0.4)";
+      setTimeout(() => {
+        card.style.boxShadow = "";
+      }, 1500);
+    }
+  };
+
+  window.cancelExpenseEdit = function () {
+    window.editingExpenseRow = null;
+
+    const title = document.getElementById("expenseFormTitle");
+    if (title) title.innerText = "Log New Expense";
+
+    const icon = document.getElementById("expenseFormIcon");
+    if (icon) {
+      icon.innerHTML = '<i class="fas fa-plus"></i>';
+      icon.className = "icon-square bg-indigo-light";
+    }
+
+    const badge = document.getElementById("expenseFormBadge");
+    if (badge) {
+      badge.innerHTML = '<i class="fas fa-magic"></i> Auto-matching enabled';
+      badge.style.background = "";
+      badge.style.color = "";
+      badge.style.border = "";
+    }
+
+    const cancelBtn = document.getElementById("btnCancelExpenseEdit");
+    if (cancelBtn) cancelBtn.style.display = "none";
+
+    const submitBtn = document.getElementById("btnSubmitExpense");
+    if (submitBtn)
+      submitBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> Save Expense Record';
+
+    const form = document.getElementById("addExpenseForm");
+    if (form) {
+      form.reset();
+      const today = new Date().toISOString().split("T")[0];
+      const expenseDateInput = document.getElementById("expenseDate");
+      if (expenseDateInput) expenseDateInput.value = today;
+    }
+  };
+
+  window.deleteExpenseRow = function (rowNumber) {
+    showCreativeConfirmModal(
+      "Are you sure you want to permanently delete this expense record?",
+      function () {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Expense record deleted successfully!");
+            window.loadExpenses();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error deleting expense: " + error.message);
+          })
+          .deleteExpense(rowNumber);
+      },
+    );
+  };
+
+  window.editPaymentRow = function (
+    rowNumber,
+    carId,
+    carModel,
+    clientName,
+    dateStr,
+    paymentOption,
+    notes,
+    amount,
+  ) {
+    window.editingPaymentRow = rowNumber;
+
+    const title = document.getElementById("paymentFormTitle");
+    if (title) title.innerText = "Edit Payment Record (Row " + rowNumber + ")";
+
+    const icon = document.getElementById("paymentFormIcon");
+    if (icon) {
+      icon.innerHTML = '<i class="fas fa-edit"></i>';
+      icon.className = "icon-square bg-emerald-light";
+    }
+
+    const badge = document.getElementById("paymentFormBadge");
+    if (badge) {
+      badge.innerHTML = '<i class="fas fa-edit"></i> Editing Mode Active';
+      badge.style.background = "#fff3cd";
+      badge.style.color = "#856404";
+      badge.style.border = "1px solid #ffeeba";
+    }
+
+    const cancelBtn = document.getElementById("btnCancelPaymentEdit");
+    if (cancelBtn) cancelBtn.style.display = "inline-flex";
+
+    const submitBtn = document.getElementById("btnSubmitPayment");
+    if (submitBtn)
+      submitBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> Update Payment';
+
+    const form = document.getElementById("add-payment-form");
+    if (form) {
+      const carIdSelect = document.getElementById("pay-car-id");
+      const modelSelect = document.getElementById("pay-car-model");
+      const clientSelect = document.getElementById("pay-client-name");
+
+      if (carIdSelect && carId) {
+        if (
+          !Array.from(carIdSelect.options).some((opt) => opt.value === carId)
+        ) {
+          carIdSelect.innerHTML += `<option value="${carId}">${carId}</option>`;
+        }
+        carIdSelect.value = carId;
+      }
+      if (modelSelect && carModel) {
+        if (
+          !Array.from(modelSelect.options).some((opt) => opt.value === carModel)
+        ) {
+          modelSelect.innerHTML += `<option value="${carModel}">${carModel}</option>`;
+        }
+        modelSelect.value = carModel;
+      }
+      if (clientSelect && clientName) {
+        if (
+          !Array.from(clientSelect.options).some(
+            (opt) => opt.value === clientName,
+          )
+        ) {
+          clientSelect.innerHTML += `<option value="${clientName}">${clientName}</option>`;
+        }
+        clientSelect.value = clientName;
+      }
+
+      if (dateStr) {
+        try {
+          let d = new Date(dateStr);
+          if (!isNaN(d.getTime())) {
+            let yyyy = d.getFullYear();
+            let mm = String(d.getMonth() + 1).padStart(2, "0");
+            let dd = String(d.getDate()).padStart(2, "0");
+            document.getElementById("pay-date").value = `${yyyy}-${mm}-${dd}`;
+          } else {
+            document.getElementById("pay-date").value = dateStr;
+          }
+        } catch (e) {
+          document.getElementById("pay-date").value = dateStr;
+        }
+      }
+
+      const payOptionSelect = document.getElementById("pay-option");
+      if (payOptionSelect && paymentOption) {
+        if (
+          !Array.from(payOptionSelect.options).some(
+            (opt) => opt.value === paymentOption,
+          )
+        ) {
+          payOptionSelect.innerHTML += `<option value="${paymentOption}">${paymentOption}</option>`;
+        }
+        payOptionSelect.value = paymentOption;
+      }
+
+      document.getElementById("pay-amount").value = amount || "";
+      document.getElementById("pay-notes").value = notes || "";
+    }
+
+    const card = document
+      .getElementById("add-payment-form")
+      .closest(".expenses-card");
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+      card.style.transition = "all 0.3s";
+      card.style.boxShadow = "0 0 20px rgba(35, 39, 84, 0.4)";
+      setTimeout(() => {
+        card.style.boxShadow = "";
+      }, 1500);
+    }
+  };
+
+  window.cancelPaymentEdit = function () {
+    window.editingPaymentRow = null;
+
+    const title = document.getElementById("paymentFormTitle");
+    if (title) title.innerText = "Log New Payment";
+
+    const icon = document.getElementById("paymentFormIcon");
+    if (icon) {
+      icon.innerHTML = '<i class="fas fa-plus"></i>';
+      icon.className = "icon-square bg-emerald-light";
+    }
+
+    const badge = document.getElementById("paymentFormBadge");
+    if (badge) {
+      badge.innerHTML = '<i class="fas fa-magic"></i> Auto-matching enabled';
+      badge.style.background = "";
+      badge.style.color = "";
+      badge.style.border = "";
+    }
+
+    const cancelBtn = document.getElementById("btnCancelPaymentEdit");
+    if (cancelBtn) cancelBtn.style.display = "none";
+
+    const submitBtn = document.getElementById("btnSubmitPayment");
+    if (submitBtn)
+      submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save Payment';
+
+    const form = document.getElementById("add-payment-form");
+    if (form) {
+      form.reset();
+      const today = new Date().toISOString().split("T")[0];
+      const payDateInput = document.getElementById("pay-date");
+      if (payDateInput) payDateInput.value = today;
+    }
+  };
+
+  window.deletePaymentRow = function (rowNumber) {
+    showCreativeConfirmModal(
+      "Are you sure you want to permanently delete this payment record?",
+      function () {
+        google.script.run
+          .withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Payment record deleted successfully!");
+            window.loadPayments();
+          })
+          .withFailureHandler(function (error) {
+            alert("Error deleting payment: " + error.message);
+          })
+          .deletePayment(rowNumber);
+      },
+    );
+  };
+
+  function showCreativeConfirmModal(message, onConfirm) {
+    const existing = document.getElementById("creativeConfirmModal");
+    if (existing) existing.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "creativeConfirmModal";
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; opacity: 0; transition: opacity 0.3s ease;
+    `;
+
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+      background: #fff; padding: 40px; border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;
+      transform: scale(0.8); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 400px; width: 90%;
+    `;
+
+    const iconContainer = document.createElement("div");
+    iconContainer.style.cssText = `
+      width: 80px; height: 80px; border-radius: 50%; background: #e74a3b;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; box-shadow: 0 0 20px rgba(231, 74, 59, 0.4);
+    `;
+    iconContainer.innerHTML =
+      '<i class="fas fa-exclamation-triangle" style="color: white; font-size: 35px;"></i>';
+
+    const titleText = document.createElement("h3");
+    titleText.innerText = "Are you sure?";
+    titleText.style.cssText =
+      "margin: 0 0 10px; color: #2c3e50; font-size: 26px; font-weight: bold;";
+
+    const msgText = document.createElement("p");
+    msgText.innerText = message;
+    msgText.style.cssText =
+      "margin: 0 0 25px; color: #7f8c8d; font-size: 16px;";
+
+    const btnContainer = document.createElement("div");
+    btnContainer.style.cssText =
+      "display: flex; justify-content: center; gap: 15px;";
+
+    const btnCancel = document.createElement("button");
+    btnCancel.innerText = "Cancel";
+    btnCancel.className = "btn-secondary";
+    btnCancel.style.cssText =
+      "padding: 10px 25px; border-radius: 30px; cursor: pointer; border: 1px solid #ccc;";
+    btnCancel.onclick = () => {
+      overlay.style.opacity = "0";
+      modal.style.transform = "scale(0.8)";
+      setTimeout(() => overlay.remove(), 300);
+    };
+
+    const btnConfirm = document.createElement("button");
+    btnConfirm.innerText = "Delete";
+    btnConfirm.style.cssText =
+      "background: #e74a3b; color: white; border: none; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(231, 74, 59, 0.4);";
+    btnConfirm.onclick = () => {
+      overlay.style.opacity = "0";
+      modal.style.transform = "scale(0.8)";
+      setTimeout(() => {
+        overlay.remove();
+        onConfirm();
+      }, 300);
+    };
+
+    btnContainer.appendChild(btnCancel);
+    btnContainer.appendChild(btnConfirm);
+
+    modal.appendChild(iconContainer);
+    modal.appendChild(titleText);
+    modal.appendChild(msgText);
+    modal.appendChild(btnContainer);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+      overlay.style.opacity = "1";
+      modal.style.transform = "scale(1)";
+    }, 10);
+  }
 
   function openLightbox(src) {
     const lightbox = document.getElementById("imageLightbox");

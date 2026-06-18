@@ -217,12 +217,12 @@
   <div class="expenses-card">
     <div class="expenses-card-header">
       <h3>
-        <span class="icon-square bg-indigo-light"
+        <span class="icon-square bg-indigo-light" id="expenseFormIcon"
           ><i class="fas fa-plus"></i
         ></span>
-        Log New Expense
+        <span id="expenseFormTitle">Log New Expense</span>
       </h3>
-      <div class="expense-info-badge">
+      <div class="expense-info-badge" id="expenseFormBadge">
         <i class="fas fa-magic"></i> Auto-matching enabled
       </div>
     </div>
@@ -352,6 +352,23 @@
           margin-top: 35px;
         "
       >
+        <button
+          type="button"
+          id="btnCancelExpenseEdit"
+          class="btn-secondary"
+          style="
+            padding: 14px 25px;
+            border-radius: 30px;
+            display: none;
+            background: #e74a3b;
+            color: white;
+            border: none;
+            margin-right: auto;
+          "
+          onclick="window.cancelExpenseEdit()"
+        >
+          <i class="fas fa-times"></i> Cancel Edit
+        </button>
         <button
           type="reset"
           class="btn-secondary"
@@ -485,6 +502,7 @@
             <th><i class="fas fa-user-check mr-2"></i> Paid By</th>
             <th><i class="fas fa-money-bill-wave mr-2"></i> Amount</th>
             <th><i class="fas fa-calendar-alt mr-2"></i> Date</th>
+            <th><i class="fas fa-cog mr-2"></i> Actions</th>
           </tr>
         </thead>
         <tbody id="expensesTableBody">

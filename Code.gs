@@ -397,7 +397,7 @@ function getExpenses() {
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var expense = {};
+    var expense = { rowNumber: i + 1 };
     for (var j = 0; j < headers.length; j++) {
       var header = headers[j];
       expense[header] = row[j];
@@ -406,6 +406,56 @@ function getExpenses() {
   }
 
   return expenses;
+}
+
+function deleteExpense(rowNumber) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  sheet.deleteRow(row);
+  return "Success";
+}
+
+function updateExpense(rowNumber, data) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
+
+  var existingRow = sheet.getRange(row, 1, 1, headers.length).getValues()[0];
+
+  var keyMap = {
+    "CAR MODEL": data.carModel || "",
+    "CAR ID": data.carId || "",
+    "Client Name": data.clientName || "",
+    DESCRIPTION: data.description || "",
+    "PAID BY": data.paidBy || "",
+    AMOUNT: data.amount || "",
+    "EXPENSE DATE": data.expenseDate || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    if (keyMap[header] !== undefined) {
+      rowValues[i] = keyMap[header];
+    } else {
+      rowValues[i] = existingRow[i];
+    }
+  }
+
+  sheet.getRange(row, 1, 1, headers.length).setValues([rowValues]);
+  return "Success";
 }
 
 function getExpensesForCar(carId) {
@@ -560,7 +610,7 @@ function getPayments() {
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var payment = {};
+    var payment = { rowNumber: i + 1 };
     for (var j = 0; j < headers.length; j++) {
       var header = headers[j];
       payment[header] = row[j];
@@ -569,6 +619,58 @@ function getPayments() {
   }
 
   return payments;
+}
+
+function deletePayment(rowNumber) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  sheet.deleteRow(row);
+  return "Success";
+}
+
+function updatePayment(rowNumber, data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
+
+  var existingRow = sheet.getRange(row, 1, 1, headers.length).getValues()[0];
+
+  var keyMap = {
+    "CAR MODEL": data.carModel || "",
+    "CAR ID": data.carId || "",
+    "Client Name": data.clientName || "",
+    "CLIENT NAME": data.clientName || "",
+    "PAYMENT OPTION / NOTES": data.paymentOption || "",
+    "PAYMENT OPTION": data.paymentOption || "",
+    "Payment Option": data.paymentOption || "",
+    AMOUNT: data.amount || "",
+    "PAYMENT DATE": data.paymentDate || "",
+    NOTES: data.notes || "",
+    Notes: data.notes || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    if (keyMap[header] !== undefined) {
+      rowValues[i] = keyMap[header];
+    } else {
+      rowValues[i] = existingRow[i];
+    }
+  }
+
+  sheet.getRange(row, 1, 1, headers.length).setValues([rowValues]);
+  return "Success";
 }
 
 function getCarListData() {
