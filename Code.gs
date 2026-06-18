@@ -798,7 +798,7 @@ function saveDataInput(data) {
     "Trade status": tradeStatusVal,
     "IAAI TOTAL PRICE W/ FEES":
       data.sourceType === "IAAI" ? data.iaaiTotalPrice || "" : "",
-    "PAPE PRICE": data.sourceType === "IAAI" ? data.papePrice || "" : "",
+    "PAPE PRICE": data.papePrice || "",
     "TRANSPORT FEES": data.transportFees || "",
     "SOLD PRICE": "",
     "DOWN PAYMENT": "",

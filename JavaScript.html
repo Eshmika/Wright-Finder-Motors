@@ -1866,22 +1866,80 @@
           });
         });
 
-      // Show/Hide Trade section based on Trade status
+      // Show/Hide Trade section based on Trade status or Source Type
       const tradeStatusSelect = document.querySelector(
         'select[name="Trade status"]',
+      );
+      const sourceTypeSelect = document.querySelector(
+        'select[name="Source Type"]',
       );
       const tradeSection = document.getElementById("editCategoryTrade");
 
       const updateTradeVisibility = () => {
-        if (tradeStatusSelect && tradeSection) {
+        const isTradeStatus =
+          tradeStatusSelect && tradeStatusSelect.value === "Trade";
+        const isTradeSource =
+          sourceTypeSelect && sourceTypeSelect.value === "Trade";
+        if (tradeSection) {
           tradeSection.style.display =
-            tradeStatusSelect.value === "Trade" ? "block" : "none";
+            isTradeStatus || isTradeSource ? "block" : "none";
         }
       };
 
       if (tradeStatusSelect) {
         tradeStatusSelect.onchange = updateTradeVisibility;
+      }
+
+      // Show/Hide fields based on Source Type
+      const updateEditSourceTypeVisibility = () => {
+        if (!sourceTypeSelect) return;
+        const sourceType = sourceTypeSelect.value;
+
+        // Define fields for each group
+        const iaaiFields = [
+          "IAAI Price Before Fees",
+          "IAAI TOTAL PRICE W/ FEES",
+        ];
+        const privateFields = [
+          "Seller Name",
+          "Acquisition Date",
+          "Purchase Price",
+          "Private Notes",
+        ];
+        const tradeFields = [
+          "Purchased Car Name",
+          "Trade Value",
+          "Trade In",
+          "Comment",
+        ];
+
+        // Helper function to toggle fields
+        const toggleFields = (fields, show) => {
+          fields.forEach((field) => {
+            const inputEl = document.querySelector(
+              `#carEditForm [name="${field}"]`,
+            );
+            if (inputEl) {
+              const inputGroup = inputEl.closest(".input-group");
+              if (inputGroup) {
+                inputGroup.style.display = show ? "block" : "none";
+              }
+            }
+          });
+        };
+
+        // Update visibility
+        toggleFields(iaaiFields, sourceType === "IAAI");
+        toggleFields(privateFields, sourceType === "Private/Partner");
+        toggleFields(tradeFields, sourceType === "Trade");
+
+        // Also update the trade category section visibility
         updateTradeVisibility();
+      };
+
+      if (sourceTypeSelect) {
+        sourceTypeSelect.onchange = updateEditSourceTypeVisibility;
+        updateEditSourceTypeVisibility();
       }
 
       // Add live update listeners
