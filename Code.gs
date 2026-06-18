@@ -201,13 +201,14 @@ function saveNewVehicle(data) {
     data.interiorFeaturesStr || "",
     mainImageUrls.join(", "),
     subImageUrls.join(", "),
-    "",
-    "",
-    data.tradeStatus || "",
-    "",
-    "",
-    "",
-    "",
+    "", // 28: CLIENT NAME
+    data.purchaseDate || "", // 29: PURCHASE DATE
+    "", // 30: SOLD DATE
+    data.tradeStatus || "", // 31: Trade status
+    "", // 32
+    "", // 33
+    "", // 34
+    "", // 35
     "",
     "",
     "",
