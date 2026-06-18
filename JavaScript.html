@@ -258,29 +258,22 @@
     function populateExpenseDropdowns() {
       const carIdSelect = document.getElementById("expenseCarId");
       const modelSelect = document.getElementById("expenseCarModel");
-      const clientSelect = document.getElementById("expenseClientName");
 
       carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
       modelSelect.innerHTML = '<option value="">Select Model...</option>';
-      clientSelect.innerHTML = '<option value="">Select Client...</option>';
 
-      // Use Sets to keep unique values for model and client
+      // Use Sets to keep unique values for model
       let uniqueModels = new Set();
-      let uniqueClients = new Set();
 
       allCars.forEach((car) => {
         if (car["Car ID"]) {
           carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
         }
         if (car["Model"]) uniqueModels.add(car["Model"]);
-        if (car["CLIENT NAME"]) uniqueClients.add(car["CLIENT NAME"]);
       });
 
       uniqueModels.forEach((model) => {
         modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
-      });
-      uniqueClients.forEach((client) => {
-        clientSelect.innerHTML += `<option value="${client}">${client}</option>`;
       });
     }
 
@@ -1756,20 +1749,6 @@
         categoriesHtml += renderCategory(cat.title, cat.icon, keysToRender);
       });
 
-      let otherKeys = [];
-      for (const key in currentEditableCar) {
-        if (!mappedKeys.includes(key) && !skippedKeys.includes(key)) {
-          otherKeys.push(key);
-        }
-      }
-      if (otherKeys.length > 0) {
-        categoriesHtml += renderCategory(
-          "Additional Information",
-          "fa-plus-circle",
-          otherKeys,
-        );
-      }
-
       grid.innerHTML = categoriesHtml;
 
       // Initialize dynamic cascading dropdowns for the edit form
@@ -3180,7 +3159,7 @@
       // Sync dropdowns
       const carIdSelect = document.getElementById("pay-car-id");
       const modelSelect = document.getElementById("pay-car-model");
-      const clientSelect = document.getElementById("pay-client-name");
+      const clientInput = document.getElementById("pay-client-name");
 
       if (carIdSelect) {
         // use event delegation or replace nodes since clones don't keep listeners
@@ -3197,10 +3176,10 @@
           syncPaymentDropdowns("carModel"),
         );
       }
-      if (clientSelect) {
-        const newClientSelect = clientSelect.cloneNode(true);
-        clientSelect.parentNode.replaceChild(newClientSelect, clientSelect);
-        newClientSelect.addEventListener("change", () =>
+      if (clientInput) {
+        const newClientInput = clientInput.cloneNode(true);
+        clientInput.parentNode.replaceChild(newClientInput, clientInput);
+        newClientInput.addEventListener("input", () =>
           syncPaymentDropdowns("clientName"),
         );
       }
@@ -3209,26 +3188,22 @@
     function populatePaymentDropdowns() {
       const carIdSelect = document.getElementById("pay-car-id");
       const modelSelect = document.getElementById("pay-car-model");
-      const clientSelect = document.getElementById("pay-client-name");
 
-      if (!carIdSelect || !modelSelect || !clientSelect) return;
+      if (!carIdSelect || !modelSelect) return;
 
       carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
       modelSelect.innerHTML = '<option value="">Select Model...</option>';
-      clientSelect.innerHTML = '<option value="">Select Client...</option>';
 
       if (!allCars) return;
 
-      // Use Sets to keep unique values for model and client
+      // Use Sets to keep unique values for model
       let uniqueModels = new Set();
-      let uniqueClients = new Set();
 
       allCars.forEach((car) => {
         if (car["Car ID"]) {
           carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
         }
         if (car["Model"]) uniqueModels.add(car["Model"]);
-        if (car["CLIENT NAME"]) uniqueClients.add(car["CLIENT NAME"]);
       });
 
       Array.from(uniqueModels)
@@ -3236,19 +3211,14 @@
         .forEach((model) => {
           modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
         });
-      Array.from(uniqueClients)
-        .sort()
-        .forEach((client) => {
-          clientSelect.innerHTML += `<option value="${client}">${client}</option>`;
-        });
     }
 
     function syncPaymentDropdowns(changedField) {
       const carIdSelect = document.getElementById("pay-car-id");
       const modelSelect = document.getElementById("pay-car-model");
-      const clientSelect = document.getElementById("pay-client-name");
+      const clientInput = document.getElementById("pay-client-name");
 
-      if (!allCars || !carIdSelect || !modelSelect || !clientSelect) return;
+      if (!allCars || !carIdSelect || !modelSelect || !clientInput) return;
 
       let matchedCar = null;
 
@@ -3256,9 +3226,9 @@
         matchedCar = allCars.find((c) => c["Car ID"] === carIdSelect.value);
       } else if (changedField === "carModel" && modelSelect.value) {
         matchedCar = allCars.find((c) => c["Model"] === modelSelect.value);
-      } else if (changedField === "clientName" && clientSelect.value) {
+      } else if (changedField === "clientName" && clientInput.value) {
         matchedCar = allCars.find(
-          (c) => c["CLIENT NAME"] === clientSelect.value,
+          (c) => c["CLIENT NAME"] === clientInput.value,
         );
       }
 
@@ -3270,14 +3240,7 @@
           modelSelect.value = matchedCar["Model"];
         }
         if (changedField !== "clientName" && matchedCar["CLIENT NAME"]) {
-          // ensure the clientname exists in dropdown
-          let optExists = Array.from(clientSelect.options).some(
-            (opt) => opt.value === matchedCar["CLIENT NAME"],
-          );
-          if (!optExists) {
-            clientSelect.innerHTML += `<option value="${matchedCar["CLIENT NAME"]}">${matchedCar["CLIENT NAME"]}</option>`;
-          }
-          clientSelect.value = matchedCar["CLIENT NAME"];
+          clientInput.value = matchedCar["CLIENT NAME"];
         }
       }
     }
@@ -4768,14 +4731,6 @@
         modelSelect.value = carModel;
       }
       if (clientSelect) {
-        if (
-          clientName &&
-          !Array.from(clientSelect.options).some(
-            (opt) => opt.value === clientName,
-          )
-        ) {
-          clientSelect.innerHTML += `<option value="${clientName}">${clientName}</option>`;
-        }
         clientSelect.value = clientName || "";
       }
 
@@ -4926,15 +4881,8 @@
         }
         modelSelect.value = carModel;
       }
-      if (clientSelect && clientName) {
-        if (
-          !Array.from(clientSelect.options).some(
-            (opt) => opt.value === clientName,
-          )
-        ) {
-          clientSelect.innerHTML += `<option value="${clientName}">${clientName}</option>`;
-        }
-        clientSelect.value = clientName;
+      if (clientSelect) {
+        clientSelect.value = clientName || "";
       }
 
       if (dateStr) {

@@ -268,14 +268,14 @@
         <div class="input-group">
           <label>Client Name</label>
           <div class="modern-input-wrapper">
-            <select
+            <input
+              type="text"
               name="clientName"
               id="expenseClientName"
               class="form-control"
-              onchange="syncExpenseDropdowns('clientName')"
-            >
-              <option value="">Select Client...</option>
-            </select>
+              placeholder="Enter Client Name..."
+              oninput="syncExpenseDropdowns('clientName')"
+            />
             <i class="fas fa-user-tie"></i>
           </div>
         </div>
