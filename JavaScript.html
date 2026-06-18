@@ -1333,6 +1333,7 @@
       const skippedKeys = ["Timestamp", "Main Image URLs", "Sub Image URLs"];
 
       const dropdownOptions = {
+        "Source Type": ["IAAI", "Private/Partner", "Trade"],
         Status: ["Available", "Sold", "Pending"],
         "Financing status": ["Paid off", "Loan Active"],
         "Tax Responsibility": ["Client", "Company", "Split"],
@@ -1494,6 +1495,18 @@
           ],
         },
         {
+          title: "Purchase Details",
+          icon: "fa-shopping-basket",
+          keys: [
+            "Source Type",
+            "Seller Name",
+            "Acquisition Date",
+            "Purchase Price",
+            "Private Notes",
+            "Purchased Car Name",
+          ],
+        },
+        {
           title: "Availabilities",
           icon: "fa-info-circle",
           keys: ["Status", "Financing status", "Tax Responsibility"],
@@ -1525,6 +1538,7 @@
           "PROFIT",
           "Trade Value",
           "Trade In",
+          "Purchase Price",
         ];
 
         const financialColorsMap = {
@@ -1658,7 +1672,11 @@
                 <input type="number" step="0.01" name="${key}" value="${cleanVal}" class="form-control" placeholder="0.00" style="${customStyle}">
                 <i class="fas fa-dollar-sign" style="${iconStyle}"></i>
               </div>`;
-          } else if (key === "PURCHASE DATE" || key === "SOLD DATE") {
+          } else if (
+            key === "PURCHASE DATE" ||
+            key === "SOLD DATE" ||
+            key === "Acquisition Date"
+          ) {
             // Format date string if it includes time component to yyyy-mm-dd for input display
             if (val) {
               try {
@@ -2710,6 +2728,81 @@
 
       let infoHtml = "";
       infoHtml += buildCategory("Vehicle Overview", "fa-car", overviewHtml);
+
+      let purchaseDetailsHtml = "";
+      if (car["Source Type"]) {
+        purchaseDetailsHtml += createSpecItem(
+          "Source Type",
+          car["Source Type"],
+          "fa-shopping-cart",
+          "#6B7280",
+        );
+        if (car["Source Type"] === "Private/Partner") {
+          purchaseDetailsHtml += createSpecItem(
+            "Seller Name",
+            car["Seller Name"],
+            "fa-user-tag",
+            "#6B7280",
+          );
+          purchaseDetailsHtml += createSpecItem(
+            "Acquisition Date",
+            car["Acquisition Date"],
+            "fa-calendar-alt",
+            "#6B7280",
+          );
+          purchaseDetailsHtml += createSpecItem(
+            "Purchase Price",
+            car["Purchase Price"]
+              ? car["Purchase Price"].toString().startsWith("$")
+                ? car["Purchase Price"]
+                : "$" + car["Purchase Price"]
+              : "",
+            "fa-dollar-sign",
+            "#22C55E",
+            "rgba(34, 197, 94, 0.08)",
+          );
+          purchaseDetailsHtml += createSpecItem(
+            "Private Notes",
+            car["Private Notes"],
+            "fa-sticky-note",
+            "#6B7280",
+          );
+        } else if (car["Source Type"] === "Trade") {
+          purchaseDetailsHtml += createSpecItem(
+            "Purchased Car Name",
+            car["Purchased Car Name"],
+            "fa-car",
+            "#6B7280",
+          );
+          purchaseDetailsHtml += createSpecItem(
+            "Trade Value",
+            car["Trade Value"]
+              ? car["Trade Value"].toString().startsWith("$")
+                ? car["Trade Value"]
+                : "$" + car["Trade Value"]
+              : "",
+            "fa-handshake",
+            "#6B7280",
+          );
+          purchaseDetailsHtml += createSpecItem(
+            "Trade In Description",
+            car["Trade In"],
+            "fa-car-side",
+            "#6B7280",
+          );
+          purchaseDetailsHtml += createSpecItem(
+            "Comment / Notes",
+            car["Comment"],
+            "fa-comment-alt",
+            "#6B7280",
+          );
+        }
+        infoHtml += buildCategory(
+          "Purchase Details",
+          "fa-shopping-basket",
+          purchaseDetailsHtml,
+        );
+      }
 
       let tradeHtml = "";
       if (car["Trade status"] === "Trade") {
