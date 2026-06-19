@@ -1574,6 +1574,22 @@ function getDocumentRequestsSheet() {
       .setBackground("#f3f4f6")
       .setHorizontalAlignment("center");
     sheet.setFrozenRows(1);
+  } else {
+    // Enforce 9 columns if they don't exist
+    if (sheet.getLastColumn() < 9) {
+      var headers = [
+        "Timestamp",
+        "Request ID",
+        "Car ID",
+        "Client Email",
+        "Subject",
+        "Message",
+        "Sender Attachments",
+        "Status",
+        "Uploaded Documents",
+      ];
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    }
   }
   return sheet;
 }
@@ -1583,9 +1599,10 @@ function getDocumentRequestDetails(requestId) {
     var sheet = getDocumentRequestsSheet();
     var values = sheet.getDataRange().getValues();
     for (var i = 1; i < values.length; i++) {
-      if (values[i][1] === requestId) {
+      var row = values[i];
+      if (row[1] === requestId) {
         var adminFilesList = [];
-        var adminFilesStr = values[i][6];
+        var adminFilesStr = row[6] ? row[6].toString() : "";
         if (adminFilesStr) {
           var links = adminFilesStr.split("\n");
           for (var j = 0; j < links.length; j++) {
@@ -1599,13 +1616,13 @@ function getDocumentRequestDetails(requestId) {
           }
         }
         return {
-          requestId: values[i][1],
-          carId: values[i][2],
-          clientEmail: values[i][3],
-          subject: values[i][4],
-          message: values[i][5],
+          requestId: row[1] ? row[1].toString() : "",
+          carId: row[2] ? row[2].toString() : "",
+          clientEmail: row[3] ? row[3].toString() : "",
+          subject: row[4] ? row[4].toString() : "",
+          message: row[5] ? row[5].toString() : "",
           adminFiles: adminFilesList,
-          status: values[i][7],
+          status: row[7] ? row[7].toString() : "",
         };
       }
     }
@@ -1621,16 +1638,26 @@ function getDocumentRequests() {
     var values = sheet.getDataRange().getValues();
     var results = [];
     for (var i = 1; i < values.length; i++) {
+      var row = values[i];
+      // Convert timestamp to string if it's a Date
+      var ts = row[0];
+      if (ts instanceof Date) {
+        ts = ts.toISOString();
+      } else if (ts) {
+        ts = ts.toString();
+      } else {
+        ts = "";
+      }
       results.push({
-        timestamp: values[i][0],
-        requestId: values[i][1],
-        carId: values[i][2],
-        clientEmail: values[i][3],
-        subject: values[i][4],
-        message: values[i][5],
-        senderAttachments: values[i][6],
-        status: values[i][7],
-        uploadedDocuments: values[i][8],
+        timestamp: ts,
+        requestId: row[1] ? row[1].toString() : "",
+        carId: row[2] ? row[2].toString() : "",
+        clientEmail: row[3] ? row[3].toString() : "",
+        subject: row[4] ? row[4].toString() : "",
+        message: row[5] ? row[5].toString() : "",
+        senderAttachments: row[6] ? row[6].toString() : "",
+        status: row[7] ? row[7].toString() : "",
+        uploadedDocuments: row.length > 8 && row[8] ? row[8].toString() : "",
       });
     }
     return results;
