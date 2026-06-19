@@ -3491,6 +3491,9 @@
     // =============================================
     // Communication Logic
     // =============================================
+    let commCurrentPage = 1;
+    const commRowsPerPage = 5;
+
     window.initCommunicationView = function () {
       if (allCars.length === 0) {
         const tbody = document.getElementById("commTableBody");
@@ -3507,10 +3510,14 @@
           .withSuccessHandler(function (vehicles) {
             allCars = vehicles;
             window.renderCommunicationTable();
+            window.populateDocReqClientSelect();
+            window.loadDocReqTable();
           })
           .getVehicles();
       } else {
         window.renderCommunicationTable();
+        window.populateDocReqClientSelect();
+        window.loadDocReqTable();
       }
     };
 
@@ -3553,7 +3560,63 @@
         );
       });
 
-      if (filtered.length === 0) {
+      const totalRecords = filtered.length;
+      const totalPages = Math.ceil(totalRecords / commRowsPerPage) || 1;
+
+      if (commCurrentPage > totalPages) commCurrentPage = totalPages;
+      if (commCurrentPage < 1) commCurrentPage = 1;
+
+      const startIndex = (commCurrentPage - 1) * commRowsPerPage;
+      const endIndex = Math.min(startIndex + commRowsPerPage, totalRecords);
+
+      const pageSlice = filtered.slice(startIndex, endIndex);
+
+      // Update pagination DOM
+      const startEl = document.getElementById("commPageStart");
+      const endEl = document.getElementById("commPageEnd");
+      const totalEl = document.getElementById("commTotalRecords");
+      if (startEl) startEl.innerText = totalRecords === 0 ? 0 : startIndex + 1;
+      if (endEl) endEl.innerText = endIndex;
+      if (totalEl) totalEl.innerText = totalRecords;
+
+      const prevBtn = document.getElementById("commPrevBtn");
+      const nextBtn = document.getElementById("commNextBtn");
+      if (prevBtn) {
+        prevBtn.disabled = commCurrentPage === 1;
+        prevBtn.style.opacity = commCurrentPage === 1 ? "0.5" : "1";
+        prevBtn.style.cursor =
+          commCurrentPage === 1 ? "not-allowed" : "pointer";
+      }
+      if (nextBtn) {
+        nextBtn.disabled = commCurrentPage === totalPages;
+        nextBtn.style.opacity = commCurrentPage === totalPages ? "0.5" : "1";
+        nextBtn.style.cursor =
+          commCurrentPage === totalPages ? "not-allowed" : "pointer";
+      }
+
+      const pageNumbersContainer = document.getElementById("commPageNumbers");
+      if (pageNumbersContainer) {
+        pageNumbersContainer.innerHTML = "";
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement("button");
+          btn.innerText = i;
+          btn.className = "action-btn";
+          if (i === commCurrentPage) {
+            btn.style.cssText =
+              "padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; background: #512b81; color: white; border: none; font-weight: bold; cursor: default;";
+          } else {
+            btn.style.cssText =
+              "padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; background: #eaecf4; color: #858796; border: none; cursor: pointer; transition: all 0.2s;";
+            btn.onclick = () => {
+              commCurrentPage = i;
+              window.renderCommunicationTable();
+            };
+          }
+          pageNumbersContainer.appendChild(btn);
+        }
+      }
+
+      if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="7" class="text-center" style="padding: 20px; color: #858796;">
@@ -3561,7 +3624,7 @@
             </td>
           </tr>`;
       } else {
-        filtered.forEach((car) => {
+        pageSlice.forEach((car) => {
           const email = (car["Client Email"] || "").toString().trim();
           const hasEmail =
             email !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -3665,7 +3728,13 @@
       }
     };
 
+    window.changeCommPage = function (direction) {
+      commCurrentPage += direction;
+      window.renderCommunicationTable();
+    };
+
     window.filterCommunicationTable = function () {
+      commCurrentPage = 1;
       window.renderCommunicationTable();
     };
 
@@ -3705,6 +3774,390 @@
           alert("Failed to send email: " + error.message);
         })
         .sendAgreementEmailToServer(carId);
+      google.script.run
+        .withSuccessHandler(function (result) {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          if (result && result.success) {
+            // Update local cache
+            const localCar = allCars.find((c) => c["Car ID"] === carId);
+            if (localCar) {
+              localCar["Agreement Status"] = "Pending";
+              window.renderCommunicationTable();
+            }
+            showCreativeSuccessModal(result.message);
+          } else {
+            alert("Error: " + (result ? result.message : "Unknown error"));
+          }
+        })
+        .withFailureHandler(function (error) {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          alert("Failed to send email: " + error.message);
+        })
+        .sendAgreementEmailToServer(carId);
+    };
+
+    // =============================================
+    // Document Request Portal Controller
+    // =============================================
+    let allDocRequests = [];
+    let docReqCurrentPage = 1;
+    const docReqRowsPerPage = 5;
+
+    window.populateDocReqClientSelect = function () {
+      const select = document.getElementById("docReqClientSelect");
+      if (!select) return;
+
+      select.innerHTML = '<option value="">-- Choose Client --</option>';
+
+      // Filter active loan vehicles (same as rendering table)
+      const loanVehicles = allCars.filter((car) => {
+        const dp = (car["DOWN PAYMENT"] || "").toString().trim();
+        const hasDownPayment =
+          dp !== "" &&
+          dp !== "0" &&
+          dp !== "0.00" &&
+          dp !== "$0.00" &&
+          dp !== "$0" &&
+          parseFloat(dp.replace(/[^0-9.-]+/g, "")) > 0;
+        const hasClient = (car["CLIENT NAME"] || "").toString().trim() !== "";
+        return hasDownPayment && hasClient;
+      });
+
+      loanVehicles.forEach((car) => {
+        const option = document.createElement("option");
+        option.value = car["Car ID"];
+        option.text = `${car["CLIENT NAME"]} (${car["Car ID"]} - ${car["Car Name"] || ""})`;
+        select.appendChild(option);
+      });
+    };
+
+    window.updateDocReqEmailFromSelect = function () {
+      const select = document.getElementById("docReqClientSelect");
+      const emailInput = document.getElementById("docReqEmail");
+      if (!select || !emailInput) return;
+
+      const selectedCarId = select.value;
+      if (!selectedCarId) {
+        emailInput.value = "";
+        return;
+      }
+
+      const car = allCars.find((c) => c["Car ID"] === selectedCarId);
+      if (car && car["Client Email"]) {
+        emailInput.value = car["Client Email"].toString().trim();
+      } else {
+        emailInput.value = "";
+      }
+    };
+
+    window.applyDocReqTemplate = function (templateId) {
+      const subjectInput = document.getElementById("docReqSubject");
+      const msgInput = document.getElementById("docReqMessage");
+      if (!subjectInput || !msgInput) return;
+
+      if (templateId === "driver_license") {
+        subjectInput.value = "Copy of Driver's License Required";
+        msgInput.value =
+          "Dear Client,\n\nWe require a clear color copy of your valid Driver's License to complete your purchase agreement. Please upload a scan or clear photo of the front and back of your license.\n\nThank you,\nWright Finder Motors Team";
+      } else if (templateId === "proof_income") {
+        subjectInput.value = "Proof of Income Documentation Required";
+        msgInput.value =
+          "Dear Client,\n\nTo complete your finance setup, please provide proof of income. This should be your last 2 consecutive paystubs or your most recent 2 months of bank statements showing regular deposits.\n\nThank you,\nWright Finder Motors Team";
+      } else if (templateId === "proof_insurance") {
+        subjectInput.value = "Proof of Active Auto Insurance Required";
+        msgInput.value =
+          "Dear Client,\n\nWe require proof of active auto insurance for your vehicle. Please upload your insurance card or declarations page showing Wright Finder Motors listed as the lienholder/loss payee.\n\nThank you,\nWright Finder Motors Team";
+      } else if (templateId === "utility_bill") {
+        subjectInput.value = "Proof of Residency Required";
+        msgInput.value =
+          "Dear Client,\n\nTo verify your residential address, please upload a recent utility bill (electric, gas, water, or internet) dated within the last 30 days showing your name and home address.\n\nThank you,\nWright Finder Motors Team";
+      } else {
+        subjectInput.value = "";
+        msgInput.value = "";
+      }
+    };
+
+    window.submitDocRequest = function () {
+      const email = document.getElementById("docReqEmail").value.trim();
+      const subject = document.getElementById("docReqSubject").value.trim();
+      const message = document.getElementById("docReqMessage").value.trim();
+      const carId = document.getElementById("docReqClientSelect").value;
+      const fileInput = document.getElementById("docReqFiles");
+      const submitBtn = document.getElementById("docReqSubmitBtn");
+
+      if (!email || !subject || !message) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const originalHtml = submitBtn.innerHTML;
+      submitBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Processing & Sending...';
+
+      const sendRequest = (encodedFiles) => {
+        google.script.run
+          .withSuccessHandler(function (result) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+            if (result && result.success) {
+              document.getElementById("docReqForm").reset();
+              showCreativeSuccessModal(result.message);
+              window.loadDocReqTable();
+            } else {
+              alert("Error: " + (result ? result.message : "Unknown error"));
+            }
+          })
+          .withFailureHandler(function (error) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+            alert("Failed to send request: " + error.message);
+          })
+          .sendClientDocumentRequestEmail(
+            email,
+            subject,
+            message,
+            encodedFiles,
+            carId,
+          );
+      };
+
+      if (fileInput && fileInput.files.length > 0) {
+        const promises = Array.from(fileInput.files).map((file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const base64Data = e.target.result.split(",")[1];
+              resolve({
+                name: file.name,
+                mimeType: file.type,
+                data: base64Data,
+              });
+            };
+            reader.onerror = () => reject(new Error("File read error"));
+            reader.readAsDataURL(file);
+          });
+        });
+
+        Promise.all(promises)
+          .then((filesData) => sendRequest(filesData))
+          .catch((err) => {
+            alert("Error reading attachment files: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+          });
+      } else {
+        sendRequest([]);
+      }
+    };
+
+    window.loadDocReqTable = function () {
+      const tbody = document.getElementById("docReqTableBody");
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center" style="padding: 30px; color: #858796;">
+              <i class="fas fa-spinner fa-spin fa-2x" style="color: #512b81;"></i>
+              <div style="margin-top: 10px;">Loading requests details...</div>
+            </td>
+          </tr>`;
+      }
+
+      google.script.run
+        .withSuccessHandler(function (requests) {
+          allDocRequests = requests || [];
+          // Sort requests by newest first
+          allDocRequests.sort(
+            (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+          );
+          window.renderDocReqTable();
+        })
+        .withFailureHandler(function (error) {
+          if (tbody) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="6" class="text-center" style="padding: 20px; color: #e74a3b;">
+                  Failed to load requests: ${error.message}
+                </td>
+              </tr>`;
+          }
+        })
+        .getDocumentRequests();
+    };
+
+    window.renderDocReqTable = function () {
+      const tbody = document.getElementById("docReqTableBody");
+      const searchInput = document.getElementById("docReqSearchInput");
+      if (!tbody) return;
+
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+      tbody.innerHTML = "";
+
+      const filtered = allDocRequests.filter((req) => {
+        if (!query) return true;
+        const email = (req.clientEmail || "").toLowerCase();
+        const subject = (req.subject || "").toLowerCase();
+        const carId = (req.carId || "").toLowerCase();
+        const status = (req.status || "").toLowerCase();
+        return (
+          email.includes(query) ||
+          subject.includes(query) ||
+          carId.includes(query) ||
+          status.includes(query)
+        );
+      });
+
+      const totalRecords = filtered.length;
+      const totalPages = Math.ceil(totalRecords / docReqRowsPerPage) || 1;
+
+      if (docReqCurrentPage > totalPages) docReqCurrentPage = totalPages;
+      if (docReqCurrentPage < 1) docReqCurrentPage = 1;
+
+      const startIndex = (docReqCurrentPage - 1) * docReqRowsPerPage;
+      const endIndex = Math.min(startIndex + docReqRowsPerPage, totalRecords);
+
+      const pageSlice = filtered.slice(startIndex, endIndex);
+
+      // Update Pagination DOM
+      const startEl = document.getElementById("docReqPageStart");
+      const endEl = document.getElementById("docReqPageEnd");
+      const totalEl = document.getElementById("docReqTotalRecords");
+      if (startEl) startEl.innerText = totalRecords === 0 ? 0 : startIndex + 1;
+      if (endEl) endEl.innerText = endIndex;
+      if (totalEl) totalEl.innerText = totalRecords;
+
+      const prevBtn = document.getElementById("docReqPrevBtn");
+      const nextBtn = document.getElementById("docReqNextBtn");
+      if (prevBtn) {
+        prevBtn.disabled = docReqCurrentPage === 1;
+        prevBtn.style.opacity = docReqCurrentPage === 1 ? "0.5" : "1";
+      }
+      if (nextBtn) {
+        nextBtn.disabled = docReqCurrentPage === totalPages;
+        nextBtn.style.opacity = docReqCurrentPage === totalPages ? "0.5" : "1";
+      }
+
+      const pageNumbersContainer = document.getElementById("docReqPageNumbers");
+      if (pageNumbersContainer) {
+        pageNumbersContainer.innerHTML = "";
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement("button");
+          btn.innerText = i;
+          btn.className = "action-btn";
+          if (i === docReqCurrentPage) {
+            btn.style.cssText =
+              "padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; background: #512b81; color: white; border: none; font-weight: bold; cursor: default;";
+          } else {
+            btn.style.cssText =
+              "padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; background: #eaecf4; color: #858796; border: none; cursor: pointer; transition: all 0.2s;";
+            btn.onclick = () => {
+              docReqCurrentPage = i;
+              window.renderDocReqTable();
+            };
+          }
+          pageNumbersContainer.appendChild(btn);
+        }
+      }
+
+      if (pageSlice.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center" style="padding: 20px; color: #858796;">
+              No matching document requests found.
+            </td>
+          </tr>`;
+      } else {
+        pageSlice.forEach((req) => {
+          // Format Timestamp
+          let dateStr = "N/A";
+          if (req.timestamp) {
+            try {
+              const d = new Date(req.timestamp);
+              dateStr =
+                d.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }) +
+                " " +
+                d.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+            } catch (e) {}
+          }
+
+          // Format status badge
+          let statusHtml = "";
+          if (req.status === "Uploaded") {
+            statusHtml = `<span style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 3px 8px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-check-circle"></i> Uploaded</span>`;
+          } else {
+            statusHtml = `<span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); padding: 3px 8px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-clock"></i> Pending</span>`;
+          }
+
+          // Sender reference files
+          let senderFilesHtml = "";
+          if (req.senderAttachments) {
+            const lines = req.senderAttachments.split("\n");
+            lines.forEach((line) => {
+              if (line) {
+                const parts = line.split(" -> ");
+                const name = parts[0] || "File";
+                const url = parts[1] || line;
+                senderFilesHtml += `<a href="${url}" target="_blank" style="display: block; font-size: 0.8rem; color: #512b81; text-decoration: none; margin-bottom: 4px; font-weight: 600;"><i class="fas fa-paperclip"></i> ${name}</a>`;
+              }
+            });
+          }
+          if (!senderFilesHtml)
+            senderFilesHtml =
+              '<span style="color: gray; font-style: italic; font-size: 0.8rem;">None</span>';
+
+          // Client uploaded files
+          let clientFilesHtml = "";
+          if (req.uploadedDocuments) {
+            const lines = req.uploadedDocuments.split("\n");
+            lines.forEach((line) => {
+              if (line) {
+                const parts = line.split(" -> ");
+                const name = parts[0] || "File";
+                const url = parts[1] || line;
+                clientFilesHtml += `<a href="${url}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: #ece8f6; border-radius: 6px; font-size: 0.8rem; color: #512b81; text-decoration: none; font-weight: 600; margin-right: 5px; margin-bottom: 5px; border: 1px solid #dcd3ef; transition: all 0.2s;"><i class="fas fa-file-download"></i> ${name}</a>`;
+              }
+            });
+          }
+          if (!clientFilesHtml)
+            clientFilesHtml =
+              '<span style="color: gray; font-style: italic; font-size: 0.85rem;">Waiting for client...</span>';
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${dateStr}</td>
+            <td>
+              <div style="font-weight: bold; color: black;">${req.clientEmail}</div>
+              <div style="font-size: 0.8rem; color: gray;">Car Stock ID: ${req.carId}</div>
+            </td>
+            <td><strong>${req.subject}</strong></td>
+            <td>${senderFilesHtml}</td>
+            <td style="text-align: center;">${statusHtml}</td>
+            <td style="text-align: center;">${clientFilesHtml}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    };
+
+    window.changeDocReqPage = function (direction) {
+      docReqCurrentPage += direction;
+      window.renderDocReqTable();
+    };
+
+    window.filterDocReqTable = function () {
+      docReqCurrentPage = 1;
+      window.renderDocReqTable();
     };
 
     window.openInstallmentModal = function (

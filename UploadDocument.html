@@ -1,0 +1,623 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Upload Document - Wright Finder Motors</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #512b81;
+        --primary-dark: #2c1a4d;
+        --primary-light: #ece8f6;
+        --success: #10b981;
+        --dark: #1e1e2d;
+        --gray: #6b7280;
+        --light: #f9fafb;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Outfit", sans-serif;
+      }
+
+      body {
+        background:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(95, 76, 152, 0.08) 0%,
+            rgba(21, 12, 45, 0.05) 90.1%
+          ),
+          #f3f4f6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: var(--dark);
+      }
+
+      .container {
+        width: 100%;
+        max-width: 650px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(44, 26, 77, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-dark) 0%,
+          var(--primary) 100%
+        );
+        color: white;
+        padding: 35px 30px;
+        text-align: center;
+        position: relative;
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .header p {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        font-weight: 400;
+      }
+
+      .logo-container {
+        margin-bottom: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        backdrop-filter: blur(5px);
+      }
+
+      .logo-container i {
+        font-size: 1.8rem;
+        color: white;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .request-details {
+        background: var(--primary-light);
+        border-left: 5px solid var(--primary);
+        padding: 20px;
+        border-radius: 0 12px 12px 0;
+        margin-bottom: 25px;
+      }
+
+      .request-details h3 {
+        font-size: 1.1rem;
+        color: var(--primary-dark);
+        margin-bottom: 6px;
+        font-weight: 700;
+      }
+
+      .request-details p {
+        font-size: 0.95rem;
+        color: #4a455a;
+        line-height: 1.5;
+      }
+
+      .admin-attachments {
+        margin-bottom: 25px;
+      }
+
+      .admin-attachments h4 {
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--gray);
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .attachment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        transition: all 0.2s;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+
+      .attachment-badge:hover {
+        background: var(--primary-light);
+        border-color: var(--primary);
+        transform: translateY(-1px);
+      }
+
+      .dropzone {
+        border: 2px dashed #c0b3d6;
+        background: #faf9fc;
+        border-radius: 12px;
+        padding: 35px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 25px;
+      }
+
+      .dropzone:hover,
+      .dropzone.dragover {
+        border-color: var(--primary);
+        background: #f1ecf8;
+        box-shadow: 0 8px 16px rgba(81, 43, 129, 0.05);
+      }
+
+      .dropzone i {
+        font-size: 2.5rem;
+        color: var(--primary);
+        transition: transform 0.2s;
+      }
+
+      .dropzone:hover i {
+        transform: translateY(-4px);
+      }
+
+      .dropzone p {
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .dropzone span {
+        font-size: 0.85rem;
+        color: var(--gray);
+      }
+
+      .file-list {
+        margin-bottom: 25px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        animation: fadeIn 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .file-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+      }
+
+      .file-info i {
+        color: var(--primary);
+      }
+
+      .file-size {
+        color: var(--gray);
+        font-size: 0.8rem;
+        margin-left: 5px;
+      }
+
+      .remove-file {
+        background: none;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 5px;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+
+      .remove-file:hover {
+        background: #fee2e2;
+      }
+
+      .submit-btn {
+        width: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: white;
+        border: none;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 8px 16px rgba(81, 43, 129, 0.25);
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px rgba(81, 43, 129, 0.35);
+      }
+
+      .submit-btn:disabled {
+        background: #d1d5db;
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 20px 0;
+        color: var(--gray);
+        font-size: 0.8rem;
+      }
+
+      /* Modals / Screens */
+      .success-screen {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+        animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes zoomIn {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        background: #ecfdf5;
+        color: var(--success);
+        font-size: 3rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.1);
+      }
+
+      .success-screen h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: #111827;
+      }
+
+      .success-screen p {
+        color: var(--gray);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 25px;
+      }
+
+      /* Utility */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo-container">
+          <i class="fas fa-file-invoice"></i>
+        </div>
+        <h1>Wright Finder Motors</h1>
+        <p>Secure Document Upload Portal</p>
+      </div>
+
+      <!-- Upload Main Screen -->
+      <div class="content" id="upload-screen">
+        <!-- Request Details -->
+        <div class="request-details">
+          <h3 id="req-subject">Loading Subject...</h3>
+          <p id="req-message">Loading message details...</p>
+        </div>
+
+        <!-- Admin Attached files if any -->
+        <div class="admin-attachments hidden" id="admin-files-section">
+          <h4>Attached by Requestor</h4>
+          <div id="admin-files-list"></div>
+        </div>
+
+        <!-- Upload Dropzone -->
+        <div
+          class="dropzone"
+          id="dropzone"
+          onclick="document.getElementById('file-input').click()"
+        >
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag & drop your files here</p>
+          <span>or click to browse from device</span>
+          <input type="file" id="file-input" class="hidden" multiple />
+        </div>
+
+        <!-- Files List -->
+        <div class="file-list" id="file-list"></div>
+
+        <!-- Submit Button -->
+        <button class="submit-btn" id="submit-btn" disabled>
+          <i class="fas fa-paper-plane"></i>
+          Submit Documents
+        </button>
+      </div>
+
+      <!-- Success Screen -->
+      <div class="success-screen" id="success-screen">
+        <div class="success-icon">
+          <i class="fas fa-check"></i>
+        </div>
+        <h2>Upload Successful!</h2>
+        <p id="success-message">
+          Your documents have been securely uploaded to Wright Finder Motors.
+          The team has been notified.
+        </p>
+        <i
+          class="fas fa-shield-alt"
+          style="color: var(--primary); font-size: 1.2rem; margin-right: 6px"
+        ></i>
+        <span style="font-size: 0.85rem; color: var(--gray); font-weight: 500"
+          >Secure SSL Encrypted Session</span
+        >
+      </div>
+    </div>
+
+    <div class="footer">
+      &copy; <?= new Date().getFullYear() ?> Wright Finder Motors. All rights
+      reserved.
+    </div>
+
+    <script>
+      // Variables populated from Apps Script template evaluation
+      const requestId = "<?= requestId ?>";
+      let requestDetails = null;
+
+      try {
+        requestDetails = JSON.parse(<?!= JSON.stringify(requestDetails) ?>);
+      } catch(e) {
+        console.error("Failed to parse request details", e);
+      }
+
+      let selectedFiles = [];
+
+      // DOM Elements
+      const uploadScreen = document.getElementById('upload-screen');
+      const successScreen = document.getElementById('success-screen');
+      const reqSubject = document.getElementById('req-subject');
+      const reqMessage = document.getElementById('req-message');
+      const adminFilesSection = document.getElementById('admin-files-section');
+      const adminFilesList = document.getElementById('admin-files-list');
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('file-input');
+      const fileList = document.getElementById('file-list');
+      const submitBtn = document.getElementById('submit-btn');
+
+      // Set details if loaded
+      if (requestDetails) {
+        reqSubject.innerText = requestDetails.subject || 'Document Upload Request';
+        reqMessage.innerText = requestDetails.message || 'Please upload the requested document below.';
+
+        // Admin files
+        if (requestDetails.adminFiles && requestDetails.adminFiles.length > 0) {
+          adminFilesSection.classList.remove('hidden');
+          requestDetails.adminFiles.forEach(file => {
+            const a = document.createElement('a');
+            a.href = file.url;
+            a.target = '_blank';
+            a.className = 'attachment-badge';
+            a.innerHTML = `<i class="fas fa-download"></i> ${file.name}`;
+            adminFilesList.appendChild(a);
+          });
+        }
+      } else {
+        reqSubject.innerText = "Upload Portal Error";
+        reqMessage.innerText = "Unable to fetch request information. Please contact support.";
+        dropzone.classList.add('hidden');
+      }
+
+      // Drag & Drop Handlers
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          dropzone.classList.add('dragover');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('dragover');
+        }, false);
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+      });
+
+      function handleFiles(files) {
+        for(let i = 0; i < files.length; i++) {
+          const file = files[i];
+          // Check if file is already added
+          if(!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+          }
+        }
+        renderFileList();
+      }
+
+      function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        renderFileList();
+      }
+
+      function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+
+      function renderFileList() {
+        fileList.innerHTML = '';
+        if(selectedFiles.length === 0) {
+          submitBtn.disabled = true;
+          return;
+        }
+
+        submitBtn.disabled = false;
+        selectedFiles.forEach((file, index) => {
+          const div = document.createElement('div');
+          div.className = 'file-item';
+          div.innerHTML = `
+            <div class="file-info">
+              <i class="fas fa-file-alt"></i>
+              <span style="font-weight: 500;">${file.name}</span>
+              <span class="file-size">(${formatBytes(file.size)})</span>
+            </div>
+            <button class="remove-file" onclick="removeFile(${index})" title="Remove file">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          fileList.appendChild(div);
+        });
+      }
+
+      // Submit Handler
+      submitBtn.addEventListener('click', () => {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading files...';
+
+        const uploadPromises = selectedFiles.map(file => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const base64Data = e.target.result.split(',')[1];
+              resolve({
+                name: file.name,
+                mimeType: file.type,
+                data: base64Data
+              });
+            };
+            reader.onerror = () => reject(new Error("File read error"));
+            reader.readAsDataURL(file);
+          });
+        });
+
+        Promise.all(uploadPromises)
+          .then(filesData => {
+            google.script.run
+              .withSuccessHandler(response => {
+                if (response && response.success) {
+                  uploadScreen.style.display = 'none';
+                  successScreen.style.display = 'block';
+                } else {
+                  alert("Upload failed: " + (response ? response.message : "Server error"));
+                  submitBtn.disabled = false;
+                  submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Documents';
+                }
+              })
+              .withFailureHandler(error => {
+                alert("Network error: " + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Documents';
+              })
+              .uploadClientDocument(requestId, filesData);
+          })
+          .catch(err => {
+            alert("Error processing files: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Documents';
+          });
+      });
+    </script>
+  </body>
+</html>

@@ -29,6 +29,20 @@ function testCreate() {
 }
 
 function doGet(e) {
+  var requestId = e.parameter.requestId;
+  if (requestId) {
+    var template = HtmlService.createTemplateFromFile("UploadDocument");
+    template.requestId = requestId;
+    template.requestDetails = JSON.stringify(
+      getDocumentRequestDetails(requestId),
+    );
+    return template
+      .evaluate()
+      .setTitle("Upload Requested Document - Wright Finder Motors")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag("viewport", "width=device-width, initial-scale=1");
+  }
+
   var id = e.parameter.id || e.parameter.carId;
   if (id) {
     var template = HtmlService.createTemplateFromFile("SignAgreement");
@@ -1525,5 +1539,295 @@ function saveInstallmentDetails(carId, frequency, endDate) {
     };
   } catch (e) {
     return { success: false, message: "Error saving details: " + e.toString() };
+  }
+}
+
+function getDocumentRequestFolder() {
+  var folderId = "15-IEb1JvHeAoP_L_aQOudIpieGf2j3Io";
+  try {
+    return DriveApp.getFolderById(folderId);
+  } catch (e) {
+    Logger.log("Failed to get Google Drive folder " + folderId + ": " + e);
+    return DriveApp.getRootFolder();
+  }
+}
+
+function getDocumentRequestsSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Document Requests");
+  if (!sheet) {
+    sheet = ss.insertSheet("Document Requests");
+    sheet.appendRow([
+      "Timestamp",
+      "Request ID",
+      "Car ID",
+      "Client Email",
+      "Subject",
+      "Message",
+      "Sender Attachments",
+      "Status",
+      "Uploaded Documents",
+    ]);
+    sheet
+      .getRange("A1:I1")
+      .setFontWeight("bold")
+      .setBackground("#f3f4f6")
+      .setHorizontalAlignment("center");
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function getDocumentRequestDetails(requestId) {
+  try {
+    var sheet = getDocumentRequestsSheet();
+    var values = sheet.getDataRange().getValues();
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][1] === requestId) {
+        var adminFilesList = [];
+        var adminFilesStr = values[i][6];
+        if (adminFilesStr) {
+          var links = adminFilesStr.split("\n");
+          for (var j = 0; j < links.length; j++) {
+            if (links[j]) {
+              var parts = links[j].split(" -> ");
+              adminFilesList.push({
+                name: parts[0] || "Attachment",
+                url: parts[1] || links[j],
+              });
+            }
+          }
+        }
+        return {
+          requestId: values[i][1],
+          carId: values[i][2],
+          clientEmail: values[i][3],
+          subject: values[i][4],
+          message: values[i][5],
+          adminFiles: adminFilesList,
+          status: values[i][7],
+        };
+      }
+    }
+  } catch (e) {
+    Logger.log("Error in getDocumentRequestDetails: " + e);
+  }
+  return null;
+}
+
+function getDocumentRequests() {
+  try {
+    var sheet = getDocumentRequestsSheet();
+    var values = sheet.getDataRange().getValues();
+    var results = [];
+    for (var i = 1; i < values.length; i++) {
+      results.push({
+        timestamp: values[i][0],
+        requestId: values[i][1],
+        carId: values[i][2],
+        clientEmail: values[i][3],
+        subject: values[i][4],
+        message: values[i][5],
+        senderAttachments: values[i][6],
+        status: values[i][7],
+        uploadedDocuments: values[i][8],
+      });
+    }
+    return results;
+  } catch (e) {
+    Logger.log("Error in getDocumentRequests: " + e);
+    return [];
+  }
+}
+
+function sendClientDocumentRequestEmail(
+  email,
+  subject,
+  message,
+  adminFiles,
+  carId,
+) {
+  try {
+    var folder = getDocumentRequestFolder();
+    var adminFileLinks = [];
+    var mailAttachments = [];
+
+    if (adminFiles && adminFiles.length > 0) {
+      for (var i = 0; i < adminFiles.length; i++) {
+        var fileData = adminFiles[i];
+        var blob = Utilities.newBlob(
+          Utilities.base64Decode(fileData.data),
+          fileData.mimeType,
+          fileData.name,
+        );
+        var file = folder.createFile(blob);
+        try {
+          file.setSharing(
+            DriveApp.Access.ANYONE_WITH_LINK,
+            DriveApp.Permission.VIEW,
+          );
+        } catch (shareErr) {}
+
+        adminFileLinks.push(fileData.name + " -> " + file.getUrl());
+        mailAttachments.push(blob);
+      }
+    }
+
+    var requestId =
+      "req_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+
+    var scriptUrl = "";
+    try {
+      scriptUrl = ScriptApp.getService().getUrl();
+    } catch (e) {
+      Logger.log("Error getting script URL: " + e);
+    }
+    if (!scriptUrl) {
+      scriptUrl = "https://script.google.com/macros/s/AKfycbz_placeholder/exec";
+    }
+
+    var uploadLink = scriptUrl + "?requestId=" + requestId;
+
+    var htmlBody =
+      "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #faf9fd;\">" +
+      '<div style="text-align: center; background: linear-gradient(135deg, #2c1a4d 0%, #512b81 100%); padding: 30px; border-radius: 12px 12px 0 0; color: #ffffff;">' +
+      '<h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px;">WRIGHT FINDER MOTORS</h1>' +
+      '<p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9; font-weight: 400;">Secure Document Portal</p>' +
+      "</div>" +
+      '<div style="padding: 30px 20px; background-color: #ffffff; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); color: #1f2937;">' +
+      '<h2 style="color: #2c1a4d; margin-top: 0; font-size: 18px; font-weight: 700; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">Document Request: ' +
+      subject +
+      "</h2>" +
+      '<p style="font-size: 15px; line-height: 1.6; margin-top: 15px;">Dear Client,</p>' +
+      '<p style="font-size: 15px; line-height: 1.6;">The team at Wright Finder Motors requires one or more documents to complete your process. Please review the request and submit your files securely using the portal link below:</p>' +
+      '<div style="background-color: #f5f3f7; border-left: 4px solid #512b81; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0; font-size: 14px; line-height: 1.5; color: #4b5563;">' +
+      "<strong>Request details / instructions:</strong><br/>" +
+      message.replace(/\n/g, "<br/>") +
+      "</div>";
+
+    if (adminFileLinks.length > 0) {
+      htmlBody +=
+        '<div style="margin: 20px 0;">' +
+        '<strong style="font-size: 14px;">Reference documents provided by sender:</strong>' +
+        '<ul style="padding-left: 20px; font-size: 14px; margin-top: 5px; color: #512b81;">';
+      for (var k = 0; k < adminFileLinks.length; k++) {
+        var parts = adminFileLinks[k].split(" -> ");
+        htmlBody +=
+          '<li><a href="' +
+          parts[1] +
+          '" style="color: #512b81; font-weight: 600;">' +
+          parts[0] +
+          "</a></li>";
+      }
+      htmlBody += "</ul>" + "</div>";
+    }
+
+    htmlBody +=
+      '<div style="text-align: center; margin: 35px 0;">' +
+      '<a href="' +
+      uploadLink +
+      '" style="background: linear-gradient(135deg, #512b81 0%, #2c1a4d 100%); color: #ffffff; padding: 14px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 6px 15px rgba(81, 43, 129, 0.25); display: inline-block;">Upload Requested Document</a>' +
+      "</div>" +
+      '<hr style="border: 0; border-top: 1px solid #f3f4f6; margin: 30px 0;">' +
+      '<p style="color: #9ca3af; font-size: 12px; line-height: 1.5; text-align: center;">This is a secure connection. Do not share your upload link with anyone.</p>' +
+      '<p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 5px 0 0 0;">&copy; ' +
+      new Date().getFullYear() +
+      " Wright Finder Motors. All rights reserved.</p>" +
+      "</div>" +
+      "</div>";
+
+    var emailOptions = {
+      to: email,
+      subject:
+        "Required Action: Document request from Wright Finder Motors - " +
+        subject,
+      htmlBody: htmlBody,
+    };
+
+    if (mailAttachments.length > 0) {
+      emailOptions.attachments = mailAttachments;
+    }
+
+    MailApp.sendEmail(emailOptions);
+
+    var sheet = getDocumentRequestsSheet();
+    sheet.appendRow([
+      new Date(),
+      requestId,
+      carId || "N/A",
+      email,
+      subject,
+      message,
+      adminFileLinks.join("\n"),
+      "Pending",
+      "",
+    ]);
+
+    return {
+      success: true,
+      message: "Document request email successfully sent to " + email,
+    };
+  } catch (e) {
+    Logger.log("Error sending document request: " + e);
+    return {
+      success: false,
+      message: "Error sending request: " + e.toString(),
+    };
+  }
+}
+
+function uploadClientDocument(requestId, filesData) {
+  try {
+    var sheet = getDocumentRequestsSheet();
+    var values = sheet.getDataRange().getValues();
+    var rowIndex = -1;
+
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][1] === requestId) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
+      return { success: false, message: "Request ID not found." };
+    }
+
+    var folder = getDocumentRequestFolder();
+    var uploadedLinks = [];
+
+    for (var j = 0; j < filesData.length; j++) {
+      var fileInfo = filesData[j];
+      var blob = Utilities.newBlob(
+        Utilities.base64Decode(fileInfo.data),
+        fileInfo.mimeType,
+        fileInfo.name,
+      );
+      var file = folder.createFile(blob);
+      try {
+        file.setSharing(
+          DriveApp.Access.ANYONE_WITH_LINK,
+          DriveApp.Permission.VIEW,
+        );
+      } catch (e) {}
+
+      uploadedLinks.push(fileInfo.name + " -> " + file.getUrl());
+    }
+
+    sheet.getRange(rowIndex, 8).setValue("Uploaded");
+
+    var existingUploads = sheet.getRange(rowIndex, 9).getValue();
+    var allUploads = existingUploads
+      ? existingUploads + "\n" + uploadedLinks.join("\n")
+      : uploadedLinks.join("\n");
+    sheet.getRange(rowIndex, 9).setValue(allUploads);
+
+    return { success: true, message: "Documents uploaded successfully." };
+  } catch (e) {
+    Logger.log("Error in uploadClientDocument: " + e);
+    return {
+      success: false,
+      message: "Failed to upload files: " + e.toString(),
+    };
   }
 }

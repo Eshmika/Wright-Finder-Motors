@@ -83,5 +83,537 @@
         </tbody>
       </table>
     </div>
+    <!-- Pagination controls -->
+    <div
+      id="commPagination"
+      class="pagination-container"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding: 10px 0;
+        border-top: 1px solid #eef4ff;
+        flex-wrap: wrap;
+        gap: 15px;
+      "
+    >
+      <div
+        class="pagination-info"
+        style="font-size: 0.9rem; color: #858796; font-weight: 500"
+      >
+        Showing
+        <span id="commPageStart" style="font-weight: 700; color: #2c3e50"
+          >0</span
+        >
+        to
+        <span id="commPageEnd" style="font-weight: 700; color: #2c3e50">0</span>
+        of
+        <span id="commTotalRecords" style="font-weight: 700; color: #2c3e50"
+          >0</span
+        >
+        entries
+      </div>
+      <div
+        class="pagination-buttons"
+        style="display: flex; gap: 8px; align-items: center"
+      >
+        <button
+          id="commPrevBtn"
+          class="action-btn"
+          onclick="changeCommPage(-1)"
+          style="
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: #eaecf4;
+            color: #858796;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+          "
+        >
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <div
+          id="commPageNumbers"
+          style="display: flex; gap: 6px; align-items: center"
+        ></div>
+        <button
+          id="commNextBtn"
+          class="action-btn"
+          onclick="changeCommPage(1)"
+          style="
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: #eaecf4;
+            color: #858796;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+          "
+        >
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Request Portal Card -->
+  <div class="expenses-card" style="margin-top: 30px">
+    <div
+      class="expenses-card-header"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      "
+    >
+      <h3>
+        <span class="icon-square" style="background: #ece8f6; color: #512b81">
+          <i class="fas fa-file-export"></i>
+        </span>
+        Document Request Manager
+      </h3>
+      <p style="color: gray; font-size: 0.9rem; margin: 0">
+        Request files from clients and view uploaded documents in real-time.
+      </p>
+    </div>
+
+    <!-- Layout: 2 columns (Form & Tracker) -->
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+        margin-top: 20px;
+      "
+    >
+      <!-- Compose Form Section -->
+      <div
+        style="
+          background: #fafafc;
+          padding: 25px;
+          border-radius: 12px;
+          border: 1px solid #eef0f6;
+        "
+      >
+        <h4
+          style="
+            color: #2c1a4d;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          <i class="fas fa-paper-plane" style="color: #512b81"></i> Request New
+          Document
+        </h4>
+
+        <form
+          id="docReqForm"
+          onsubmit="
+            event.preventDefault();
+            submitDocRequest();
+          "
+          style="display: flex; flex-direction: column; gap: 15px"
+        >
+          <!-- Select Client/Car -->
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #4a5568;
+                margin-bottom: 6px;
+              "
+              >Select Client / Loan Vehicle</label
+            >
+            <div class="modern-input-wrapper">
+              <select
+                id="docReqClientSelect"
+                class="form-control"
+                style="
+                  width: 100%;
+                  border: 1px solid #d1d5db;
+                  padding: 0 15px 0 45px;
+                  height: 38px;
+                  font-size: 0.9rem;
+                "
+                onchange="updateDocReqEmailFromSelect()"
+                required
+              >
+                <option value="">-- Choose Client --</option>
+              </select>
+              <i class="fas fa-user" style="font-size: 0.9rem"></i>
+            </div>
+          </div>
+
+          <!-- Custom Client Email (autofills but editable) -->
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #4a5568;
+                margin-bottom: 6px;
+              "
+              >Client Email</label
+            >
+            <div class="modern-input-wrapper">
+              <input
+                type="email"
+                id="docReqEmail"
+                class="form-control"
+                placeholder="client@example.com"
+                style="
+                  border: 1px solid #d1d5db;
+                  height: 38px;
+                  font-size: 0.9rem;
+                "
+                required
+              />
+              <i class="fas fa-envelope" style="font-size: 0.9rem"></i>
+            </div>
+          </div>
+
+          <!-- Quick Templates Dropdown -->
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #4a5568;
+                margin-bottom: 6px;
+              "
+              >Preset Request Templates</label
+            >
+            <div class="modern-input-wrapper">
+              <select
+                class="form-control"
+                style="
+                  width: 100%;
+                  border: 1px solid #d1d5db;
+                  padding: 0 15px 0 45px;
+                  height: 38px;
+                  font-size: 0.9rem;
+                "
+                onchange="applyDocReqTemplate(this.value)"
+              >
+                <option value="">-- Select Template (Optional) --</option>
+                <option value="driver_license">Driver's License Copy</option>
+                <option value="proof_income">
+                  Proof of Income (Paystubs/Bank Statements)
+                </option>
+                <option value="proof_insurance">Proof of Auto Insurance</option>
+                <option value="utility_bill">
+                  Proof of Residency (Utility Bill)
+                </option>
+              </select>
+              <i class="fas fa-magic" style="font-size: 0.9rem"></i>
+            </div>
+          </div>
+
+          <!-- Subject -->
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #4a5568;
+                margin-bottom: 6px;
+              "
+              >Email Subject</label
+            >
+            <div class="modern-input-wrapper">
+              <input
+                type="text"
+                id="docReqSubject"
+                class="form-control"
+                placeholder="e.g., Driver License Required"
+                style="
+                  border: 1px solid #d1d5db;
+                  height: 38px;
+                  font-size: 0.9rem;
+                "
+                required
+              />
+              <i class="fas fa-heading" style="font-size: 0.9rem"></i>
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #4a5568;
+                margin-bottom: 6px;
+              "
+              >Email Message / Instructions</label
+            >
+            <textarea
+              id="docReqMessage"
+              class="form-control"
+              placeholder="Write detailed instructions here..."
+              style="
+                min-height: 100px;
+                border: 1px solid #d1d5db;
+                padding: 12px;
+                width: 100%;
+                border-radius: 6px;
+                font-size: 0.9rem;
+                resize: vertical;
+              "
+              required
+            ></textarea>
+          </div>
+
+          <!-- Attachments (Admin to Client) -->
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #4a5568;
+                margin-bottom: 6px;
+              "
+              >Attach Reference Documents (Optional)</label
+            >
+            <input
+              type="file"
+              id="docReqFiles"
+              multiple
+              style="
+                font-size: 0.85rem;
+                display: block;
+                width: 100%;
+                padding: 8px 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                background: white;
+              "
+            />
+          </div>
+
+          <!-- Submit Request -->
+          <button
+            type="submit"
+            id="docReqSubmitBtn"
+            class="action-btn"
+            style="
+              background: linear-gradient(135deg, #512b81 0%, #2c1a4d 100%);
+              color: white;
+              border: none;
+              padding: 12px;
+              font-weight: bold;
+              border-radius: 6px;
+              cursor: pointer;
+              transition: all 0.2s;
+              box-shadow: 0 4px 6px rgba(81, 43, 129, 0.2);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              font-size: 0.9rem;
+              margin-top: 10px;
+            "
+          >
+            <i class="fas fa-paper-plane"></i> Send Request Email
+          </button>
+        </form>
+      </div>
+
+      <!-- Requests List & Upload Tracker Section -->
+      <div
+        style="
+          background: white;
+          border-radius: 12px;
+          border: 1px solid #eef0f6;
+          padding: 25px;
+          min-height: 400px;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+          "
+        >
+          <h4
+            style="
+              color: #2c1a4d;
+              font-size: 1.1rem;
+              margin: 0;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <i class="fas fa-list-ul" style="color: #512b81"></i> Sent Requests
+            Tracker
+          </h4>
+          <input
+            type="text"
+            id="docReqSearchInput"
+            class="form-control"
+            placeholder="Search requests..."
+            style="
+              width: 220px;
+              height: 34px;
+              font-size: 0.85rem;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              padding: 0 10px;
+            "
+            oninput="filterDocReqTable()"
+          />
+        </div>
+
+        <div class="table-responsive" style="flex-grow: 1">
+          <table class="cars-table" id="docReqTable" style="font-size: 0.9rem">
+            <thead>
+              <tr>
+                <th>Date Requested</th>
+                <th>Client Details</th>
+                <th>Subject</th>
+                <th>Sender Files</th>
+                <th style="text-align: center">Status</th>
+                <th style="text-align: center">Uploaded Documents</th>
+              </tr>
+            </thead>
+            <tbody id="docReqTableBody">
+              <tr>
+                <td
+                  colspan="6"
+                  class="text-center"
+                  style="padding: 30px; color: #858796"
+                >
+                  <i
+                    class="fas fa-spinner fa-spin fa-2x"
+                    style="color: #512b81"
+                  ></i>
+                  <div style="margin-top: 10px">
+                    Loading requests details...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div
+          id="docReqPagination"
+          class="pagination-container"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #eef4ff;
+            flex-wrap: wrap;
+            gap: 15px;
+          "
+        >
+          <div
+            class="pagination-info"
+            style="font-size: 0.85rem; color: #858796; font-weight: 500"
+          >
+            Showing
+            <span id="docReqPageStart" style="font-weight: 700; color: #2c3e50"
+              >0</span
+            >
+            to
+            <span id="docReqPageEnd" style="font-weight: 700; color: #2c3e50"
+              >0</span
+            >
+            of
+            <span
+              id="docReqTotalRecords"
+              style="font-weight: 700; color: #2c3e50"
+              >0</span
+            >
+            entries
+          </div>
+          <div
+            class="pagination-buttons"
+            style="display: flex; gap: 8px; align-items: center"
+          >
+            <button
+              id="docReqPrevBtn"
+              class="action-btn"
+              onclick="changeDocReqPage(-1)"
+              style="
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                background: #eaecf4;
+                color: #858796;
+                border: none;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                font-weight: 600;
+              "
+            >
+              <i class="fas fa-chevron-left"></i> Prev
+            </button>
+            <div
+              id="docReqPageNumbers"
+              style="display: flex; gap: 4px; align-items: center"
+            ></div>
+            <button
+              id="docReqNextBtn"
+              class="action-btn"
+              onclick="changeDocReqPage(1)"
+              style="
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                background: #eaecf4;
+                color: #858796;
+                border: none;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                font-weight: 600;
+              "
+            >
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
