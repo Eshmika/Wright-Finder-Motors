@@ -1659,6 +1659,30 @@
                 <input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="${customStyle}">
                 <i class="fas fa-dollar-sign" style="${iconStyle}"></i>
               </div>`;
+          } else if (key === "Trade Value") {
+            const cleanTradeVal =
+              parseFloat(String(val || "").replace(/[^0-9.-]+/g, "")) || 0;
+            const cleanDPVal =
+              parseFloat(
+                String(currentEditableCar["DOWN PAYMENT"] || "").replace(
+                  /[^0-9.-]+/g,
+                  "",
+                ),
+              ) || 0;
+            const isInitiallyChecked =
+              cleanTradeVal > 0 && cleanTradeVal === cleanDPVal;
+            inputHtml = `
+              <div class="modern-input-wrapper">
+                <input type="number" step="0.01" name="${key}" value="${cleanVal}" class="form-control" placeholder="0.00" style="${customStyle}">
+                <i class="fas fa-dollar-sign" style="${iconStyle}"></i>
+              </div>
+              <div class="switch-container" id="tradeLinkDpContainer" style="display: none;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="tradeLinkDpSwitch" ${isInitiallyChecked ? "checked" : ""}>
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="switch-label">Use as Down Payment</span>
+              </div>`;
           } else if (isFinancial) {
             inputHtml = `
               <div class="modern-input-wrapper">
@@ -1912,6 +1936,12 @@
         toggleFields(privateFields, sourceType === "Private/Partner");
         toggleFields(tradeFields, sourceType === "Trade");
 
+        const linkDpContainer = document.getElementById("tradeLinkDpContainer");
+        if (linkDpContainer) {
+          linkDpContainer.style.display =
+            sourceType === "Trade" ? "inline-flex" : "none";
+        }
+
         // Also update the trade category section visibility
         updateTradeVisibility();
       };
@@ -1924,6 +1954,11 @@
       // Add live update listeners
       const form = document.getElementById("carEditForm");
       form.oninput = updateEditFormCalculations;
+
+      const linkSwitch = document.getElementById("tradeLinkDpSwitch");
+      if (linkSwitch) {
+        linkSwitch.onchange = updateEditFormCalculations;
+      }
 
       // Initial calculation and data fetch
       updateEditFormCalculations();
@@ -1951,6 +1986,26 @@
     function updateEditFormCalculations() {
       const form = document.getElementById("carEditForm");
       if (!form) return;
+
+      const sourceType = form.querySelector('[name="Source Type"]')?.value;
+      const isTrade = sourceType === "Trade";
+      const linkSwitch = document.getElementById("tradeLinkDpSwitch");
+      const isLinked = isTrade && linkSwitch && linkSwitch.checked;
+
+      const dpField = form.querySelector('[name="DOWN PAYMENT"]');
+      if (dpField) {
+        if (isLinked) {
+          const tradeValEl = form.querySelector('[name="Trade Value"]');
+          if (tradeValEl) {
+            dpField.value = tradeValEl.value;
+          }
+          dpField.readOnly = true;
+          dpField.classList.add("readonly-locked");
+        } else {
+          dpField.readOnly = false;
+          dpField.classList.remove("readonly-locked");
+        }
+      }
 
       const parseMoneyLocal = (val) => {
         if (!val) return 0;
