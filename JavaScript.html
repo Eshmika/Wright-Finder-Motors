@@ -132,6 +132,10 @@
             else if (targetView === "wfm-expenses") {
               initWfmExpensesView();
             }
+            // If Other Expenses is opened, load other expenses data
+            else if (targetView === "other-expenses") {
+              initOtherExpensesView();
+            }
             // If Communication is opened, load communication view
             else if (targetView === "communication") {
               initCommunicationView();
@@ -170,6 +174,15 @@
             `;
           }
         }
+      });
+    });
+
+    // Toggle submenus on click
+    document.querySelectorAll(".has-submenu > a").forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const parent = this.parentElement;
+        parent.classList.toggle("open");
       });
     });
 
@@ -655,6 +668,185 @@
           return matchesName && matchesPayer && matchesDate;
         });
         renderWfmExpensesTable(filtered);
+      }
+    };
+
+    // =============================================
+    // Other Expenses Logic
+    // =============================================
+    window.initOtherExpensesView = function () {
+      // Set default date to today
+      const today = new Date().toISOString().split("T")[0];
+      const otherDateInput = document.getElementById("other-date");
+      if (otherDateInput && !otherDateInput.value) {
+        otherDateInput.value = today;
+      }
+      window.loadOtherExpenses();
+    };
+
+    window.calculateOtherTax = function () {
+      const beforeTax = parseFloat(
+        document.getElementById("other-value-before-tax").value,
+      );
+      const afterTaxInput = document.getElementById("other-value-after-tax");
+      if (!isNaN(beforeTax)) {
+        // Default: copy before-tax value to after-tax value if after-tax is empty
+        if (!afterTaxInput.value) {
+          afterTaxInput.value = beforeTax.toFixed(2);
+        }
+      }
+    };
+
+    window.handleOtherExpenseSubmit = function (e) {
+      e.preventDefault();
+
+      const form = document.getElementById("addOtherExpenseForm");
+      const btn = document.getElementById("btnSubmitOtherExpense");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      const formData = new FormData(form);
+      const data = {
+        details: formData.get("otherDetails"),
+        valueBeforeTax: formData.get("otherValueBeforeTax"),
+        valueAfterTax: formData.get("otherValueAfterTax"),
+        date: formData.get("otherDate"),
+        paidBy: formData.get("otherPaidBy"),
+      };
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          showCreativeSuccessModal("Other Expense added successfully!");
+          form.reset();
+          // Keep today's date
+          document.getElementById("other-date").value = new Date()
+            .toISOString()
+            .split("T")[0];
+
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+
+          // Reload other expenses table
+          window.loadOtherExpenses();
+        })
+        .withFailureHandler(function (error) {
+          alert("Error: " + error.message);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .saveOtherExpense(data);
+    };
+
+    let cachedOtherExpenses = [];
+
+    window.loadOtherExpenses = function () {
+      const tbody = document.getElementById("otherExpensesTableBody");
+      if (tbody) {
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading other expenses...</td></tr>';
+      }
+
+      google.script.run
+        .withSuccessHandler(function (expenses) {
+          cachedOtherExpenses = expenses || [];
+          renderOtherExpensesTable(cachedOtherExpenses);
+        })
+        .withFailureHandler(function (error) {
+          if (tbody) {
+            tbody.innerHTML =
+              '<tr><td colspan="5" class="text-center text-danger" style="padding: 20px;">Error loading other expenses: ' +
+              error.message +
+              "</td></tr>";
+          }
+        })
+        .getOtherExpenses();
+    };
+
+    function renderOtherExpensesTable(expensesToRender) {
+      const tbody = document.getElementById("otherExpensesTableBody");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      if (!expensesToRender || expensesToRender.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No other expense records found.</td></tr>';
+        return;
+      }
+
+      // Clone and reverse to show latest first
+      [...expensesToRender].reverse().forEach((exp) => {
+        const tr = document.createElement("tr");
+
+        let valBefore = parseFloat(exp["VALUE BEFORE TAX"]);
+        let formattedBefore = isNaN(valBefore)
+          ? exp["VALUE BEFORE TAX"]
+          : "$" + valBefore.toFixed(2);
+
+        let valAfter = parseFloat(exp["VALUE AFTER TAX"]);
+        let formattedAfter = isNaN(valAfter)
+          ? exp["VALUE AFTER TAX"]
+          : "$" + valAfter.toFixed(2);
+        let badgeHtml = isNaN(valAfter)
+          ? formattedAfter
+          : `<span class="amount-badge" style="background: #fae8ff; color: #86198f; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-block;">${formattedAfter}</span>`;
+
+        let dateStr = exp["DATE"];
+        if (dateStr) {
+          try {
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+          } catch (e) {}
+        }
+
+        tr.innerHTML = `
+          <td><strong>${exp["DETAILS"] || "-"}</strong></td>
+          <td>${formattedBefore}</td>
+          <td>${badgeHtml}</td>
+          <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
+          <td>${exp["PAID BY"] || "-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.filterOtherExpenses = function () {
+      const nameInput = document.getElementById("otherNameFilter");
+      const dateInput = document.getElementById("otherDateFilter");
+      const payerInput = document.getElementById("otherPayerFilter");
+
+      const nameTerm = nameInput ? nameInput.value.toLowerCase().trim() : "";
+      const dateTerm = dateInput ? dateInput.value.trim() : "";
+      const payerTerm = payerInput ? payerInput.value.toLowerCase().trim() : "";
+
+      if (!nameTerm && !dateTerm && !payerTerm) {
+        renderOtherExpensesTable(cachedOtherExpenses);
+      } else {
+        const filtered = cachedOtherExpenses.filter((exp) => {
+          const details = exp["DETAILS"] || "";
+          const paidBy = exp["PAID BY"] || "";
+          const expDate = exp["DATE"] || "";
+
+          const matchesName = details.toLowerCase().includes(nameTerm);
+          const matchesPayer = paidBy.toLowerCase().includes(payerTerm);
+
+          let matchesDate = true;
+          if (dateTerm) {
+            let formattedExpDate = "";
+            try {
+              let d = new Date(expDate);
+              if (!isNaN(d.getTime())) {
+                formattedExpDate = d.toISOString().split("T")[0];
+              }
+            } catch (e) {}
+
+            matchesDate =
+              formattedExpDate === dateTerm || expDate.includes(dateTerm);
+          }
+
+          return matchesName && matchesPayer && matchesDate;
+        });
+        renderOtherExpensesTable(filtered);
       }
     };
 

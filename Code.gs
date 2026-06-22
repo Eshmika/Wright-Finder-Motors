@@ -1216,6 +1216,70 @@ function getWfmExpenses() {
   return wfmExpenses;
 }
 
+function saveOtherExpense(data) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Other Expenses");
+
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Other Expenses");
+    sheet.appendRow([
+      "Timestamp",
+      "DETAILS",
+      "VALUE BEFORE TAX",
+      "VALUE AFTER TAX",
+      "DATE",
+      "PAID BY",
+    ]);
+  }
+
+  // Get current headers to dynamically build row values
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
+
+  var keyMap = {
+    Timestamp: new Date(),
+    DETAILS: data.details || "",
+    "VALUE BEFORE TAX": data.valueBeforeTax || "",
+    "VALUE AFTER TAX": data.valueAfterTax || "",
+    DATE: data.date || "",
+    "PAID BY": data.paidBy || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    rowValues[i] = keyMap[header] !== undefined ? keyMap[header] : "";
+  }
+
+  sheet.appendRow(rowValues);
+  return "Success";
+}
+
+function getOtherExpenses() {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Other Expenses");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return []; // Only headers or empty
+
+  var headers = data[0];
+  var otherExpenses = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var expense = {};
+    for (var j = 0; j < headers.length; j++) {
+      var header = headers[j];
+      expense[header] = row[j];
+    }
+    otherExpenses.push(expense);
+  }
+
+  return otherExpenses;
+}
+
 function sendAgreementEmailToServer(carId) {
   try {
     var vehicles = getVehicles();

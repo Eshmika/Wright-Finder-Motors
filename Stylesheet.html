@@ -235,16 +235,29 @@
     white-space: nowrap;
   }
 
-  /* Main Content Styles */
-  .main-content .submenu {
+  .submenu {
     list-style: none;
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: rgba(0, 0, 0, 0.08);
+    display: none;
+  }
+
+  .has-submenu.active .submenu,
+  .has-submenu.open .submenu {
     display: block;
+  }
+
+  .submenu-arrow {
+    transition: transform 0.2s ease;
+  }
+
+  .has-submenu.active .submenu-arrow,
+  .has-submenu.open .submenu-arrow {
+    transform: rotate(180deg);
   }
 
   .submenu li a {
     display: block;
-    padding: 10px 20px 10px 55px;
+    padding: 8px 20px 8px 45px;
     color: var(--text-menu);
     text-decoration: none;
     font-size: 0.9rem;
