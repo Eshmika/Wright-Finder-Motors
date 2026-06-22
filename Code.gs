@@ -307,6 +307,21 @@ function updateVehicleData(updatedData) {
           }
         }
       }
+
+      // Handle Trade: apply down payment to purchased vehicle and mark as Sold
+      var sourceType = updatedData["Source Type"] || "";
+      var useAsDp = updatedData["tradeUseAsDownPayment"] || "";
+      var purchasedCarName = updatedData["Purchased Car Name"] || "";
+      var tradeValue = updatedData["Trade Value"] || "";
+
+      if (sourceType === "Trade" && purchasedCarName) {
+        if (useAsDp === "true" && tradeValue) {
+          applyTradeDownPayment(purchasedCarName, tradeValue);
+        } else {
+          markCarAsSold(purchasedCarName);
+        }
+      }
+
       return "Success";
     }
   }
@@ -856,7 +871,110 @@ function saveDataInput(data) {
 
   sheet.appendRow(rowValues);
 
+  // Handle Trade: apply down payment to purchased vehicle and mark as Sold
+  if (
+    data.sourceType === "Trade" &&
+    data.tradeUseAsDownPayment === "true" &&
+    data.tradeCarName
+  ) {
+    applyTradeDownPayment(data.tradeCarName, data.tradeValue);
+  } else if (data.sourceType === "Trade" && data.tradeCarName) {
+    // Even if not using as down payment, mark the purchased vehicle as Sold
+    markCarAsSold(data.tradeCarName);
+  }
+
   return "Success";
+}
+
+function applyTradeDownPayment(purchasedCarId, tradeValue) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  var dpIndex = headers.indexOf("DOWN PAYMENT");
+  var statusIndex = headers.indexOf("Status");
+
+  if (carIdIndex === -1) return;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][carIdIndex]).trim() === String(purchasedCarId).trim()) {
+      if (dpIndex !== -1) {
+        sheet.getRange(i + 1, dpIndex + 1).setValue(tradeValue || "");
+      }
+      if (statusIndex !== -1) {
+        sheet.getRange(i + 1, statusIndex + 1).setValue("Sold");
+      }
+      return;
+    }
+  }
+}
+
+function markCarAsSold(purchasedCarId) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  var statusIndex = headers.indexOf("Status");
+
+  if (carIdIndex === -1) return;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][carIdIndex]).trim() === String(purchasedCarId).trim()) {
+      if (statusIndex !== -1) {
+        sheet.getRange(i + 1, statusIndex + 1).setValue("Sold");
+      }
+      return;
+    }
+  }
+}
+
+function getAvailableCarsForTrade(excludeCarId) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  var carNameIndex = headers.indexOf("Car Name");
+  var modelIndex = headers.indexOf("Model");
+  var yearIndex = headers.indexOf("Year");
+  var statusIndex = headers.indexOf("Status");
+
+  if (carIdIndex === -1) return [];
+
+  var cars = [];
+  for (var i = 1; i < data.length; i++) {
+    var status =
+      statusIndex !== -1 ? String(data[i][statusIndex]).trim() : "Available";
+    var carId = String(data[i][carIdIndex]).trim();
+    if (status === "Available" && carId !== String(excludeCarId || "").trim()) {
+      var carName =
+        carNameIndex !== -1 ? String(data[i][carNameIndex]).trim() : "";
+      var model = modelIndex !== -1 ? String(data[i][modelIndex]).trim() : "";
+      var year = yearIndex !== -1 ? String(data[i][yearIndex]).trim() : "";
+      cars.push({
+        carId: carId,
+        displayName:
+          (year ? year + " " : "") +
+          (carName ? carName + " " : "") +
+          (model || ""),
+        carName: carName,
+        model: model,
+        year: year,
+      });
+    }
+  }
+
+  return cars;
 }
 
 function getCarListItems() {

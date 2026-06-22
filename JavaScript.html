@@ -1070,6 +1070,27 @@
       }
     };
 
+    window.loadActiveCarsForTrade = function (excludeCarId) {
+      google.script.run
+        .withSuccessHandler(function (cars) {
+          var select = document.getElementById("dataInputTradeCarName");
+          if (!select) return;
+          var currentVal = select.value;
+          select.innerHTML =
+            '<option value="">Select Available Vehicle...</option>';
+          if (cars && cars.length > 0) {
+            cars.forEach(function (car) {
+              var option = document.createElement("option");
+              option.value = car.carId;
+              option.textContent = car.displayName;
+              select.appendChild(option);
+            });
+          }
+          if (currentVal) select.value = currentVal;
+        })
+        .getAvailableCarsForTrade(excludeCarId || "");
+    };
+
     window.initDataInputView = function () {
       window.initCascadingDropdowns({
         makeSelect: document.getElementById("dataInputCarNameSelect"),
@@ -1620,6 +1641,8 @@
             inputHtml = `<select name="${key}" id="editBodyStyleSelect" class="form-control"><option value="">Select Body Style...</option></select>`;
           } else if (key === "Fuel Type") {
             inputHtml = `<select name="${key}" id="editFuelTypeSelect" class="form-control"><option value="">Select Fuel...</option></select>`;
+          } else if (key === "Purchased Car Name") {
+            inputHtml = `<select name="${key}" id="editPurchasedCarName" class="form-control"><option value="">Select Available Vehicle...</option></select>`;
           } else if (dropdownOptions[key]) {
             if (
               key === "Interior Color" ||
@@ -1682,7 +1705,8 @@
                   <span class="toggle-slider"></span>
                 </label>
                 <span class="switch-label">Use as Down Payment</span>
-              </div>`;
+              </div>
+              <input type="hidden" name="tradeUseAsDownPayment" id="tradeUseAsDownPaymentHidden" value="${isInitiallyChecked ? "true" : "false"}">`;
           } else if (isFinancial) {
             inputHtml = `
               <div class="modern-input-wrapper">
@@ -1957,7 +1981,47 @@
 
       const linkSwitch = document.getElementById("tradeLinkDpSwitch");
       if (linkSwitch) {
-        linkSwitch.onchange = updateEditFormCalculations;
+        linkSwitch.onchange = function () {
+          var hiddenField = document.getElementById(
+            "tradeUseAsDownPaymentHidden",
+          );
+          if (hiddenField) hiddenField.value = this.checked ? "true" : "false";
+          updateEditFormCalculations();
+        };
+      }
+
+      // Load available cars for Purchased Car Name dropdown
+      var purchasedCarSelect = document.getElementById("editPurchasedCarName");
+      if (purchasedCarSelect) {
+        google.script.run
+          .withSuccessHandler(function (cars) {
+            var currentVal = currentEditableCar["Purchased Car Name"] || "";
+            purchasedCarSelect.innerHTML =
+              '<option value="">Select Available Vehicle...</option>';
+            if (cars && cars.length > 0) {
+              cars.forEach(function (car) {
+                var option = document.createElement("option");
+                option.value = car.carId;
+                option.textContent = car.displayName;
+                if (car.carId === currentVal) option.selected = true;
+                purchasedCarSelect.appendChild(option);
+              });
+            }
+            // Add current car's Purchased Car Name if it exists but not in available list
+            if (
+              currentVal &&
+              !purchasedCarSelect.querySelector(
+                'option[value="' + currentVal + '"]',
+              )
+            ) {
+              var option = document.createElement("option");
+              option.value = currentVal;
+              option.textContent = currentVal;
+              option.selected = true;
+              purchasedCarSelect.appendChild(option);
+            }
+          })
+          .getAvailableCarsForTrade(currentEditableCar["Car ID"] || "");
       }
 
       // Initial calculation and data fetch
@@ -1992,18 +2056,16 @@
       const linkSwitch = document.getElementById("tradeLinkDpSwitch");
       const isLinked = isTrade && linkSwitch && linkSwitch.checked;
 
-      const dpField = form.querySelector('[name="DOWN PAYMENT"]');
-      if (dpField) {
+      // When linked, lock the Trade Value field to indicate it will be applied to purchased vehicle
+      const tradeValEl = form.querySelector('[name="Trade Value"]');
+      if (tradeValEl) {
         if (isLinked) {
-          const tradeValEl = form.querySelector('[name="Trade Value"]');
-          if (tradeValEl) {
-            dpField.value = tradeValEl.value;
-          }
-          dpField.readOnly = true;
-          dpField.classList.add("readonly-locked");
+          tradeValEl.classList.add("readonly-locked");
+          tradeValEl.title =
+            "This value will be applied as DOWN PAYMENT to the selected Purchased Vehicle";
         } else {
-          dpField.readOnly = false;
-          dpField.classList.remove("readonly-locked");
+          tradeValEl.classList.remove("readonly-locked");
+          tradeValEl.title = "";
         }
       }
 

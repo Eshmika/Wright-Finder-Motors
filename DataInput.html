@@ -249,22 +249,47 @@
         >
           <div class="input-group">
             <label>Car Name (Purchased Vehicle)</label>
-            <input
-              type="text"
+            <select
               name="tradeCarName"
+              id="dataInputTradeCarName"
               class="form-control"
-              placeholder="e.g. 2018 Toyota Camry"
-            />
+            >
+              <option value="">Select Available Vehicle...</option>
+            </select>
           </div>
           <div class="input-group">
             <label>Trade Value ($)</label>
-            <input
-              type="number"
-              name="tradeValue"
-              class="form-control"
-              step="0.01"
-              placeholder="0.00"
-            />
+            <div class="modern-input-wrapper">
+              <input
+                type="number"
+                name="tradeValue"
+                id="dataInputTradeValue"
+                class="form-control"
+                step="0.01"
+                placeholder="0.00"
+              />
+              <i
+                class="fas fa-dollar-sign"
+                style="
+                  position: absolute;
+                  right: 16px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  color: #b7b9cc;
+                "
+              ></i>
+            </div>
+            <div class="switch-container" style="margin-top: 8px">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="dataInputTradeUseDp"
+                  name="tradeUseAsDownPayment"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="switch-label">Use as Down Payment</span>
+            </div>
           </div>
           <div class="input-group">
             <label>Traded Car Description</label>
@@ -534,6 +559,11 @@
 
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+
+    // Handle checkbox - FormData only includes checked checkboxes
+    const tradeDpSwitch = document.getElementById("dataInputTradeUseDp");
+    data.tradeUseAsDownPayment =
+      tradeDpSwitch && tradeDpSwitch.checked ? "true" : "false";
 
     // Handle custom Title value if "Other" is selected
     if (data.title === "Other") {
