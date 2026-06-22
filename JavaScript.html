@@ -2078,6 +2078,12 @@
       const iaaiTotal = parseMoneyLocal(
         form.querySelector('[name="IAAI TOTAL PRICE W/ FEES"]')?.value,
       );
+      const purchasePrice = parseMoneyLocal(
+        form.querySelector('[name="Purchase Price"]')?.value,
+      );
+      const tradeValue = parseMoneyLocal(
+        form.querySelector('[name="Trade Value"]')?.value,
+      );
       const papePrice = parseMoneyLocal(
         form.querySelector('[name="PAPE PRICE"]')?.value,
       );
@@ -2091,8 +2097,17 @@
         form.querySelector('[name="All Materials Expenses"]')?.value,
       );
 
+      let basePrice = 0;
+      if (sourceType === "IAAI") {
+        basePrice = iaaiTotal;
+      } else if (sourceType === "Private/Partner") {
+        basePrice = purchasePrice;
+      } else if (sourceType === "Trade") {
+        basePrice = tradeValue;
+      }
+
       const totalCost =
-        iaaiTotal +
+        basePrice +
         papePrice +
         transportFees +
         dispatcherPrice +
@@ -3040,8 +3055,18 @@
         return isNaN(p) ? 0 : p;
       }
 
+      let basePrice = 0;
+      const srcType = car["Source Type"];
+      if (srcType === "IAAI") {
+        basePrice = parseMoney(car["IAAI TOTAL PRICE W/ FEES"]);
+      } else if (srcType === "Private/Partner") {
+        basePrice = parseMoney(car["Purchase Price"]);
+      } else if (srcType === "Trade") {
+        basePrice = parseMoney(car["Trade Value"]);
+      }
+
       let partialTotalCost =
-        parseMoney(car["IAAI TOTAL PRICE W/ FEES"]) +
+        basePrice +
         parseMoney(car["PAPE PRICE"]) +
         parseMoney(car["Dispatcher Price"]) +
         parseMoney(car["TRANSPORT FEES"]);
