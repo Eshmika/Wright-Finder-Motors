@@ -31,6 +31,7 @@
       id="addWfmExpenseForm"
       class="creative-form"
       onsubmit="handleWfmExpenseSubmit(event)"
+      onreset="setTimeout(toggleWfmAssociateNameInput, 0)"
     >
       <div class="grid-responsive" style="gap: 25px">
         <div class="input-group" style="grid-column: span 2">
@@ -100,20 +101,35 @@
         <div class="input-group">
           <label class="required-label">Paid By</label>
           <div class="modern-input-wrapper">
-            <input
-              type="text"
+            <select
               name="wfmPaidBy"
               id="wfm-paid-by"
-              list="wfmPaidByOptions"
               class="form-control"
-              placeholder="Name or entity..."
               required
-            />
-            <datalist id="wfmPaidByOptions">
-              <option value="Company"></option>
-              <option value="Associate"></option>
-            </datalist>
+              onchange="toggleWfmAssociateNameInput()"
+            >
+              <option value="Company">Company</option>
+              <option value="Associate">Associate</option>
+            </select>
             <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+
+        <div
+          class="input-group"
+          id="wfm-associate-name-group"
+          style="display: none"
+        >
+          <label class="required-label">Associate Name</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="wfmAssociateName"
+              id="wfm-associate-name"
+              class="form-control"
+              placeholder="Enter associate's name..."
+            />
+            <i class="fas fa-user"></i>
           </div>
         </div>
       </div>

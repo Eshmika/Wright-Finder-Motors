@@ -33,6 +33,7 @@
       id="addOtherExpenseForm"
       class="creative-form"
       onsubmit="handleOtherExpenseSubmit(event)"
+      onreset="setTimeout(toggleOtherAssociateNameInput, 0)"
     >
       <div class="grid-responsive" style="gap: 25px">
         <div class="input-group" style="grid-column: span 2">
@@ -102,20 +103,35 @@
         <div class="input-group">
           <label class="required-label">Paid By</label>
           <div class="modern-input-wrapper">
-            <input
-              type="text"
+            <select
               name="otherPaidBy"
               id="other-paid-by"
-              list="otherPaidByOptions"
               class="form-control"
-              placeholder="Name or entity..."
               required
-            />
-            <datalist id="otherPaidByOptions">
-              <option value="Company"></option>
-              <option value="Associate"></option>
-            </datalist>
+              onchange="toggleOtherAssociateNameInput()"
+            >
+              <option value="Company">Company</option>
+              <option value="Associate">Associate</option>
+            </select>
             <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+
+        <div
+          class="input-group"
+          id="other-associate-name-group"
+          style="display: none"
+        >
+          <label class="required-label">Associate Name</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="otherAssociateName"
+              id="other-associate-name"
+              class="form-control"
+              placeholder="Enter associate's name..."
+            />
+            <i class="fas fa-user"></i>
           </div>
         </div>
       </div>

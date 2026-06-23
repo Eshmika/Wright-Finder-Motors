@@ -505,6 +505,22 @@
       window.loadWfmExpenses();
     };
 
+    window.toggleWfmAssociateNameInput = function () {
+      const select = document.getElementById("wfm-paid-by");
+      const group = document.getElementById("wfm-associate-name-group");
+      const input = document.getElementById("wfm-associate-name");
+      if (select && group && input) {
+        if (select.value === "Associate") {
+          group.style.display = "block";
+          input.required = true;
+        } else {
+          group.style.display = "none";
+          input.required = false;
+          input.value = "";
+        }
+      }
+    };
+
     window.calculateWfmTax = function () {
       const beforeTax = parseFloat(
         document.getElementById("wfm-value-before-tax").value,
@@ -528,18 +544,27 @@
       btn.disabled = true;
 
       const formData = new FormData(form);
+      let paidByVal = formData.get("wfmPaidBy");
+      if (paidByVal === "Associate") {
+        const assocName = formData.get("wfmAssociateName")?.trim();
+        if (assocName) {
+          paidByVal = "Associate: " + assocName;
+        }
+      }
+
       const data = {
         details: formData.get("wfmDetails"),
         valueBeforeTax: formData.get("wfmValueBeforeTax"),
         valueAfterTax: formData.get("wfmValueAfterTax"),
         date: formData.get("wfmDate"),
-        paidBy: formData.get("wfmPaidBy"),
+        paidBy: paidByVal,
       };
 
       google.script.run
         .withSuccessHandler(function (response) {
           showCreativeSuccessModal("Business Expense added successfully!");
           form.reset();
+          window.toggleWfmAssociateNameInput();
           // Keep today's date
           document.getElementById("wfm-date").value = new Date()
             .toISOString()
@@ -684,6 +709,22 @@
       window.loadOtherExpenses();
     };
 
+    window.toggleOtherAssociateNameInput = function () {
+      const select = document.getElementById("other-paid-by");
+      const group = document.getElementById("other-associate-name-group");
+      const input = document.getElementById("other-associate-name");
+      if (select && group && input) {
+        if (select.value === "Associate") {
+          group.style.display = "block";
+          input.required = true;
+        } else {
+          group.style.display = "none";
+          input.required = false;
+          input.value = "";
+        }
+      }
+    };
+
     window.calculateOtherTax = function () {
       const beforeTax = parseFloat(
         document.getElementById("other-value-before-tax").value,
@@ -707,18 +748,27 @@
       btn.disabled = true;
 
       const formData = new FormData(form);
+      let paidByVal = formData.get("otherPaidBy");
+      if (paidByVal === "Associate") {
+        const assocName = formData.get("otherAssociateName")?.trim();
+        if (assocName) {
+          paidByVal = "Associate: " + assocName;
+        }
+      }
+
       const data = {
         details: formData.get("otherDetails"),
         valueBeforeTax: formData.get("otherValueBeforeTax"),
         valueAfterTax: formData.get("otherValueAfterTax"),
         date: formData.get("otherDate"),
-        paidBy: formData.get("otherPaidBy"),
+        paidBy: paidByVal,
       };
 
       google.script.run
         .withSuccessHandler(function (response) {
           showCreativeSuccessModal("Other Expense added successfully!");
           form.reset();
+          window.toggleOtherAssociateNameInput();
           // Keep today's date
           document.getElementById("other-date").value = new Date()
             .toISOString()
