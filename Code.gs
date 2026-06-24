@@ -1205,7 +1205,7 @@ function getWfmExpenses() {
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var expense = {};
+    var expense = { rowNumber: i + 1 };
     for (var j = 0; j < headers.length; j++) {
       var header = headers[j];
       expense[header] = row[j];
@@ -1214,6 +1214,56 @@ function getWfmExpenses() {
   }
 
   return wfmExpenses;
+}
+
+function deleteWfmExpense(rowNumber) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    "WFM Business Expenses",
+  );
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  sheet.deleteRow(row);
+  return "Success";
+}
+
+function updateWfmExpense(rowNumber, data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    "WFM Business Expenses",
+  );
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
+
+  var existingRow = sheet.getRange(row, 1, 1, headers.length).getValues()[0];
+
+  var keyMap = {
+    DETAILS: data.details || "",
+    "VALUE BEFORE TAX": data.valueBeforeTax || "",
+    "VALUE AFTER TAX": data.valueAfterTax || "",
+    DATE: data.date || "",
+    "PAID BY": data.paidBy || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    if (keyMap[header] !== undefined) {
+      rowValues[i] = keyMap[header];
+    } else {
+      rowValues[i] = existingRow[i];
+    }
+  }
+
+  sheet.getRange(row, 1, 1, headers.length).setValues([rowValues]);
+  return "Success";
 }
 
 function saveOtherExpense(data) {
@@ -1269,7 +1319,7 @@ function getOtherExpenses() {
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var expense = {};
+    var expense = { rowNumber: i + 1 };
     for (var j = 0; j < headers.length; j++) {
       var header = headers[j];
       expense[header] = row[j];
@@ -1278,6 +1328,54 @@ function getOtherExpenses() {
   }
 
   return otherExpenses;
+}
+
+function deleteOtherExpense(rowNumber) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Other Expenses");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  sheet.deleteRow(row);
+  return "Success";
+}
+
+function updateOtherExpense(rowNumber, data) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Other Expenses");
+  if (!sheet) return "Error: Sheet not found";
+
+  var row = parseInt(rowNumber);
+  if (isNaN(row) || row <= 1) return "Error: Invalid row number";
+
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var rowValues = new Array(headers.length);
+
+  var existingRow = sheet.getRange(row, 1, 1, headers.length).getValues()[0];
+
+  var keyMap = {
+    DETAILS: data.details || "",
+    "VALUE BEFORE TAX": data.valueBeforeTax || "",
+    "VALUE AFTER TAX": data.valueAfterTax || "",
+    DATE: data.date || "",
+    "PAID BY": data.paidBy || "",
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    if (keyMap[header] !== undefined) {
+      rowValues[i] = keyMap[header];
+    } else {
+      rowValues[i] = existingRow[i];
+    }
+  }
+
+  sheet.getRange(row, 1, 1, headers.length).setValues([rowValues]);
+  return "Success";
 }
 
 function sendAgreementEmailToServer(carId) {

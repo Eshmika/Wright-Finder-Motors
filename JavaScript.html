@@ -534,6 +534,8 @@
       }
     };
 
+    window.editingWfmExpenseRow = null;
+
     window.handleWfmExpenseSubmit = function (e) {
       e.preventDefault();
 
@@ -560,28 +562,40 @@
         paidBy: paidByVal,
       };
 
-      google.script.run
-        .withSuccessHandler(function (response) {
-          showCreativeSuccessModal("Business Expense added successfully!");
-          form.reset();
-          window.toggleWfmAssociateNameInput();
-          // Keep today's date
-          document.getElementById("wfm-date").value = new Date()
-            .toISOString()
-            .split("T")[0];
+      const runServerCall = window.editingWfmExpenseRow
+        ? google.script.run.withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Business Expense updated successfully!");
+            window.cancelWfmExpenseEdit();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            window.loadWfmExpenses();
+          })
+        : google.script.run.withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Business Expense added successfully!");
+            form.reset();
+            window.toggleWfmAssociateNameInput();
+            // Keep today's date
+            document.getElementById("wfm-date").value = new Date()
+              .toISOString()
+              .split("T")[0];
 
-          btn.innerHTML = originalText;
-          btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            window.loadWfmExpenses();
+          });
 
-          // Reload business expenses table
-          window.loadWfmExpenses();
-        })
+      runServerCall
         .withFailureHandler(function (error) {
           alert("Error: " + error.message);
           btn.innerHTML = originalText;
           btn.disabled = false;
-        })
-        .saveWfmExpense(data);
+        });
+
+      if (window.editingWfmExpenseRow) {
+        runServerCall.updateWfmExpense(window.editingWfmExpenseRow, data);
+      } else {
+        runServerCall.saveWfmExpense(data);
+      }
     };
 
     let cachedWfmExpenses = [];
@@ -590,7 +604,7 @@
       const tbody = document.getElementById("wfmExpensesTableBody");
       if (tbody) {
         tbody.innerHTML =
-          '<tr><td colspan="5" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading business expenses...</td></tr>';
+          '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading business expenses...</td></tr>';
       }
 
       google.script.run
@@ -601,7 +615,7 @@
         .withFailureHandler(function (error) {
           if (tbody) {
             tbody.innerHTML =
-              '<tr><td colspan="5" class="text-center text-danger" style="padding: 20px;">Error loading business expenses: ' +
+              '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading business expenses: ' +
               error.message +
               "</td></tr>";
           }
@@ -616,7 +630,7 @@
       tbody.innerHTML = "";
       if (!expensesToRender || expensesToRender.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No business expense records found.</td></tr>';
+          '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No business expense records found.</td></tr>';
         return;
       }
 
@@ -645,13 +659,137 @@
           } catch (e) {}
         }
 
+        let escDetails = (exp["DETAILS"] || "").replace(/'/g, "\\'");
+        let escPaidBy = (exp["PAID BY"] || "").replace(/'/g, "\\'");
+        let rawDate = exp["DATE"] || "";
+
         tr.innerHTML = `
           <td><strong>${exp["DETAILS"] || "-"}</strong></td>
           <td>${formattedBefore}</td>
           <td>${badgeHtml}</td>
           <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
           <td>${exp["PAID BY"] || "-"}</td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-action edit" onclick="window.editWfmExpenseRow(${exp.rowNumber}, '${escDetails}', '${exp["VALUE BEFORE TAX"] || 0}', '${exp["VALUE AFTER TAX"] || 0}', '${rawDate}', '${escPaidBy}')" title="Edit" style="border: none; background: #eef2ff; color: #4f46e5; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-edit"></i></button>
+              <button class="btn-action delete" onclick="window.deleteWfmExpenseRow(${exp.rowNumber})" title="Delete" style="border: none; background: #fef2f2; color: #ef4444; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
         `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.editWfmExpenseRow = function (rowNumber, details, beforeTax, afterTax, dateStr, paidBy) {
+      window.editingWfmExpenseRow = rowNumber;
+
+      const title = document.getElementById("wfmExpenseFormTitle");
+      if (title) title.innerText = "Edit Business Expense (Row " + rowNumber + ")";
+
+      const icon = document.getElementById("wfmExpenseFormIcon");
+      if (icon) {
+        icon.innerHTML = '<i class="fas fa-edit"></i>';
+        icon.style.background = "#fff3cd";
+        icon.style.color = "#856404";
+      }
+
+      const cancelBtn = document.getElementById("btnCancelWfmExpenseEdit");
+      if (cancelBtn) cancelBtn.style.display = "inline-flex";
+
+      const submitBtn = document.getElementById("btnSubmitWfmExpense");
+      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Update Expense';
+
+      document.getElementById("wfm-details").value = details || "";
+      document.getElementById("wfm-value-before-tax").value = beforeTax || "";
+      document.getElementById("wfm-value-after-tax").value = afterTax || "";
+
+      if (dateStr) {
+        try {
+          let d = new Date(dateStr);
+          if (!isNaN(d.getTime())) {
+            let yyyy = d.getFullYear();
+            let mm = String(d.getMonth() + 1).padStart(2, "0");
+            let dd = String(d.getDate()).padStart(2, "0");
+            document.getElementById("wfm-date").value = `${yyyy}-${mm}-${dd}`;
+          } else {
+            document.getElementById("wfm-date").value = dateStr;
+          }
+        } catch (e) {
+          document.getElementById("wfm-date").value = dateStr;
+        }
+      }
+
+      const paidBySelect = document.getElementById("wfm-paid-by");
+      const assocNameInput = document.getElementById("wfm-associate-name");
+      if (paidBySelect) {
+        if (paidBy.startsWith("Associate:")) {
+          paidBySelect.value = "Associate";
+          if (assocNameInput) {
+            assocNameInput.value = paidBy.replace("Associate:", "").trim();
+          }
+        } else {
+          paidBySelect.value = paidBy || "Company";
+          if (assocNameInput) assocNameInput.value = "";
+        }
+        window.toggleWfmAssociateNameInput();
+      }
+
+      const card = document.getElementById("addWfmExpenseForm").closest(".expenses-card");
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+        card.style.transition = "all 0.3s";
+        card.style.boxShadow = "0 0 20px rgba(35, 39, 84, 0.4)";
+        setTimeout(() => {
+          card.style.boxShadow = "";
+        }, 1500);
+      }
+    };
+
+    window.cancelWfmExpenseEdit = function () {
+      window.editingWfmExpenseRow = null;
+
+      const title = document.getElementById("wfmExpenseFormTitle");
+      if (title) title.innerText = "Log New Business Expense";
+
+      const icon = document.getElementById("wfmExpenseFormIcon");
+      if (icon) {
+        icon.innerHTML = '<i class="fas fa-plus"></i>';
+        icon.style.background = "#dbeafe";
+        icon.style.color = "#1e40af";
+      }
+
+      const cancelBtn = document.getElementById("btnCancelWfmExpenseEdit");
+      if (cancelBtn) cancelBtn.style.display = "none";
+
+      const submitBtn = document.getElementById("btnSubmitWfmExpense");
+      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save Business Expense';
+
+      const form = document.getElementById("addWfmExpenseForm");
+      if (form) {
+        form.reset();
+        const today = new Date().toISOString().split("T")[0];
+        const dateInput = document.getElementById("wfm-date");
+        if (dateInput) dateInput.value = today;
+        window.toggleWfmAssociateNameInput();
+      }
+    };
+
+    window.deleteWfmExpenseRow = function (rowNumber) {
+      showCreativeConfirmModal(
+        "Are you sure you want to permanently delete this business expense?",
+        function () {
+          google.script.run
+            .withSuccessHandler(function (response) {
+              showCreativeSuccessModal("Business expense deleted successfully!");
+              window.loadWfmExpenses();
+            })
+            .withFailureHandler(function (error) {
+              alert("Error deleting business expense: " + error.message);
+            })
+            .deleteWfmExpense(rowNumber);
+        }
+      );
+    };
         tbody.appendChild(tr);
       });
     }
@@ -738,6 +876,8 @@
       }
     };
 
+    window.editingOtherExpenseRow = null;
+
     window.handleOtherExpenseSubmit = function (e) {
       e.preventDefault();
 
@@ -764,28 +904,40 @@
         paidBy: paidByVal,
       };
 
-      google.script.run
-        .withSuccessHandler(function (response) {
-          showCreativeSuccessModal("Other Expense added successfully!");
-          form.reset();
-          window.toggleOtherAssociateNameInput();
-          // Keep today's date
-          document.getElementById("other-date").value = new Date()
-            .toISOString()
-            .split("T")[0];
+      const runServerCall = window.editingOtherExpenseRow
+        ? google.script.run.withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Other Expense updated successfully!");
+            window.cancelOtherExpenseEdit();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            window.loadOtherExpenses();
+          })
+        : google.script.run.withSuccessHandler(function (response) {
+            showCreativeSuccessModal("Other Expense added successfully!");
+            form.reset();
+            window.toggleOtherAssociateNameInput();
+            // Keep today's date
+            document.getElementById("other-date").value = new Date()
+              .toISOString()
+              .split("T")[0];
 
-          btn.innerHTML = originalText;
-          btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            window.loadOtherExpenses();
+          });
 
-          // Reload other expenses table
-          window.loadOtherExpenses();
-        })
+      runServerCall
         .withFailureHandler(function (error) {
           alert("Error: " + error.message);
           btn.innerHTML = originalText;
           btn.disabled = false;
-        })
-        .saveOtherExpense(data);
+        });
+
+      if (window.editingOtherExpenseRow) {
+        runServerCall.updateOtherExpense(window.editingOtherExpenseRow, data);
+      } else {
+        runServerCall.saveOtherExpense(data);
+      }
     };
 
     let cachedOtherExpenses = [];
@@ -794,7 +946,7 @@
       const tbody = document.getElementById("otherExpensesTableBody");
       if (tbody) {
         tbody.innerHTML =
-          '<tr><td colspan="5" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading other expenses...</td></tr>';
+          '<tr><td colspan="6" class="text-center" style="padding: 30px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px; display: block;"></i> Loading other expenses...</td></tr>';
       }
 
       google.script.run
@@ -805,7 +957,7 @@
         .withFailureHandler(function (error) {
           if (tbody) {
             tbody.innerHTML =
-              '<tr><td colspan="5" class="text-center text-danger" style="padding: 20px;">Error loading other expenses: ' +
+              '<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Error loading other expenses: ' +
               error.message +
               "</td></tr>";
           }
@@ -820,7 +972,7 @@
       tbody.innerHTML = "";
       if (!expensesToRender || expensesToRender.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No other expense records found.</td></tr>';
+          '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #7f8c8d;"><i class="fas fa-folder-open" style="font-size: 24px; display: block; margin-bottom: 10px; color: #bdc3c7;"></i> No other expense records found.</td></tr>';
         return;
       }
 
@@ -849,13 +1001,137 @@
           } catch (e) {}
         }
 
+        let escDetails = (exp["DETAILS"] || "").replace(/'/g, "\\'");
+        let escPaidBy = (exp["PAID BY"] || "").replace(/'/g, "\\'");
+        let rawDate = exp["DATE"] || "";
+
         tr.innerHTML = `
           <td><strong>${exp["DETAILS"] || "-"}</strong></td>
           <td>${formattedBefore}</td>
           <td>${badgeHtml}</td>
           <td style="color: #858796;"><i class="far fa-calendar-alt" style="margin-right: 5px;"></i> ${dateStr || "-"}</td>
           <td>${exp["PAID BY"] || "-"}</td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-action edit" onclick="window.editOtherExpenseRow(${exp.rowNumber}, '${escDetails}', '${exp["VALUE BEFORE TAX"] || 0}', '${exp["VALUE AFTER TAX"] || 0}', '${rawDate}', '${escPaidBy}')" title="Edit" style="border: none; background: #eef2ff; color: #4f46e5; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-edit"></i></button>
+              <button class="btn-action delete" onclick="window.deleteOtherExpenseRow(${exp.rowNumber})" title="Delete" style="border: none; background: #fef2f2; color: #ef4444; width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
         `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.editOtherExpenseRow = function (rowNumber, details, beforeTax, afterTax, dateStr, paidBy) {
+      window.editingOtherExpenseRow = rowNumber;
+
+      const title = document.getElementById("otherExpenseFormTitle");
+      if (title) title.innerText = "Edit Other Expense (Row " + rowNumber + ")";
+
+      const icon = document.getElementById("otherExpenseFormIcon");
+      if (icon) {
+        icon.innerHTML = '<i class="fas fa-edit"></i>';
+        icon.style.background = "#fff3cd";
+        icon.style.color = "#856404";
+      }
+
+      const cancelBtn = document.getElementById("btnCancelOtherExpenseEdit");
+      if (cancelBtn) cancelBtn.style.display = "inline-flex";
+
+      const submitBtn = document.getElementById("btnSubmitOtherExpense");
+      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Update Expense';
+
+      document.getElementById("other-details").value = details || "";
+      document.getElementById("other-value-before-tax").value = beforeTax || "";
+      document.getElementById("other-value-after-tax").value = afterTax || "";
+
+      if (dateStr) {
+        try {
+          let d = new Date(dateStr);
+          if (!isNaN(d.getTime())) {
+            let yyyy = d.getFullYear();
+            let mm = String(d.getMonth() + 1).padStart(2, "0");
+            let dd = String(d.getDate()).padStart(2, "0");
+            document.getElementById("other-date").value = `${yyyy}-${mm}-${dd}`;
+          } else {
+            document.getElementById("other-date").value = dateStr;
+          }
+        } catch (e) {
+          document.getElementById("other-date").value = dateStr;
+        }
+      }
+
+      const paidBySelect = document.getElementById("other-paid-by");
+      const assocNameInput = document.getElementById("other-associate-name");
+      if (paidBySelect) {
+        if (paidBy.startsWith("Associate:")) {
+          paidBySelect.value = "Associate";
+          if (assocNameInput) {
+            assocNameInput.value = paidBy.replace("Associate:", "").trim();
+          }
+        } else {
+          paidBySelect.value = paidBy || "Company";
+          if (assocNameInput) assocNameInput.value = "";
+        }
+        window.toggleOtherAssociateNameInput();
+      }
+
+      const card = document.getElementById("addOtherExpenseForm").closest(".expenses-card");
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+        card.style.transition = "all 0.3s";
+        card.style.boxShadow = "0 0 20px rgba(35, 39, 84, 0.4)";
+        setTimeout(() => {
+          card.style.boxShadow = "";
+        }, 1500);
+      }
+    };
+
+    window.cancelOtherExpenseEdit = function () {
+      window.editingOtherExpenseRow = null;
+
+      const title = document.getElementById("otherExpenseFormTitle");
+      if (title) title.innerText = "Log New Other Expense";
+
+      const icon = document.getElementById("otherExpenseFormIcon");
+      if (icon) {
+        icon.innerHTML = '<i class="fas fa-plus"></i>';
+        icon.style.background = "#fae8ff";
+        icon.style.color = "#86198f";
+      }
+
+      const cancelBtn = document.getElementById("btnCancelOtherExpenseEdit");
+      if (cancelBtn) cancelBtn.style.display = "none";
+
+      const submitBtn = document.getElementById("btnSubmitOtherExpense");
+      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save Other Expense';
+
+      const form = document.getElementById("addOtherExpenseForm");
+      if (form) {
+        form.reset();
+        const today = new Date().toISOString().split("T")[0];
+        const dateInput = document.getElementById("other-date");
+        if (dateInput) dateInput.value = today;
+        window.toggleOtherAssociateNameInput();
+      }
+    };
+
+    window.deleteOtherExpenseRow = function (rowNumber) {
+      showCreativeConfirmModal(
+        "Are you sure you want to permanently delete this expense?",
+        function () {
+          google.script.run
+            .withSuccessHandler(function (response) {
+              showCreativeSuccessModal("Expense deleted successfully!");
+              window.loadOtherExpenses();
+            })
+            .withFailureHandler(function (error) {
+              alert("Error deleting expense: " + error.message);
+            })
+            .deleteOtherExpense(rowNumber);
+        }
+      );
+    };
         tbody.appendChild(tr);
       });
     }
@@ -4005,10 +4281,10 @@
           let pdfHtml = "";
           if (pdfLink) {
             pdfHtml = `
-              <a 
-                href="${pdfLink}" 
-                target="_blank" 
-                class="action-btn" 
+              <a
+                href="${pdfLink}"
+                target="_blank"
+                class="action-btn"
                 style="padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; background: #10b981; color: white; border: none; cursor: pointer; text-decoration: none; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);"
               >
                 <i class="fas fa-file-pdf"></i> View
@@ -4033,17 +4309,17 @@
                   ? ""
                   : `
               <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-                <button 
-                  class="action-btn" 
+                <button
+                  class="action-btn"
                   style="padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; background: #4e73df; color: white; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(78, 115, 223, 0.2);"
                   onclick="openInstallmentModal('${car["Car ID"]}', '${(car["Installment Frequency"] || "").toString().replace(/'/g, "\\'")}', '${dateStr}')"
                   title="Edit Installment Terms"
                 >
                   <i class="fas fa-edit"></i> Edit Terms
                 </button>
-                <button 
-                  class="action-btn" 
-                  style="padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; ${btnStyle}" 
+                <button
+                  class="action-btn"
+                  style="padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; ${btnStyle}"
                   ${btnDisabled}
                   onclick="sendAgreementEmail('${car["Car ID"]}')"
                 >
