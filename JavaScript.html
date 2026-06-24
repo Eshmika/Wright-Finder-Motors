@@ -265,6 +265,22 @@
       return fallbackModel || "-";
     };
 
+    window.toggleExpenseAssociateNameInput = function () {
+      const select = document.getElementById("expensePaidBy");
+      const group = document.getElementById("expense-associate-name-group");
+      const input = document.getElementById("expense-associate-name");
+      if (select && group && input) {
+        if (select.value === "Associate") {
+          group.style.display = "block";
+          input.required = true;
+        } else {
+          group.style.display = "none";
+          input.required = false;
+          input.value = "";
+        }
+      }
+    };
+
     // =============================================
     // All Expenses Logic
     // =============================================
@@ -357,12 +373,20 @@
       btn.disabled = true;
 
       const formData = new FormData(form);
+      let paidByVal = formData.get("paidBy");
+      if (paidByVal === "Associate") {
+        const assocName = formData.get("expenseAssociateName")?.trim();
+        if (assocName) {
+          paidByVal = "Associate: " + assocName;
+        }
+      }
+
       const data = {
         carId: formData.get("carId"),
         carModel: formData.get("carModel"),
         clientName: formData.get("clientName"),
         description: formData.get("description"),
-        paidBy: formData.get("paidBy"),
+        paidBy: paidByVal,
         amount: formData.get("amount"),
         expenseDate: formData.get("expenseDate"),
       };
@@ -387,6 +411,7 @@
           .withSuccessHandler(function (response) {
             showCreativeSuccessModal("Expense added successfully!");
             form.reset();
+            window.toggleExpenseAssociateNameInput();
             // Keep today's date
             document.getElementById("expenseDate").value = new Date()
               .toISOString()
@@ -5923,7 +5948,20 @@
         }
       }
       form.querySelector('[name="description"]').value = description || "";
-      form.querySelector('[name="paidBy"]').value = paidBy || "";
+      const paidBySelect = document.getElementById("expensePaidBy");
+      const assocNameInput = document.getElementById("expense-associate-name");
+      if (paidBySelect) {
+        if (paidBy.startsWith("Associate:")) {
+          paidBySelect.value = "Associate";
+          if (assocNameInput) {
+            assocNameInput.value = paidBy.replace("Associate:", "").trim();
+          }
+        } else {
+          paidBySelect.value = paidBy || "Company";
+          if (assocNameInput) assocNameInput.value = "";
+        }
+        window.toggleExpenseAssociateNameInput();
+      }
       form.querySelector('[name="amount"]').value = amount || "";
     }
 
@@ -5974,6 +6012,7 @@
       const today = new Date().toISOString().split("T")[0];
       const expenseDateInput = document.getElementById("expenseDate");
       if (expenseDateInput) expenseDateInput.value = today;
+      window.toggleExpenseAssociateNameInput();
     }
   };
 

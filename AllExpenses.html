@@ -311,20 +311,35 @@
         <div class="input-group" style="grid-column: span 1">
           <label class="required-label">Paid By</label>
           <div class="modern-input-wrapper">
-            <input
-              type="text"
+            <select
               name="paidBy"
               id="expensePaidBy"
-              list="paidByOptions"
               class="form-control"
-              placeholder="Company, Associate, or Name..."
               required
-            />
-            <datalist id="paidByOptions">
-              <option value="Company"></option>
-              <option value="Associate"></option>
-            </datalist>
+              onchange="window.toggleExpenseAssociateNameInput()"
+            >
+              <option value="Company">Company</option>
+              <option value="Associate">Associate</option>
+            </select>
             <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+
+        <div
+          class="input-group"
+          id="expense-associate-name-group"
+          style="display: none; grid-column: span 1"
+        >
+          <label class="required-label">Associate Name</label>
+          <div class="modern-input-wrapper">
+            <input
+              type="text"
+              name="expenseAssociateName"
+              id="expense-associate-name"
+              class="form-control"
+              placeholder="Enter associate's name..."
+            />
+            <i class="fas fa-user"></i>
           </div>
         </div>
 
