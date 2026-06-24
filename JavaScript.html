@@ -242,6 +242,29 @@
       renderFeatures();
     };
 
+    window.getCarModelDisplay = function (carId, fallbackModel) {
+      if (
+        typeof allCars !== "undefined" &&
+        allCars &&
+        allCars.length > 0 &&
+        carId
+      ) {
+        const matchedCar = allCars.find(
+          (c) => String(c["Car ID"] || "").trim() === String(carId).trim(),
+        );
+        if (matchedCar) {
+          const parts = [];
+          if (matchedCar["Car Name"]) parts.push(matchedCar["Car Name"]);
+          if (matchedCar["Model"]) parts.push(matchedCar["Model"]);
+          if (matchedCar["Year"]) parts.push(matchedCar["Year"]);
+          if (parts.length > 0) {
+            return parts.join(" ");
+          }
+        }
+      }
+      return fallbackModel || "-";
+    };
+
     // =============================================
     // All Expenses Logic
     // =============================================
@@ -445,7 +468,7 @@
         let rawDate = exp["EXPENSE DATE"] || "";
 
         tr.innerHTML = `
-          <td><strong>${exp["CAR MODEL"] || "-"}</strong></td>
+          <td><strong>${window.getCarModelDisplay(exp["CAR ID"], exp["CAR MODEL"])}</strong></td>
           <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${exp["CAR ID"] || "-"}</span></td>
           <td>${exp["Client Name"] || exp["CLIENT NAME"] || "-"}</td>
           <td>${exp["DESCRIPTION"] || "-"}</td>
@@ -584,12 +607,11 @@
             window.loadWfmExpenses();
           });
 
-      runServerCall
-        .withFailureHandler(function (error) {
-          alert("Error: " + error.message);
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        });
+      runServerCall.withFailureHandler(function (error) {
+        alert("Error: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      });
 
       if (window.editingWfmExpenseRow) {
         runServerCall.updateWfmExpense(window.editingWfmExpenseRow, data);
@@ -680,11 +702,19 @@
       });
     }
 
-    window.editWfmExpenseRow = function (rowNumber, details, beforeTax, afterTax, dateStr, paidBy) {
+    window.editWfmExpenseRow = function (
+      rowNumber,
+      details,
+      beforeTax,
+      afterTax,
+      dateStr,
+      paidBy,
+    ) {
       window.editingWfmExpenseRow = rowNumber;
 
       const title = document.getElementById("wfmExpenseFormTitle");
-      if (title) title.innerText = "Edit Business Expense (Row " + rowNumber + ")";
+      if (title)
+        title.innerText = "Edit Business Expense (Row " + rowNumber + ")";
 
       const icon = document.getElementById("wfmExpenseFormIcon");
       if (icon) {
@@ -697,7 +727,9 @@
       if (cancelBtn) cancelBtn.style.display = "inline-flex";
 
       const submitBtn = document.getElementById("btnSubmitWfmExpense");
-      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Update Expense';
+      if (submitBtn)
+        submitBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> Update Expense';
 
       document.getElementById("wfm-details").value = details || "";
       document.getElementById("wfm-value-before-tax").value = beforeTax || "";
@@ -734,7 +766,9 @@
         window.toggleWfmAssociateNameInput();
       }
 
-      const card = document.getElementById("addWfmExpenseForm").closest(".expenses-card");
+      const card = document
+        .getElementById("addWfmExpenseForm")
+        .closest(".expenses-card");
       if (card) {
         card.scrollIntoView({ behavior: "smooth", block: "start" });
         card.style.transition = "all 0.3s";
@@ -762,7 +796,9 @@
       if (cancelBtn) cancelBtn.style.display = "none";
 
       const submitBtn = document.getElementById("btnSubmitWfmExpense");
-      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save Business Expense';
+      if (submitBtn)
+        submitBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> Save Business Expense';
 
       const form = document.getElementById("addWfmExpenseForm");
       if (form) {
@@ -780,19 +816,18 @@
         function () {
           google.script.run
             .withSuccessHandler(function (response) {
-              showCreativeSuccessModal("Business expense deleted successfully!");
+              showCreativeSuccessModal(
+                "Business expense deleted successfully!",
+              );
               window.loadWfmExpenses();
             })
             .withFailureHandler(function (error) {
               alert("Error deleting business expense: " + error.message);
             })
             .deleteWfmExpense(rowNumber);
-        }
+        },
       );
     };
-        tbody.appendChild(tr);
-      });
-    }
 
     window.filterWfmExpenses = function () {
       const nameInput = document.getElementById("wfmNameFilter");
@@ -926,12 +961,11 @@
             window.loadOtherExpenses();
           });
 
-      runServerCall
-        .withFailureHandler(function (error) {
-          alert("Error: " + error.message);
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        });
+      runServerCall.withFailureHandler(function (error) {
+        alert("Error: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      });
 
       if (window.editingOtherExpenseRow) {
         runServerCall.updateOtherExpense(window.editingOtherExpenseRow, data);
@@ -1022,7 +1056,14 @@
       });
     }
 
-    window.editOtherExpenseRow = function (rowNumber, details, beforeTax, afterTax, dateStr, paidBy) {
+    window.editOtherExpenseRow = function (
+      rowNumber,
+      details,
+      beforeTax,
+      afterTax,
+      dateStr,
+      paidBy,
+    ) {
       window.editingOtherExpenseRow = rowNumber;
 
       const title = document.getElementById("otherExpenseFormTitle");
@@ -1039,7 +1080,9 @@
       if (cancelBtn) cancelBtn.style.display = "inline-flex";
 
       const submitBtn = document.getElementById("btnSubmitOtherExpense");
-      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Update Expense';
+      if (submitBtn)
+        submitBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> Update Expense';
 
       document.getElementById("other-details").value = details || "";
       document.getElementById("other-value-before-tax").value = beforeTax || "";
@@ -1076,7 +1119,9 @@
         window.toggleOtherAssociateNameInput();
       }
 
-      const card = document.getElementById("addOtherExpenseForm").closest(".expenses-card");
+      const card = document
+        .getElementById("addOtherExpenseForm")
+        .closest(".expenses-card");
       if (card) {
         card.scrollIntoView({ behavior: "smooth", block: "start" });
         card.style.transition = "all 0.3s";
@@ -1104,7 +1149,9 @@
       if (cancelBtn) cancelBtn.style.display = "none";
 
       const submitBtn = document.getElementById("btnSubmitOtherExpense");
-      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Save Other Expense';
+      if (submitBtn)
+        submitBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> Save Other Expense';
 
       const form = document.getElementById("addOtherExpenseForm");
       if (form) {
@@ -1129,12 +1176,9 @@
               alert("Error deleting expense: " + error.message);
             })
             .deleteOtherExpense(rowNumber);
-        }
+        },
       );
     };
-        tbody.appendChild(tr);
-      });
-    }
 
     window.filterOtherExpenses = function () {
       const nameInput = document.getElementById("otherNameFilter");
@@ -4048,7 +4092,7 @@
         let rawDate = pay["PAYMENT DATE"] || "";
 
         tr.innerHTML = `
-          <td><strong>${pay["CAR MODEL"] || "-"}</strong></td>
+          <td><strong>${window.getCarModelDisplay(pay["CAR ID"], pay["CAR MODEL"])}</strong></td>
           <td><span style="background: #e9ecef; padding: 5px 10px; border-radius: 6px; font-family: monospace; color: #4e73df; font-weight: 600; font-size: 0.85em;">${pay["CAR ID"] || "-"}</span></td>
           <td>${pay["Client Name"] || pay["CLIENT NAME"] || "-"}</td>
           <td><span style="background: #fff8e1; color: #f39c12; padding: 5px 10px; border-radius: 6px; font-size: 0.9em; display: inline-block;"><i class="fas fa-check-circle" style="opacity: 0.7; margin-right: 5px;"></i>${pay["PAYMENT OPTION / NOTES"] || pay["PAYMENT OPTION"] || pay["Payment Option"] || "-"}</span></td>
