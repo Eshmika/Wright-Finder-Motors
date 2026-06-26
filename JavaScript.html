@@ -3885,6 +3885,13 @@
         const newPaymentForm = paymentForm.cloneNode(true);
         paymentForm.parentNode.replaceChild(newPaymentForm, paymentForm);
         newPaymentForm.addEventListener("submit", submitPayment);
+        newPaymentForm.addEventListener("reset", () => {
+          setTimeout(() => {
+            const today = new Date().toISOString().split("T")[0];
+            const payDateInput = document.getElementById("pay-date");
+            if (payDateInput) payDateInput.value = today;
+          }, 0);
+        });
       }
 
       // Sync dropdowns
