@@ -24,6 +24,29 @@
     input.value = val;
   }
 
+  window.formatDateToET = function (dateVal) {
+    if (!dateVal) return "-";
+    try {
+      if (typeof dateVal === "string") {
+        const trimmed = dateVal.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+          const parts = trimmed.split("-");
+          return `${parts[1]}/${parts[2]}/${parts[0]}`;
+        }
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
+          return trimmed;
+        }
+      }
+      let d = new Date(dateVal);
+      if (isNaN(d.getTime())) return dateVal;
+      return d.toLocaleDateString("en-US", {
+        timeZone: "America/New_York",
+      });
+    } catch (e) {
+      return dateVal;
+    }
+  };
+
   document.addEventListener("DOMContentLoaded", function () {
     // Sidebar Toggle Logic
     const sidebarToggle = document.getElementById("sidebarToggle");
@@ -478,13 +501,7 @@
           : `<span class="amount-badge">${formattedAmt}</span>`;
 
         // Format dates well
-        let dateStr = exp["EXPENSE DATE"];
-        if (dateStr) {
-          try {
-            let d = new Date(dateStr);
-            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-          } catch (e) {}
-        }
+        let dateStr = formatDateToET(exp["EXPENSE DATE"]);
 
         let escClient = (
           exp["Client Name"] ||
@@ -702,13 +719,7 @@
           ? formattedAfter
           : `<span class="amount-badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-block;">${formattedAfter}</span>`;
 
-        let dateStr = exp["DATE"];
-        if (dateStr) {
-          try {
-            let d = new Date(dateStr);
-            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-          } catch (e) {}
-        }
+        let dateStr = formatDateToET(exp["DATE"]);
 
         let escDetails = (exp["DETAILS"] || "").replace(/'/g, "\\'");
         let escPaidBy = (exp["PAID BY"] || "").replace(/'/g, "\\'");
@@ -1056,13 +1067,7 @@
           ? formattedAfter
           : `<span class="amount-badge" style="background: #fae8ff; color: #86198f; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-block;">${formattedAfter}</span>`;
 
-        let dateStr = exp["DATE"];
-        if (dateStr) {
-          try {
-            let d = new Date(dateStr);
-            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-          } catch (e) {}
-        }
+        let dateStr = formatDateToET(exp["DATE"]);
 
         let escDetails = (exp["DETAILS"] || "").replace(/'/g, "\\'");
         let escPaidBy = (exp["PAID BY"] || "").replace(/'/g, "\\'");
@@ -3713,13 +3718,7 @@
         });
 
         sorted.forEach((exp) => {
-          let dateStr = exp["EXPENSE DATE"];
-          if (dateStr) {
-            try {
-              let d = new Date(dateStr);
-              if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-            } catch (e) {}
-          }
+          let dateStr = formatDateToET(exp["EXPENSE DATE"]);
 
           let amt = parseFloat(exp["AMOUNT"]);
           let formattedAmt = isNaN(amt) ? exp["AMOUNT"] : "$" + amt.toFixed(2);
@@ -3848,13 +3847,7 @@
         });
 
         sorted.forEach((pay) => {
-          let dateStr = pay["PAYMENT DATE"];
-          if (dateStr) {
-            try {
-              let d = new Date(dateStr);
-              if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-            } catch (e) {}
-          }
+          let dateStr = formatDateToET(pay["PAYMENT DATE"]);
 
           let amt = parseFloat(pay["AMOUNT"]);
           let formattedAmt = isNaN(amt) ? pay["AMOUNT"] : "$" + amt.toFixed(2);
@@ -4181,13 +4174,7 @@
           : `<span class="amount-badge" style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 6px; font-weight: 700; display: inline-block;">${formattedAmt}</span>`;
 
         // Format dates well
-        let dateStr = pay["PAYMENT DATE"];
-        if (dateStr) {
-          try {
-            let d = new Date(dateStr);
-            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
-          } catch (e) {}
-        }
+        let dateStr = formatDateToET(pay["PAYMENT DATE"]);
 
         // Notes fallback
         let notesText = pay["NOTES"] || pay["Notes"] || "-";
@@ -4852,11 +4839,13 @@
                   month: "short",
                   day: "numeric",
                   year: "numeric",
+                  timeZone: "America/New_York",
                 }) +
                 " " +
                 d.toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "America/New_York",
                 });
             } catch (e) {}
           }
