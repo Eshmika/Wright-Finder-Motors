@@ -2252,6 +2252,8 @@
                 </select>
                 <input type="text" name="${key}_custom" value="${isCustom ? val : ""}" class="form-control mt-2" placeholder="Enter custom ${key.toLowerCase()}" style="display: ${isCustom ? "block" : "none"};" ${isCustom ? "required" : ""}>
               `;
+            } else if (key === "Financing status") {
+              inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed;">`;
             } else {
               let options = `<option value="">Select ${key === "Status" ? "Availabilities" : key}...</option>`;
               dropdownOptions[key].forEach((opt) => {
@@ -3793,12 +3795,69 @@
             }
           }
         })
-        .withFailureHandler(function (e) {
-          const remainEl = document.getElementById("pageCarRemainLoan");
-          if (remainEl)
-            remainEl.innerHTML = `<span class="text-danger">Error</span>`;
-        })
         .getTotalPaymentForCar(car["Car ID"]);
+
+      function renderCarPaymentsHistory(paymentsList) {
+        const tbody = document.getElementById("carPaymentsHistoryTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        if (!paymentsList || paymentsList.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center" style="padding: 25px; color: #858796;">
+                <i class="fas fa-folder-open mr-2"></i> No payment records found for this car.
+              </td>
+            </tr>`;
+          return;
+        }
+
+        // Sort by date descending
+        const sorted = [...paymentsList].sort((a, b) => {
+          return (
+            new Date(b["PAYMENT DATE"] || 0) - new Date(a["PAYMENT DATE"] || 0)
+          );
+        });
+
+        sorted.forEach((pay) => {
+          let dateStr = pay["PAYMENT DATE"];
+          if (dateStr) {
+            try {
+              let d = new Date(dateStr);
+              if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
+            } catch (e) {}
+          }
+
+          let amt = parseFloat(pay["AMOUNT"]);
+          let formattedAmt = isNaN(amt) ? pay["AMOUNT"] : "$" + amt.toFixed(2);
+          let amountBadge = isNaN(amt)
+            ? formattedAmt
+            : `<span class="amount-badge" style="background:#e3fbef; color:#1cc88a; font-weight:700; padding:4px 8px; border-radius:6px; display:inline-block;">${formattedAmt}</span>`;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4; color: #858796;"><i class="far fa-calendar-alt mr-1"></i> ${dateStr || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4; font-weight: 500;">${pay["Client Name"] || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4;">${pay["PAYMENT OPTION / NOTES"] || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4;">${pay["NOTES"] || "-"}</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #eaecf4; text-align: right; font-weight: bold;">${amountBadge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Request payments history from the backend
+      google.script.run
+        .withSuccessHandler(function (paymentsList) {
+          renderCarPaymentsHistory(paymentsList);
+        })
+        .withFailureHandler(function (e) {
+          const tbody = document.getElementById("carPaymentsHistoryTableBody");
+          if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error loading payment history.</td></tr>`;
+          }
+        })
+        .getPaymentsForCar(car["Car ID"]);
     }
 
     // Search Logic

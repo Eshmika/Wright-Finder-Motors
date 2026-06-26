@@ -515,6 +515,34 @@ function getExpensesForCar(carId) {
   return expenses;
 }
 
+function getPaymentsForCar(carId) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
+  if (!sheet) return [];
+
+  var data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return [];
+
+  var headers = data[0];
+  var carIdIndex = headers.findIndex(function (h) {
+    return String(h).toUpperCase() === "CAR ID";
+  });
+  if (carIdIndex === -1) return [];
+
+  var payments = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][carIdIndex] === carId) {
+      var payment = {};
+      for (var j = 0; j < headers.length; j++) {
+        var header = headers[j];
+        payment[header] = data[i][j];
+      }
+      payments.push(payment);
+    }
+  }
+
+  return payments;
+}
+
 function getTotalExpenseForCar(carId) {
   var sheet =
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All expenses");
