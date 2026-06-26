@@ -2257,9 +2257,31 @@
                 <input type="text" name="${key}_custom" value="${isCustom ? val : ""}" class="form-control mt-2" placeholder="Enter custom ${key.toLowerCase()}" style="display: ${isCustom ? "block" : "none"};" ${isCustom ? "required" : ""}>
               `;
             } else if (key === "Financing status") {
-              inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed;">`;
+              const finColors = {
+                "Paid off": "#0033A0",
+                "Loan Active": "#7F1D1D",
+              };
+              const textColor = finColors[val] || "#3a3b45";
+              inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed; color: ${textColor}; font-weight: bold;">`;
+            } else if (key === "Status") {
+              const statusColors = {
+                Available: "#22C55E",
+                Sold: "#8B5CF6",
+                Pending: "#fb8c00",
+              };
+              let options = `<option value="">Select Availabilities...</option>`;
+              dropdownOptions[key].forEach((opt) => {
+                const color = statusColors[opt] || "";
+                options += `<option value="${opt}" ${val === opt ? "selected" : ""} style="color: ${color}; font-weight: bold;">${opt}</option>`;
+              });
+              const initialColor = statusColors[val] || "";
+              inputHtml = `
+                <select name="${key}" class="form-control" style="color: ${initialColor}; font-weight: bold;" onchange="const statusColors = {'Available': '#22C55E', 'Sold': '#8B5CF6', 'Pending': '#fb8c00'}; this.style.color = statusColors[this.value] || '';">
+                  ${options}
+                </select>
+              `;
             } else {
-              let options = `<option value="">Select ${key === "Status" ? "Availabilities" : key}...</option>`;
+              let options = `<option value="">Select ${key}...</option>`;
               dropdownOptions[key].forEach((opt) => {
                 options += `<option value="${opt}" ${val === opt ? "selected" : ""}>${opt}</option>`;
               });
@@ -2726,8 +2748,10 @@
       if (fsField && downPayment > 0) {
         if (remainLoan <= 0) {
           fsField.value = "Paid off";
+          fsField.style.color = "#0033A0";
         } else {
           fsField.value = "Loan Active";
+          fsField.style.color = "#7F1D1D";
         }
       }
 
@@ -2966,7 +2990,7 @@
 
       // Price & Status Card
       document.getElementById("pageCarPrice").textContent =
-        `$${car["Price on title"] || "0"}`;
+        `$${car["SOLD PRICE"] || "0"}`;
 
       const statusValue = car["Status"] || "Available";
       const statusEl = document.getElementById("pageCarStatus");
