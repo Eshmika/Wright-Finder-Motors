@@ -206,7 +206,7 @@
           align-items: center;
         "
       >
-        <div style="position: relative; max-width: 200px; width: 100%">
+        <div style="position: relative; max-width: 250px; width: 100%">
           <i
             class="fas fa-search"
             style="
@@ -219,58 +219,10 @@
           ></i>
           <input
             type="text"
-            id="otherNameFilter"
+            id="otherSearchInput"
             class="form-control"
-            placeholder="Filter by name/details..."
-            onkeyup="filterOtherExpenses()"
-            style="
-              padding-left: 35px;
-              border-radius: 20px;
-              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            "
-          />
-        </div>
-        <div style="position: relative; max-width: 180px; width: 100%">
-          <i
-            class="fas fa-calendar-alt"
-            style="
-              position: absolute;
-              left: 12px;
-              top: 50%;
-              transform: translateY(-50%);
-              color: #aaa;
-              z-index: 5;
-            "
-          ></i>
-          <input
-            type="date"
-            id="otherDateFilter"
-            class="form-control"
-            onchange="filterOtherExpenses()"
-            style="
-              padding-left: 35px;
-              border-radius: 20px;
-              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            "
-          />
-        </div>
-        <div style="position: relative; max-width: 180px; width: 100%">
-          <i
-            class="fas fa-user"
-            style="
-              position: absolute;
-              left: 12px;
-              top: 50%;
-              transform: translateY(-50%);
-              color: #aaa;
-            "
-          ></i>
-          <input
-            type="text"
-            id="otherPayerFilter"
-            class="form-control"
-            placeholder="Filter by payer..."
-            onkeyup="filterOtherExpenses()"
+            placeholder="Search all columns..."
+            onkeydown="if (event.key === 'Enter') filterOtherExpenses();"
             style="
               padding-left: 35px;
               border-radius: 20px;
@@ -279,13 +231,37 @@
           />
         </div>
         <button
+          onclick="filterOtherExpenses()"
+          class="btn-secondary"
+          style="
+            border-radius: 20px;
+            font-size: 0.9rem;
+            padding: 8px 18px;
+            cursor: pointer;
+          "
+        >
+          <i class="fas fa-search"></i> Search
+        </button>
+        <button
+          onclick="resetOtherExpenses()"
+          class="btn-secondary"
+          style="
+            border-radius: 20px;
+            font-size: 0.9rem;
+            padding: 8px 18px;
+            cursor: pointer;
+          "
+        >
+          <i class="fas fa-undo"></i> Reset
+        </button>
+        <button
           onclick="loadOtherExpenses()"
           class="btn-secondary"
           style="
             border-radius: 20px;
             font-size: 0.9rem;
             padding: 8px 15px;
-            background-color: #717384;
+            cursor: pointer;
           "
         >
           <i class="fas fa-sync-alt"></i> Refresh Data

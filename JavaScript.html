@@ -533,32 +533,25 @@
     }
 
     window.filterExpenses = function () {
-      const clientInput = document.getElementById("expenseClientFilter");
-      const modelInput = document.getElementById("expenseCarModelFilter");
-      const idInput = document.getElementById("expenseCarIdFilter");
+      const input = document.getElementById("expenseSearchInput");
+      const term = input ? input.value.toLowerCase().trim() : "";
 
-      const clientTerm = clientInput
-        ? clientInput.value.toLowerCase().trim()
-        : "";
-      const modelTerm = modelInput ? modelInput.value.toLowerCase().trim() : "";
-      const idTerm = idInput ? idInput.value.toLowerCase().trim() : "";
-
-      if (!clientTerm && !modelTerm && !idTerm) {
+      if (!term) {
         renderExpensesTable(cachedExpenses);
       } else {
         const filtered = cachedExpenses.filter((exp) => {
-          const clientName = exp["Client Name"] || exp["CLIENT NAME"] || "";
-          const carModel = exp["CAR MODEL"] || "";
-          const carId = exp["CAR ID"] || "";
-
-          const matchesClient = clientName.toLowerCase().includes(clientTerm);
-          const matchesModel = carModel.toLowerCase().includes(modelTerm);
-          const matchesId = carId.toString().toLowerCase().includes(idTerm);
-
-          return matchesClient && matchesModel && matchesId;
+          return Object.values(exp).some((val) =>
+            String(val).toLowerCase().includes(term),
+          );
         });
         renderExpensesTable(filtered);
       }
+    };
+
+    window.resetExpenses = function () {
+      const input = document.getElementById("expenseSearchInput");
+      if (input) input.value = "";
+      renderExpensesTable(cachedExpenses);
     };
 
     // =============================================
@@ -870,43 +863,25 @@
     };
 
     window.filterWfmExpenses = function () {
-      const nameInput = document.getElementById("wfmNameFilter");
-      const dateInput = document.getElementById("wfmDateFilter");
-      const payerInput = document.getElementById("wfmPayerFilter");
+      const input = document.getElementById("wfmSearchInput");
+      const term = input ? input.value.toLowerCase().trim() : "";
 
-      const nameTerm = nameInput ? nameInput.value.toLowerCase().trim() : "";
-      const dateTerm = dateInput ? dateInput.value.trim() : "";
-      const payerTerm = payerInput ? payerInput.value.toLowerCase().trim() : "";
-
-      if (!nameTerm && !dateTerm && !payerTerm) {
+      if (!term) {
         renderWfmExpensesTable(cachedWfmExpenses);
       } else {
         const filtered = cachedWfmExpenses.filter((exp) => {
-          const details = exp["DETAILS"] || "";
-          const paidBy = exp["PAID BY"] || "";
-          const expDate = exp["DATE"] || "";
-
-          const matchesName = details.toLowerCase().includes(nameTerm);
-          const matchesPayer = paidBy.toLowerCase().includes(payerTerm);
-
-          let matchesDate = true;
-          if (dateTerm) {
-            let formattedExpDate = "";
-            try {
-              let d = new Date(expDate);
-              if (!isNaN(d.getTime())) {
-                formattedExpDate = d.toISOString().split("T")[0];
-              }
-            } catch (e) {}
-
-            matchesDate =
-              formattedExpDate === dateTerm || expDate.includes(dateTerm);
-          }
-
-          return matchesName && matchesPayer && matchesDate;
+          return Object.values(exp).some((val) =>
+            String(val).toLowerCase().includes(term),
+          );
         });
         renderWfmExpensesTable(filtered);
       }
+    };
+
+    window.resetWfmExpenses = function () {
+      const input = document.getElementById("wfmSearchInput");
+      if (input) input.value = "";
+      renderWfmExpensesTable(cachedWfmExpenses);
     };
 
     // =============================================
@@ -1215,43 +1190,25 @@
     };
 
     window.filterOtherExpenses = function () {
-      const nameInput = document.getElementById("otherNameFilter");
-      const dateInput = document.getElementById("otherDateFilter");
-      const payerInput = document.getElementById("otherPayerFilter");
+      const input = document.getElementById("otherSearchInput");
+      const term = input ? input.value.toLowerCase().trim() : "";
 
-      const nameTerm = nameInput ? nameInput.value.toLowerCase().trim() : "";
-      const dateTerm = dateInput ? dateInput.value.trim() : "";
-      const payerTerm = payerInput ? payerInput.value.toLowerCase().trim() : "";
-
-      if (!nameTerm && !dateTerm && !payerTerm) {
+      if (!term) {
         renderOtherExpensesTable(cachedOtherExpenses);
       } else {
         const filtered = cachedOtherExpenses.filter((exp) => {
-          const details = exp["DETAILS"] || "";
-          const paidBy = exp["PAID BY"] || "";
-          const expDate = exp["DATE"] || "";
-
-          const matchesName = details.toLowerCase().includes(nameTerm);
-          const matchesPayer = paidBy.toLowerCase().includes(payerTerm);
-
-          let matchesDate = true;
-          if (dateTerm) {
-            let formattedExpDate = "";
-            try {
-              let d = new Date(expDate);
-              if (!isNaN(d.getTime())) {
-                formattedExpDate = d.toISOString().split("T")[0];
-              }
-            } catch (e) {}
-
-            matchesDate =
-              formattedExpDate === dateTerm || expDate.includes(dateTerm);
-          }
-
-          return matchesName && matchesPayer && matchesDate;
+          return Object.values(exp).some((val) =>
+            String(val).toLowerCase().includes(term),
+          );
         });
         renderOtherExpensesTable(filtered);
       }
+    };
+
+    window.resetOtherExpenses = function () {
+      const input = document.getElementById("otherSearchInput");
+      if (input) input.value = "";
+      renderOtherExpensesTable(cachedOtherExpenses);
     };
 
     // File input UX changes
@@ -4217,32 +4174,25 @@
     }
 
     window.filterPayments = function () {
-      const clientInput = document.getElementById("paymentClientFilter");
-      const modelInput = document.getElementById("paymentCarModelFilter");
-      const idInput = document.getElementById("paymentCarIdFilter");
+      const input = document.getElementById("paymentSearchInput");
+      const term = input ? input.value.toLowerCase().trim() : "";
 
-      const clientTerm = clientInput
-        ? clientInput.value.toLowerCase().trim()
-        : "";
-      const modelTerm = modelInput ? modelInput.value.toLowerCase().trim() : "";
-      const idTerm = idInput ? idInput.value.toLowerCase().trim() : "";
-
-      if (!clientTerm && !modelTerm && !idTerm) {
+      if (!term) {
         renderPaymentsTable(cachedPayments);
       } else {
         const filtered = cachedPayments.filter((pay) => {
-          const clientName = pay["Client Name"] || pay["CLIENT NAME"] || "";
-          const carModel = pay["CAR MODEL"] || "";
-          const carId = pay["CAR ID"] || "";
-
-          const matchesClient = clientName.toLowerCase().includes(clientTerm);
-          const matchesModel = carModel.toLowerCase().includes(modelTerm);
-          const matchesId = carId.toString().toLowerCase().includes(idTerm);
-
-          return matchesClient && matchesModel && matchesId;
+          return Object.values(pay).some((val) =>
+            String(val).toLowerCase().includes(term),
+          );
         });
         renderPaymentsTable(filtered);
       }
+    };
+
+    window.resetPayments = function () {
+      const input = document.getElementById("paymentSearchInput");
+      if (input) input.value = "";
+      renderPaymentsTable(cachedPayments);
     };
 
     // =============================================
