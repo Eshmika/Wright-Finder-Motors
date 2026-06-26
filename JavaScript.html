@@ -2262,7 +2262,7 @@
                 "Loan Active": "#7F1D1D",
               };
               const textColor = finColors[val] || "#3a3b45";
-              inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed; color: ${textColor}; font-weight: bold;">`;
+              inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed; color: ${textColor} !important; font-weight: bold;">`;
             } else if (key === "Status") {
               const statusColors = {
                 Available: "#22C55E",
@@ -2748,10 +2748,10 @@
       if (fsField && downPayment > 0) {
         if (remainLoan <= 0) {
           fsField.value = "Paid off";
-          fsField.style.color = "#0033A0";
+          fsField.style.setProperty("color", "#0033A0", "important");
         } else {
           fsField.value = "Loan Active";
-          fsField.style.color = "#7F1D1D";
+          fsField.style.setProperty("color", "#7F1D1D", "important");
         }
       }
 
