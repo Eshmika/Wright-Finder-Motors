@@ -4279,12 +4279,10 @@
       const pageSlice = filtered.slice(startIndex, endIndex);
 
       // Update pagination DOM
-      const startEl = document.getElementById("commPageStart");
-      const endEl = document.getElementById("commPageEnd");
-      const totalEl = document.getElementById("commTotalRecords");
-      if (startEl) startEl.innerText = totalRecords === 0 ? 0 : startIndex + 1;
-      if (endEl) endEl.innerText = endIndex;
-      if (totalEl) totalEl.innerText = totalRecords;
+      const infoEl = document.getElementById("commPaginationInfo");
+      if (infoEl) {
+        infoEl.innerText = `Showing ${totalRecords === 0 ? 0 : startIndex + 1} to ${endIndex} of ${totalRecords} entries`;
+      }
 
       const prevBtn = document.getElementById("commPrevBtn");
       const nextBtn = document.getElementById("commNextBtn");
@@ -4441,6 +4439,13 @@
     };
 
     window.filterCommunicationTable = function () {
+      commCurrentPage = 1;
+      window.renderCommunicationTable();
+    };
+
+    window.resetCommunicationTable = function () {
+      const searchInput = document.getElementById("commSearchInput");
+      if (searchInput) searchInput.value = "";
       commCurrentPage = 1;
       window.renderCommunicationTable();
     };
@@ -4865,6 +4870,13 @@
     };
 
     window.filterDocReqTable = function () {
+      docReqCurrentPage = 1;
+      window.renderDocReqTable();
+    };
+
+    window.resetDocReqTable = function () {
+      const searchInput = document.getElementById("docReqSearchInput");
+      if (searchInput) searchInput.value = "";
       docReqCurrentPage = 1;
       window.renderDocReqTable();
     };
