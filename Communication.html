@@ -1,5 +1,5 @@
-<!-- Communication View -->
-<div id="view-communication" class="view">
+<!-- Loan Agreement View -->
+<div id="view-loan-agreement" class="view">
   <div
     class="creative-expenses-header"
     style="background: linear-gradient(135deg, #2c1a4d 0%, #512b81 100%)"
@@ -8,8 +8,8 @@
     <div class="bg-shape shape2"></div>
     <div class="expenses-header-content">
       <h1>
-        <i class="fas fa-envelope-open-text"></i>
-        Client Communications
+        <i class="fas fa-file-contract"></i>
+        Loan Agreement Dispatcher
       </h1>
       <p>
         Manage purchasing agreements and email notifications to loan clients.
@@ -98,68 +98,50 @@
         gap: 15px;
       "
     >
-      <div
-        class="pagination-info"
-        style="font-size: 0.9rem; color: #858796; font-weight: 500"
+      <span id="commPaginationInfo" style="font-size: 0.9rem; color: #858796"
+        >Showing page 1 of 1</span
       >
-        Showing
-        <span id="commPageStart" style="font-weight: 700; color: #2c3e50"
-          >0</span
-        >
-        to
-        <span id="commPageEnd" style="font-weight: 700; color: #2c3e50">0</span>
-        of
-        <span id="commTotalRecords" style="font-weight: 700; color: #2c3e50"
-          >0</span
-        >
-        entries
-      </div>
-      <div
-        class="pagination-buttons"
-        style="display: flex; gap: 8px; align-items: center"
-      >
+      <div style="display: flex; gap: 5px">
         <button
           id="commPrevBtn"
           class="action-btn"
           onclick="changeCommPage(-1)"
           style="
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
             background: #eaecf4;
             color: #858796;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             font-weight: 600;
-            transition: all 0.2s;
           "
         >
-          <i class="fas fa-chevron-left"></i> Previous
+          <i class="fas fa-chevron-left"></i> Prev
         </button>
         <div
           id="commPageNumbers"
-          style="display: flex; gap: 6px; align-items: center"
+          style="display: flex; gap: 4px; align-items: center"
         ></div>
         <button
           id="commNextBtn"
           class="action-btn"
           onclick="changeCommPage(1)"
           style="
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
             background: #eaecf4;
             color: #858796;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             font-weight: 600;
-            transition: all 0.2s;
           "
         >
           Next <i class="fas fa-chevron-right"></i>
@@ -167,8 +149,28 @@
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Document Request Portal Card -->
+<!-- Inbox Chat View -->
+<div id="view-inbox-chat" class="view">
+  <div
+    class="creative-expenses-header"
+    style="background: linear-gradient(135deg, #2c1a4d 0%, #512b81 100%)"
+  >
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
+    <div class="expenses-header-content">
+      <h1>
+        <i class="fas fa-envelope-open-text"></i>
+        Inbox Chat
+      </h1>
+      <p>
+        Request files from clients and view uploaded documents in real-time.
+      </p>
+    </div>
+  </div>
+
+  <!-- Inbox Chat Portal Card -->
   <div class="expenses-card" style="margin-top: 30px">
     <div
       class="expenses-card-header"
@@ -184,7 +186,7 @@
         <span class="icon-square" style="background: #ece8f6; color: #512b81">
           <i class="fas fa-file-export"></i>
         </span>
-        Document Request Manager
+        Inbox Chat
       </h3>
       <p style="color: gray; font-size: 0.9rem; margin: 0">
         Request files from clients and view uploaded documents in real-time.

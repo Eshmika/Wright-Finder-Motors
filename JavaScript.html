@@ -136,8 +136,12 @@
             else if (targetView === "other-expenses") {
               initOtherExpensesView();
             }
-            // If Communication is opened, load communication view
-            else if (targetView === "communication") {
+            // If Loan Agreement or Inbox Chat is opened, load data
+            else if (
+              targetView === "loan-agreement" ||
+              targetView === "inbox-chat" ||
+              targetView === "communication"
+            ) {
               initCommunicationView();
             }
             // If Add New Car is opened, load car list
