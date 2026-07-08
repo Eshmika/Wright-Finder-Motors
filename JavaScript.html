@@ -2011,6 +2011,17 @@
           keys: ["Trade Value", "Trade In", "Comment"],
         },
         {
+          title: "Purchase Details",
+          icon: "fa-shopping-basket",
+          keys: [
+            "Seller Name",
+            "Acquisition Date",
+            "Purchase Price",
+            "Private Notes",
+            "Purchased Car Name",
+          ],
+        },
+        {
           title: "Power & Performance",
           icon: "fa-bolt",
           keys: [
@@ -2080,17 +2091,8 @@
             "REMAIN LOAN",
             "Dispatcher Price",
             "TRANSPORT FEES",
-          ],
-        },
-        {
-          title: "Purchase Details",
-          icon: "fa-shopping-basket",
-          keys: [
-            "Seller Name",
-            "Acquisition Date",
-            "Purchase Price",
-            "Private Notes",
-            "Purchased Car Name",
+            "Trade Value",
+            "Trade In",
           ],
         },
         {
@@ -2654,8 +2656,8 @@
       const isLinked = isTrade && linkSwitch && linkSwitch.checked;
 
       // When linked, lock the Trade Value field to indicate it will be applied to purchased vehicle
-      const tradeValEl = form.querySelector('[name="Trade Value"]');
-      if (tradeValEl) {
+      const tradeValEls = form.querySelectorAll('[name="Trade Value"]');
+      tradeValEls.forEach((tradeValEl) => {
         if (isLinked) {
           tradeValEl.classList.add("readonly-locked");
           tradeValEl.title =
@@ -2664,7 +2666,7 @@
           tradeValEl.classList.remove("readonly-locked");
           tradeValEl.title = "";
         }
-      }
+      });
 
       const parseMoneyLocal = (val) => {
         if (!val) return 0;
@@ -2776,6 +2778,26 @@
 
     const carEditForm = document.getElementById("carEditForm");
     if (carEditForm) {
+      // Auto-sync duplicate input fields (e.g., Trade Value, Trade In)
+      const syncDuplicateFields = (e) => {
+        if (e.target && e.target.name) {
+          const name = e.target.name;
+          const dups = carEditForm.querySelectorAll(`[name="${name}"]`);
+          if (dups.length > 1) {
+            dups.forEach((el) => {
+              if (el !== e.target) {
+                el.value = e.target.value;
+              }
+            });
+            if (typeof window.recalculateEditFormFinancials === "function") {
+              window.recalculateEditFormFinancials();
+            }
+          }
+        }
+      };
+      carEditForm.addEventListener("input", syncDuplicateFields);
+      carEditForm.addEventListener("change", syncDuplicateFields);
+
       carEditForm.onsubmit = async function (e) {
         e.preventDefault();
         const btn = carEditForm.querySelector('button[type="submit"]');
