@@ -287,250 +287,250 @@
             <!-- Sub images will be loaded here -->
           </div>
         </div>
+      </div>
 
-        <!-- Vehicle Expense History Section -->
-        <div
-          class="spec-card"
-          id="carExpensesHistoryCard"
+      <!-- Vehicle Expense History Section -->
+      <div
+        class="spec-card"
+        id="carExpensesHistoryCard"
+        style="
+          margin-top: 25px;
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 25px;
+          border: 1px solid #edf2f9;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        "
+      >
+        <h4
           style="
-            margin-top: 25px;
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #edf2f9;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f3f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
           "
         >
-          <h4
+          <span
+            class="icon-wrap"
             style="
-              font-size: 1.2rem;
-              color: var(--dark);
-              margin-bottom: 20px;
-              padding-bottom: 12px;
-              border-bottom: 2px solid #f1f3f9;
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            "
-          >
-            <span
-              class="icon-wrap"
-              style="
-                background: rgba(255, 105, 180, 0.1);
-                color: #ff69b4;
-                width: 32px;
-                height: 32px;
-                border-radius: 8px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-              "
-              ><i class="fas fa-file-invoice-dollar"></i
-            ></span>
-            Vehicle Expense History
-          </h4>
-          <div
-            class="table-responsive"
-            style="
+              background: rgba(255, 105, 180, 0.1);
+              color: #ff69b4;
+              width: 32px;
+              height: 32px;
               border-radius: 8px;
-              overflow: hidden;
-              border: 1px solid #eaecf4;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
             "
+            ><i class="fas fa-file-invoice-dollar"></i
+          ></span>
+          Vehicle Expense History
+        </h4>
+        <div
+          class="table-responsive"
+          style="
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #eaecf4;
+          "
+        >
+          <table
+            class="creative-table"
+            style="width: 100%; border-collapse: collapse"
           >
-            <table
-              class="creative-table"
-              style="width: 100%; border-collapse: collapse"
-            >
-              <thead>
-                <tr style="background: #f8f9fc">
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Date
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Description
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Paid By
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: right;
-                    "
-                  >
-                    Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="carExpensesHistoryTableBody">
-                <tr>
-                  <td
-                    colspan="4"
-                    class="text-center"
-                    style="padding: 25px; color: #858796"
-                  >
-                    <i class="fas fa-spinner fa-spin mr-2"></i> Loading
-                    expenses...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <thead>
+              <tr style="background: #f8f9fc">
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Date
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Description
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Paid By
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: right;
+                  "
+                >
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody id="carExpensesHistoryTableBody">
+              <tr>
+                <td
+                  colspan="4"
+                  class="text-center"
+                  style="padding: 25px; color: #858796"
+                >
+                  <i class="fas fa-spinner fa-spin mr-2"></i> Loading
+                  expenses...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        <!-- Vehicle Payments History Section -->
-        <div
-          class="spec-card"
-          id="carPaymentsHistoryCard"
+      <!-- Vehicle Payments History Section -->
+      <div
+        class="spec-card"
+        id="carPaymentsHistoryCard"
+        style="
+          margin-top: 25px;
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 25px;
+          border: 1px solid #edf2f9;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        "
+      >
+        <h4
           style="
-            margin-top: 25px;
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #edf2f9;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f3f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
           "
         >
-          <h4
+          <span
+            class="icon-wrap"
             style="
-              font-size: 1.2rem;
-              color: var(--dark);
-              margin-bottom: 20px;
-              padding-bottom: 12px;
-              border-bottom: 2px solid #f1f3f9;
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            "
-          >
-            <span
-              class="icon-wrap"
-              style="
-                background: rgba(28, 200, 138, 0.1);
-                color: #1cc88a;
-                width: 32px;
-                height: 32px;
-                border-radius: 8px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-              "
-              ><i class="fas fa-hand-holding-usd"></i
-            ></span>
-            Vehicle Payments History
-          </h4>
-          <div
-            class="table-responsive"
-            style="
+              background: rgba(28, 200, 138, 0.1);
+              color: #1cc88a;
+              width: 32px;
+              height: 32px;
               border-radius: 8px;
-              overflow: hidden;
-              border: 1px solid #eaecf4;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
             "
+            ><i class="fas fa-hand-holding-usd"></i
+          ></span>
+          Vehicle Payments History
+        </h4>
+        <div
+          class="table-responsive"
+          style="
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #eaecf4;
+          "
+        >
+          <table
+            class="creative-table"
+            style="width: 100%; border-collapse: collapse"
           >
-            <table
-              class="creative-table"
-              style="width: 100%; border-collapse: collapse"
-            >
-              <thead>
-                <tr style="background: #f8f9fc">
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Date
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Client Name
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Option
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: left;
-                    "
-                  >
-                    Notes
-                  </th>
-                  <th
-                    style="
-                      padding: 12px 15px;
-                      font-size: 0.8rem;
-                      text-transform: uppercase;
-                      color: #858796;
-                      text-align: right;
-                    "
-                  >
-                    Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="carPaymentsHistoryTableBody">
-                <tr>
-                  <td
-                    colspan="5"
-                    class="text-center"
-                    style="padding: 25px; color: #858796"
-                  >
-                    <i class="fas fa-spinner fa-spin mr-2"></i> Loading
-                    payments...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <thead>
+              <tr style="background: #f8f9fc">
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Date
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Client Name
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Option
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: left;
+                  "
+                >
+                  Notes
+                </th>
+                <th
+                  style="
+                    padding: 12px 15px;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    color: #858796;
+                    text-align: right;
+                  "
+                >
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody id="carPaymentsHistoryTableBody">
+              <tr>
+                <td
+                  colspan="5"
+                  class="text-center"
+                  style="padding: 25px; color: #858796"
+                >
+                  <i class="fas fa-spinner fa-spin mr-2"></i> Loading
+                  payments...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
