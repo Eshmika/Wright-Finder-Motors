@@ -308,18 +308,10 @@ function updateVehicleData(updatedData) {
         }
       }
 
-      // Handle Trade: apply down payment to purchased vehicle and mark as Sold
-      var sourceType = updatedData["Source Type"] || "";
-      var useAsDp = updatedData["tradeUseAsDownPayment"] || "";
+      // Handle Trade: Mark selected inventory vehicle as Sold
       var purchasedCarName = updatedData["Purchased Car Name"] || "";
-      var tradeValue = updatedData["Trade Value"] || "";
-
-      if (sourceType === "Trade" && purchasedCarName) {
-        if (useAsDp === "true" && tradeValue) {
-          applyTradeDownPayment(purchasedCarName, tradeValue);
-        } else {
-          markCarAsSold(purchasedCarName);
-        }
+      if (purchasedCarName) {
+        markCarAsSold(purchasedCarName);
       }
 
       return "Success";
@@ -976,6 +968,7 @@ function getAvailableCarsForTrade(excludeCarId) {
   var modelIndex = headers.indexOf("Model");
   var yearIndex = headers.indexOf("Year");
   var statusIndex = headers.indexOf("Status");
+  var purchasePriceIndex = headers.indexOf("Purchase Price");
 
   if (carIdIndex === -1) return [];
 
@@ -998,6 +991,8 @@ function getAvailableCarsForTrade(excludeCarId) {
         carName: carName,
         model: model,
         year: year,
+        purchasePrice:
+          purchasePriceIndex !== -1 ? data[i][purchasePriceIndex] : "",
       });
     }
   }

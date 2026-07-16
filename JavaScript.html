@@ -2368,7 +2368,9 @@
                              ? "Transport Fees"
                              : key === "Purchased Car Name"
                                ? "Search from Inventory"
-                               : key
+                               : key === "Trade In"
+                                 ? "Add more money"
+                                 : key
                }</label>
                ${inputHtml}
             </div>
@@ -2612,6 +2614,13 @@
       // Load available cars for Purchased Car Name dropdown
       var purchasedCarSelect = document.getElementById("editPurchasedCarName");
       if (purchasedCarSelect) {
+        if (!purchasedCarSelect.hasChangeListener) {
+          purchasedCarSelect.addEventListener(
+            "change",
+            updateEditFormCalculations,
+          );
+          purchasedCarSelect.hasChangeListener = true;
+        }
         google.script.run
           .withSuccessHandler(function (cars) {
             var currentVal = currentEditableCar["Purchased Car Name"] || "";
@@ -2622,6 +2631,10 @@
                 var option = document.createElement("option");
                 option.value = car.carId;
                 option.textContent = car.displayName;
+                option.setAttribute(
+                  "data-purchase-price",
+                  car.purchasePrice || 0,
+                );
                 if (car.carId === currentVal) option.selected = true;
                 purchasedCarSelect.appendChild(option);
               });
@@ -2636,9 +2649,15 @@
               var option = document.createElement("option");
               option.value = currentVal;
               option.textContent = currentVal;
+              option.setAttribute(
+                "data-purchase-price",
+                currentEditableCar["Trade Value"] || 0,
+              );
               option.selected = true;
               purchasedCarSelect.appendChild(option);
             }
+            // Force calculations refresh to apply lock on load
+            updateEditFormCalculations();
           })
           .getAvailableCarsForTrade(currentEditableCar["Car ID"] || "");
       }
@@ -2670,38 +2689,85 @@
       const form = document.getElementById("carEditForm");
       if (!form) return;
 
-      const sourceType = form.querySelector('[name="Source Type"]')?.value;
-      const isTrade = sourceType === "Trade";
-      const linkSwitch = document.getElementById("tradeLinkDpSwitch");
-      const isLinked = isTrade && linkSwitch && linkSwitch.checked;
-
-      // When linked, lock the Trade Value field to indicate it will be applied to purchased vehicle
-      const tradeValEls = form.querySelectorAll('[name="Trade Value"]');
-      tradeValEls.forEach((tradeValEl) => {
-        if (isLinked) {
-          tradeValEl.classList.add("readonly-locked");
-          tradeValEl.title =
-            "This value will be applied as DOWN PAYMENT to the selected Purchased Vehicle";
-        } else {
-          tradeValEl.classList.remove("readonly-locked");
-          tradeValEl.title = "";
-        }
-      });
-
       const parseMoneyLocal = (val) => {
         if (!val) return 0;
         let p = parseFloat(String(val).replace(/[^0-9.-]+/g, ""));
         return isNaN(p) ? 0 : p;
       };
 
+      const sourceType = form.querySelector('[name="Source Type"]')?.value;
+      const isTrade = sourceType === "Trade";
+      const linkSwitch = document.getElementById("tradeLinkDpSwitch");
+      const isLinked = linkSwitch && linkSwitch.checked;
+
+      // Check if a car is selected from "Search from Inventory" (Purchased Car Name)
+      const purchasedCarSelect = form.querySelector(
+        '[name="Purchased Car Name"]',
+      );
+      const isInventorySelected =
+        purchasedCarSelect &&
+        purchasedCarSelect.value &&
+        purchasedCarSelect.value.trim() !== "";
+      let inventoryPurchasePrice = 0;
+      if (isInventorySelected && purchasedCarSelect.selectedIndex >= 0) {
+        const selectedOpt =
+          purchasedCarSelect.options[purchasedCarSelect.selectedIndex];
+        if (selectedOpt) {
+          inventoryPurchasePrice =
+            parseFloat(selectedOpt.getAttribute("data-purchase-price")) || 0;
+        }
+      }
+
+      // Update Trade Value input value and read-only state
+      const tradeValEls = form.querySelectorAll('[name="Trade Value"]');
+      tradeValEls.forEach((tradeValEl) => {
+        if (isInventorySelected) {
+          tradeValEl.value = inventoryPurchasePrice.toFixed(2);
+          tradeValEl.readOnly = true;
+          tradeValEl.classList.add("readonly-locked");
+          tradeValEl.title =
+            "This value is locked to the Purchase Price of the selected inventory vehicle";
+        } else {
+          // If not selected from inventory, check if it's locked because it's linked as DP
+          if (isLinked) {
+            tradeValEl.readOnly = true;
+            tradeValEl.classList.add("readonly-locked");
+            tradeValEl.title =
+              "This value is locked because it is applied as DOWN PAYMENT";
+          } else {
+            tradeValEl.readOnly = false;
+            tradeValEl.classList.remove("readonly-locked");
+            tradeValEl.title = "";
+          }
+        }
+      });
+
+      const tradeValue = parseMoneyLocal(
+        form.querySelector('[name="Trade Value"]')?.value,
+      );
+      const tradeIn = parseMoneyLocal(
+        form.querySelector('[name="Trade In"]')?.value,
+      );
+
+      // Handle Down Payment auto calculation when Use as Down Payment toggle is on
+      const dpField = form.querySelector('[name="DOWN PAYMENT"]');
+      if (dpField) {
+        if (isLinked) {
+          const calculatedDP = tradeValue + tradeIn;
+          dpField.value = calculatedDP.toFixed(2);
+          dpField.readOnly = true;
+          dpField.classList.add("readonly-locked");
+        } else {
+          dpField.readOnly = false;
+          dpField.classList.remove("readonly-locked");
+        }
+      }
+
       const iaaiTotal = parseMoneyLocal(
         form.querySelector('[name="IAAI TOTAL PRICE W/ FEES"]')?.value,
       );
       const purchasePrice = parseMoneyLocal(
         form.querySelector('[name="Purchase Price"]')?.value,
-      );
-      const tradeValue = parseMoneyLocal(
-        form.querySelector('[name="Trade Value"]')?.value,
       );
       const papePrice = parseMoneyLocal(
         form.querySelector('[name="PAPE PRICE"]')?.value,
@@ -3682,7 +3748,7 @@
           "#6B7280",
         );
         tradeHtml += createSpecItem(
-          "Trade In",
+          "Add more money",
           car["Trade In"],
           "fa-car-side",
           "#6B7280",
