@@ -2089,6 +2089,7 @@
             "Tax Amount",
             "Price on title",
             "REMAIN LOAN",
+            "OVERPAYMENT",
             "Dispatcher Price",
             "TRANSPORT FEES",
             "Trade Value",
@@ -2124,6 +2125,7 @@
           "TOTAL COST",
           "LOAN AMOUNT",
           "REMAIN LOAN",
+          "OVERPAYMENT",
           "PROFIT",
           "Trade Value",
           "Trade In",
@@ -2157,6 +2159,7 @@
             bg: "rgba(119, 136, 158, 0.08)",
           },
           "REMAIN LOAN": { color: "black", bg: "rgba(0, 0, 0, 0.08)" },
+          OVERPAYMENT: { color: "#10B981", bg: "rgba(16, 185, 129, 0.1)" },
           "Dispatcher Price": {
             color: "#6B7280",
             bg: "rgba(107, 114, 128, 0.08)",
@@ -2274,6 +2277,7 @@
             key === "TOTAL COST" ||
             key === "LOAN AMOUNT" ||
             key === "REMAIN LOAN" ||
+            key === "OVERPAYMENT" ||
             key === "PROFIT"
           ) {
             inputHtml = `
@@ -2281,6 +2285,9 @@
                 <input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="${customStyle}">
                 <i class="fas fa-dollar-sign" style="${iconStyle}"></i>
               </div>`;
+            if (key === "OVERPAYMENT") {
+              inputHtml += `<div id="editFormNewProfitCalc" style="font-size: 0.75rem; font-weight: 600; color: #047857; margin-top: 4px;">New Profit = PROFIT + Overpayment</div>`;
+            }
           } else if (key === "Trade Value") {
             const cleanTradeVal =
               parseFloat(String(val || "").replace(/[^0-9.-]+/g, "")) || 0;
@@ -2745,7 +2752,34 @@
       if (laField) laField.value = loanAmount.toFixed(2);
 
       const rlField = form.querySelector('[name="REMAIN LOAN"]');
-      if (rlField) rlField.value = remainLoan.toFixed(2);
+      if (rlField)
+        rlField.value =
+          (remainLoan < 0 ? "-" : "") + Math.abs(remainLoan).toFixed(2);
+
+      const overpayment = remainLoan < 0 ? Math.abs(remainLoan) : 0;
+      const opField = form.querySelector('[name="OVERPAYMENT"]');
+      if (opField) {
+        opField.value = overpayment.toFixed(2);
+        const opGroup = opField.closest(".input-group");
+        if (opGroup) {
+          if (overpayment > 0) {
+            opGroup.style.display = "block";
+            const newProfit = profit + overpayment;
+            const formattedProfit =
+              (profit >= 0 ? "" : "-") + "$" + Math.abs(profit).toFixed(2);
+            const formattedNewProfit =
+              (newProfit >= 0 ? "" : "-") +
+              "$" +
+              Math.abs(newProfit).toFixed(2);
+            const calcLabel = document.getElementById("editFormNewProfitCalc");
+            if (calcLabel) {
+              calcLabel.innerHTML = `<span style="font-weight: 700; color: #047857;">New Profit = Profit (${formattedProfit}) + Overpayment ($${overpayment.toFixed(2)}) = ${formattedNewProfit}</span>`;
+            }
+          } else {
+            opGroup.style.display = "none";
+          }
+        }
+      }
 
       const pField = form.querySelector('[name="PROFIT"]');
       if (pField) {
@@ -3483,6 +3517,13 @@
             <div class="spec-label" style="color: black; font-size: 0.8rem; font-weight:700;"><i class="fas fa-balance-scale-right" style="margin-right:5px;"></i> REMAIN LOAN</div>
             <div class="spec-value" id="pageCarRemainLoan" style="color: black; font-size: 1.3em; font-weight: 800;" data-loan-amount="${loanAmount}"><i class="fas fa-spinner fa-spin"></i></div>
           </div>
+          
+          <!-- Overpayment Card -->
+          <div id="pageCarOverpaymentCard" class="spec-item-card" style="display: none; background: rgba(16, 185, 129, 0.1); border: 2px solid #10B981; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); transition: transform 0.2s ease, box-shadow 0.2s ease; flex-direction:column; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(16, 185, 129, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.2)';">
+            <div class="spec-label" style="color: #10B981; font-size: 0.8rem; font-weight:700;"><i class="fas fa-hand-holding-usd" style="margin-right:5px;"></i> OVERPAYMENT</div>
+            <div class="spec-value" id="pageCarOverpaymentValue" style="color: #10B981; font-size: 1.4em; font-weight: 800;">$0.00</div>
+            <div id="pageCarNewProfitLabel" style="color: #047857; font-size: 0.75rem; font-weight: 600; margin-top: 4px; border-top: 1px dashed rgba(16, 185, 129, 0.3); padding-top: 4px;"></div>
+          </div>
         `;
       }
 
@@ -3766,6 +3807,7 @@
                 car["SOLD PRICE"].toString().replace(/[^0-9.-]+/g, ""),
               ) || 0;
             let profit = soldPriceVal - finalTotalCost;
+            profitEl.setAttribute("data-base-profit", profit);
             let formattedProfit =
               (profit >= 0 ? "+$" : "-$") + Math.abs(profit).toFixed(2);
             profitEl.innerHTML = formattedProfit;
@@ -3780,6 +3822,12 @@
               parent.querySelector(".spec-label").innerHTML =
                 `<i class="fas fa-chart-line" style="transform: scaleY(-1);"></i> LOSS`;
             }
+          }
+
+          if (
+            typeof window.updateDetailsOverpaymentAndNewProfit === "function"
+          ) {
+            window.updateDetailsOverpaymentAndNewProfit();
           }
         })
         .withFailureHandler(function (e) {
@@ -3798,6 +3846,55 @@
         })
         .getExpensesForCar(car["Car ID"]);
 
+      // Define calculation helper for overpayment and new profit details
+      window.updateDetailsOverpaymentAndNewProfit = function () {
+        const remainEl = document.getElementById("pageCarRemainLoan");
+        const profitEl = document.getElementById("pageCarProfit");
+        const overpaymentCard = document.getElementById(
+          "pageCarOverpaymentCard",
+        );
+        const overpaymentValue = document.getElementById(
+          "pageCarOverpaymentValue",
+        );
+        const newProfitLabel = document.getElementById("pageCarNewProfitLabel");
+
+        if (!remainEl || !overpaymentCard) return;
+
+        const remain = parseFloat(remainEl.getAttribute("data-remain-loan"));
+        if (isNaN(remain)) return; // not loaded yet
+
+        if (remain < 0) {
+          const overpayment = Math.abs(remain);
+          overpaymentCard.style.display = "flex";
+          if (overpaymentValue) {
+            overpaymentValue.innerHTML = `$${overpayment.toFixed(2)}`;
+          }
+
+          // If profit is loaded, calculate new profit
+          if (profitEl && newProfitLabel) {
+            const baseProfit = parseFloat(
+              profitEl.getAttribute("data-base-profit"),
+            );
+            if (!isNaN(baseProfit)) {
+              const newProfit = baseProfit + overpayment;
+              const formattedBaseProfit =
+                (baseProfit >= 0 ? "" : "-") +
+                "$" +
+                Math.abs(baseProfit).toFixed(2);
+              const formattedNewProfit =
+                (newProfit >= 0 ? "" : "-") +
+                "$" +
+                Math.abs(newProfit).toFixed(2);
+              newProfitLabel.innerHTML = `New Profit = Profit (${formattedBaseProfit}) + Overpayment ($${overpayment.toFixed(2)}) = <span style="font-weight: 700; color: #047857;">${formattedNewProfit}</span>`;
+            } else {
+              newProfitLabel.innerHTML = `New Profit = PROFIT + Overpayment ($${overpayment.toFixed(2)})`;
+            }
+          }
+        } else {
+          overpaymentCard.style.display = "none";
+        }
+      };
+
       // Request total payments for this car specifically from the backend
       google.script.run
         .withSuccessHandler(function (totalPayments) {
@@ -3805,9 +3902,11 @@
           if (remainEl) {
             const loan =
               parseFloat(remainEl.getAttribute("data-loan-amount")) || 0;
-            const remain =
-              loan > 0 ? Math.max(0, loan - parseFloat(totalPayments || 0)) : 0;
-            remainEl.innerHTML = `$${remain.toFixed(2)}`;
+            const remain = loan > 0 ? loan - parseFloat(totalPayments || 0) : 0;
+
+            remainEl.innerHTML =
+              (remain < 0 ? "-" : "") + `$${Math.abs(remain).toFixed(2)}`;
+            remainEl.setAttribute("data-remain-loan", remain);
 
             const fsEl = document.getElementById("pageCarFinancingStatus");
             if (fsEl && loan > 0) {
@@ -3816,6 +3915,12 @@
               } else {
                 fsEl.textContent = "Loan Active";
               }
+            }
+
+            if (
+              typeof window.updateDetailsOverpaymentAndNewProfit === "function"
+            ) {
+              window.updateDetailsOverpaymentAndNewProfit();
             }
           }
         })
