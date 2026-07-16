@@ -24,6 +24,63 @@
     input.value = val;
   }
 
+  window.redirectToDataInputWithPrivatePartner = function () {
+    // Hide details view or modal if open
+    const viewCarDetails = document.getElementById("view-car-details");
+    if (viewCarDetails) {
+      viewCarDetails.classList.remove("active");
+    }
+
+    // Switch to data-input view
+    document
+      .querySelectorAll(".view")
+      .forEach((v) => v.classList.remove("active"));
+
+    const dataInputView = document.getElementById("view-data-input");
+    if (dataInputView) {
+      dataInputView.classList.add("active");
+    }
+
+    // Update topbar title
+    const topBarTitle = document.querySelector(".topbar h2");
+    if (topBarTitle) {
+      topBarTitle.textContent = "Data Input";
+    }
+
+    // Update active state in sidebar
+    document
+      .querySelectorAll(".nav-link")
+      .forEach((l) => l.classList.remove("active"));
+    document
+      .querySelectorAll(".sidebar li")
+      .forEach((li) => li.classList.remove("active"));
+    const dataInputLink = document.querySelector(
+      '.nav-link[data-view="data-input"]',
+    );
+    if (dataInputLink) {
+      dataInputLink.classList.add("active");
+      if (dataInputLink.closest(".submenu")) {
+        dataInputLink.closest(".has-submenu").classList.add("active");
+      } else {
+        dataInputLink.parentElement.classList.add("active");
+      }
+    }
+
+    // Set select option in data-input to Private/Partner
+    const selectEl = document.getElementById("dataInputSourceType");
+    if (selectEl) {
+      selectEl.value = "Private/Partner";
+      if (typeof window.toggleSourceFields === "function") {
+        window.toggleSourceFields();
+      }
+    }
+
+    // Initialize data input view
+    if (typeof window.initDataInputView === "function") {
+      window.initDataInputView();
+    }
+  };
+
   window.formatDateToET = function (dateVal) {
     if (!dateVal) return "-";
     try {
@@ -1920,7 +1977,7 @@
       const skippedKeys = ["Timestamp", "Main Image URLs", "Sub Image URLs"];
 
       const dropdownOptions = {
-        "Source Type": ["IAAI", "Private/Partner", "Trade"],
+        "Source Type": ["IAAI", "Private/Partner"],
         Status: ["Available", "Sold", "Pending"],
         "Financing status": ["Paid off", "Loan Active"],
         "Tax Responsibility": ["Client", "Company", "Split"],
@@ -2220,7 +2277,18 @@
           } else if (key === "Fuel Type") {
             inputHtml = `<select name="${key}" id="editFuelTypeSelect" class="form-control"><option value="">Select Fuel...</option></select>`;
           } else if (key === "Purchased Car Name") {
-            inputHtml = `<select name="${key}" id="editPurchasedCarName" class="form-control"><option value="">Select Available Vehicle...</option></select>`;
+            inputHtml = `
+              <div style="display: flex; gap: 10px; align-items: center; width: 100%;">
+                <div style="flex: 1;">
+                  <select name="${key}" id="editPurchasedCarName" class="form-control" style="width: 100%;">
+                    <option value="">Select Available Vehicle...</option>
+                  </select>
+                </div>
+                <button type="button" id="editPurchasedCarDataInputBtn" class="btn btn-secondary" onclick="window.redirectToDataInputWithPrivatePartner()" style="height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; transition: all 0.3s; font-weight: 600;">
+                  <i class="fas fa-keyboard"></i> Data Input
+                </button>
+              </div>
+            `;
           } else if (dropdownOptions[key]) {
             if (
               key === "Interior Color" ||
@@ -2369,8 +2437,10 @@
                              : key === "Purchased Car Name"
                                ? "Search from Inventory"
                                : key === "Trade In"
-                                 ? "Add more money"
-                                 : key
+                                 ? "Cash down"
+                                 : key === "Trade Value"
+                                   ? "Trade/ Purchase Price"
+                                   : key
                }</label>
                ${inputHtml}
             </div>
@@ -2715,6 +2785,26 @@
         if (selectedOpt) {
           inventoryPurchasePrice =
             parseFloat(selectedOpt.getAttribute("data-purchase-price")) || 0;
+        }
+      }
+
+      // Disable/enable Data Input button dynamically
+      const diBtn = document.getElementById("editPurchasedCarDataInputBtn");
+      if (diBtn) {
+        if (isInventorySelected) {
+          diBtn.disabled = true;
+          diBtn.style.opacity = "0.5";
+          diBtn.style.cursor = "not-allowed";
+          diBtn.style.backgroundColor = "#d1d3e2";
+          diBtn.style.borderColor = "#d1d3e2";
+          diBtn.style.color = "#858796";
+        } else {
+          diBtn.disabled = false;
+          diBtn.style.opacity = "1";
+          diBtn.style.cursor = "pointer";
+          diBtn.style.backgroundColor = "#6c757d";
+          diBtn.style.borderColor = "#6c757d";
+          diBtn.style.color = "#ffffff";
         }
       }
 
@@ -3706,7 +3796,7 @@
             "#6B7280",
           );
           purchaseDetailsHtml += createSpecItem(
-            "Trade Value",
+            "Trade/ Purchase Price",
             car["Trade Value"]
               ? car["Trade Value"].toString().startsWith("$")
                 ? car["Trade Value"]
@@ -3716,7 +3806,7 @@
             "#6B7280",
           );
           purchaseDetailsHtml += createSpecItem(
-            "Trade In Description",
+            "Cash down",
             car["Trade In"],
             "fa-car-side",
             "#6B7280",
@@ -3738,7 +3828,7 @@
       let tradeHtml = "";
       if (car["Trade status"] === "Trade") {
         tradeHtml += createSpecItem(
-          "Trade Value",
+          "Trade/ Purchase Price",
           car["Trade Value"]
             ? car["Trade Value"].toString().startsWith("$")
               ? car["Trade Value"]
@@ -3748,7 +3838,7 @@
           "#6B7280",
         );
         tradeHtml += createSpecItem(
-          "Add more money",
+          "Cash down",
           car["Trade In"],
           "fa-car-side",
           "#6B7280",
