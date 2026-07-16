@@ -2273,6 +2273,7 @@
               inputHtml = `<select name="${key}" class="form-control">${options}</select>`;
             }
           } else if (
+            key === "Discount" ||
             key === "All Materials Expenses" ||
             key === "TOTAL COST" ||
             key === "LOAN AMOUNT" ||
@@ -2749,6 +2750,14 @@
       const tcField = form.querySelector('[name="TOTAL COST"]');
       if (tcField) tcField.value = totalCost.toFixed(2);
 
+      const sellingPrice = parseMoneyLocal(
+        form.querySelector('[name="Price"]')?.value,
+      );
+      const discount =
+        soldPrice > 0 ? Math.max(0, sellingPrice - soldPrice) : 0;
+      const discField = form.querySelector('[name="Discount"]');
+      if (discField) discField.value = discount.toFixed(2);
+
       const laField = form.querySelector('[name="LOAN AMOUNT"]');
       if (laField) laField.value = loanAmount.toFixed(2);
 
@@ -2955,6 +2964,19 @@
     }
 
     function openCarModal(car) {
+      // Calculate Discount on the fly: Discount = Price (Selling Price) - SOLD PRICE
+      const detailSellingPrice =
+        parseFloat(String(car["Price"] || "").replace(/[^0-9.-]+/g, "")) || 0;
+      const detailSoldPrice =
+        parseFloat(String(car["SOLD PRICE"] || "").replace(/[^0-9.-]+/g, "")) ||
+        0;
+      const calculatedDiscount =
+        detailSoldPrice > 0
+          ? Math.max(0, detailSellingPrice - detailSoldPrice)
+          : 0;
+      car["Discount"] =
+        calculatedDiscount > 0 ? calculatedDiscount.toFixed(2) : "0";
+
       currentEditableCar = car;
       setEditMode(false);
 
