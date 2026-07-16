@@ -2366,7 +2366,9 @@
                            ? "Dispatcher Phone"
                            : key === "TRANSPORT FEES"
                              ? "Transport Fees"
-                             : key
+                             : key === "Purchased Car Name"
+                               ? "Search from Inventory"
+                               : key
                }</label>
                ${inputHtml}
             </div>
@@ -2522,13 +2524,17 @@
       };
 
       if (tradeStatusSelect) {
-        tradeStatusSelect.onchange = updateTradeVisibility;
+        tradeStatusSelect.onchange = function () {
+          updateTradeVisibility();
+          updateEditSourceTypeVisibility();
+        };
       }
 
-      // Show/Hide fields based on Source Type
+      // Show/Hide fields based on Source Type and Trade status
       const updateEditSourceTypeVisibility = () => {
         if (!sourceTypeSelect) return;
         const sourceType = sourceTypeSelect.value;
+        const tradeStatus = tradeStatusSelect ? tradeStatusSelect.value : "";
 
         // Define fields for each group
         const iaaiFields = [
@@ -2566,12 +2572,17 @@
         // Update visibility
         toggleFields(iaaiFields, sourceType === "IAAI");
         toggleFields(privateFields, sourceType === "Private/Partner");
-        toggleFields(tradeFields, sourceType === "Trade");
+        toggleFields(
+          tradeFields,
+          sourceType === "Trade" || tradeStatus === "Trade",
+        );
 
         const linkDpContainer = document.getElementById("tradeLinkDpContainer");
         if (linkDpContainer) {
           linkDpContainer.style.display =
-            sourceType === "Trade" ? "inline-flex" : "none";
+            sourceType === "Trade" || tradeStatus === "Trade"
+              ? "inline-flex"
+              : "none";
         }
 
         // Also update the trade category section visibility
