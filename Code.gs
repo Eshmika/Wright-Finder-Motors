@@ -985,6 +985,7 @@ function getAvailableCarsForTrade(excludeCarId) {
       cars.push({
         carId: carId,
         displayName:
+          (carId ? "#" + carId + " - " : "") +
           (year ? year + " " : "") +
           (carName ? carName + " " : "") +
           (model || ""),

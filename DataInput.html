@@ -1,11 +1,45 @@
 <div id="view-data-input" class="view form-view">
-  <div class="view-header">
-    <h1 class="view-title">
-      <i class="fas fa-keyboard title-icon"></i> Data Input
-    </h1>
-    <p class="view-subtitle">
-      Quickly input and save detailed vehicle data into the database.
-    </p>
+  <div
+    class="view-header"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    "
+  >
+    <div>
+      <h1 class="view-title">
+        <i class="fas fa-keyboard title-icon"></i> Data Input
+      </h1>
+      <p class="view-subtitle">
+        Quickly input and save detailed vehicle data into the database.
+      </p>
+    </div>
+    <button
+      id="dataInputBackBtn"
+      type="button"
+      class="btn btn-secondary"
+      onclick="window.goBackToCarEditForm()"
+      style="
+        display: none;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 700;
+        border-radius: 8px;
+        background: rgba(58, 31, 98, 0.1);
+        color: #3a1f62;
+        border: 1px solid rgba(58, 31, 98, 0.2);
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+      "
+    >
+      <i class="fas fa-arrow-left"></i> Back to Edit Form
+    </button>
   </div>
 
   <div class="spec-card info-card" style="margin-top: 20px">

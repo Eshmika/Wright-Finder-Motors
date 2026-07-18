@@ -24,61 +24,18 @@
     input.value = val;
   }
 
-  window.redirectToDataInputWithPrivatePartner = function () {
-    // Hide details view or modal if open
-    const viewCarDetails = document.getElementById("view-car-details");
-    if (viewCarDetails) {
-      viewCarDetails.classList.remove("active");
-    }
-
-    // Switch to data-input view
-    document
-      .querySelectorAll(".view")
-      .forEach((v) => v.classList.remove("active"));
-
-    const dataInputView = document.getElementById("view-data-input");
-    if (dataInputView) {
-      dataInputView.classList.add("active");
-    }
-
-    // Update topbar title
-    const topBarTitle = document.querySelector(".topbar h2");
-    if (topBarTitle) {
-      topBarTitle.textContent = "Data Input";
-    }
-
-    // Update active state in sidebar
-    document
-      .querySelectorAll(".nav-link")
-      .forEach((l) => l.classList.remove("active"));
-    document
-      .querySelectorAll(".sidebar li")
-      .forEach((li) => li.classList.remove("active"));
-    const dataInputLink = document.querySelector(
-      '.nav-link[data-view="data-input"]',
-    );
-    if (dataInputLink) {
-      dataInputLink.classList.add("active");
-      if (dataInputLink.closest(".submenu")) {
-        dataInputLink.closest(".has-submenu").classList.add("active");
-      } else {
-        dataInputLink.parentElement.classList.add("active");
-      }
-    }
-
-    // Set select option in data-input to Private/Partner
-    const selectEl = document.getElementById("dataInputSourceType");
-    if (selectEl) {
-      selectEl.value = "Private/Partner";
-      if (typeof window.toggleSourceFields === "function") {
-        window.toggleSourceFields();
-      }
-    }
-
-    // Initialize data input view
-    if (typeof window.initDataInputView === "function") {
-      window.initDataInputView();
-    }
+  window.formatCurrency = function (value) {
+    if (!value && value !== 0) return "$0";
+    const num =
+      typeof value === "string"
+        ? parseFloat(value.replace(/[^0-9.-]+/g, ""))
+        : value;
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(num);
   };
 
   window.formatDateToET = function (dateVal) {
@@ -185,6 +142,11 @@
           }
 
           topBarTitle.textContent = viewTitle;
+
+          // Hide back button and clear last editing car when navigating via sidebar
+          const backBtn = document.getElementById("dataInputBackBtn");
+          if (backBtn) backBtn.style.display = "none";
+          window.lastEditingCar = null;
 
           // Hide all views
           document
@@ -1936,6 +1898,117 @@
       btnCancelEdit.onclick = () => setEditMode(false);
     }
 
+    window.redirectToDataInputWithPrivatePartner = function () {
+      if (currentEditableCar) {
+        window.lastEditingCar = currentEditableCar;
+        const backBtn = document.getElementById("dataInputBackBtn");
+        if (backBtn) backBtn.style.display = "flex";
+      }
+
+      // Hide details view or modal if open
+      const viewCarDetails = document.getElementById("view-car-details");
+      if (viewCarDetails) {
+        viewCarDetails.classList.remove("active");
+      }
+
+      // Switch to data-input view
+      document
+        .querySelectorAll(".view")
+        .forEach((v) => v.classList.remove("active"));
+
+      const dataInputView = document.getElementById("view-data-input");
+      if (dataInputView) {
+        dataInputView.classList.add("active");
+      }
+
+      // Update topbar title
+      const topBarTitle = document.querySelector(".topbar h2");
+      if (topBarTitle) {
+        topBarTitle.textContent = "Data Input";
+      }
+
+      // Update active state in sidebar
+      document
+        .querySelectorAll(".nav-link")
+        .forEach((l) => l.classList.remove("active"));
+      document
+        .querySelectorAll(".sidebar li")
+        .forEach((li) => li.classList.remove("active"));
+      const dataInputLink = document.querySelector(
+        '.nav-link[data-view="data-input"]',
+      );
+      if (dataInputLink) {
+        dataInputLink.classList.add("active");
+        if (dataInputLink.closest(".submenu")) {
+          dataInputLink.closest(".has-submenu").classList.add("active");
+        } else {
+          dataInputLink.parentElement.classList.add("active");
+        }
+      }
+
+      // Set select option in data-input to Private/Partner
+      const selectEl = document.getElementById("dataInputSourceType");
+      if (selectEl) {
+        selectEl.value = "Private/Partner";
+        if (typeof window.toggleSourceFields === "function") {
+          window.toggleSourceFields();
+        }
+      }
+
+      // Initialize data input view
+      if (typeof window.initDataInputView === "function") {
+        window.initDataInputView();
+      }
+    };
+
+    window.goBackToCarEditForm = function () {
+      if (!window.lastEditingCar) return;
+
+      // Hide back button on Data Input
+      const backBtn = document.getElementById("dataInputBackBtn");
+      if (backBtn) backBtn.style.display = "none";
+
+      // Switch to details view
+      document
+        .querySelectorAll(".view")
+        .forEach((v) => v.classList.remove("active"));
+
+      const viewCarDetails = document.getElementById("view-car-details");
+      if (viewCarDetails) {
+        viewCarDetails.classList.add("active");
+      }
+
+      // Re-open details view and trigger Edit mode
+      openCarModal(window.lastEditingCar);
+      setEditMode(true);
+
+      // Restore title to "Car Details"
+      const topBarTitle = document.querySelector(".topbar h2");
+      if (topBarTitle) topBarTitle.textContent = "Car Details";
+
+      // Reset active state in sidebar
+      document
+        .querySelectorAll(".nav-link")
+        .forEach((l) => l.classList.remove("active"));
+      document
+        .querySelectorAll(".sidebar li")
+        .forEach((li) => li.classList.remove("active"));
+      const viewAllCarsLink = document.querySelector(
+        '.nav-link[data-view="buy-view-all"]',
+      );
+      if (viewAllCarsLink) {
+        viewAllCarsLink.classList.add("active");
+        if (viewAllCarsLink.closest(".submenu")) {
+          viewAllCarsLink.closest(".has-submenu").classList.add("active");
+        } else {
+          viewAllCarsLink.parentElement.classList.add("active");
+        }
+      }
+
+      // Clear reference
+      window.lastEditingCar = null;
+    };
+
     const btnDeleteCar = document.getElementById("btnDeleteCar");
     if (btnDeleteCar) {
       btnDeleteCar.onclick = () => {
@@ -2655,15 +2728,15 @@
         // Helper function to toggle fields
         const toggleFields = (fields, show) => {
           fields.forEach((field) => {
-            const inputEl = document.querySelector(
+            const inputEls = document.querySelectorAll(
               `#carEditForm [name="${field}"]`,
             );
-            if (inputEl) {
+            inputEls.forEach((inputEl) => {
               const inputGroup = inputEl.closest(".input-group");
               if (inputGroup) {
                 inputGroup.style.display = show ? "block" : "none";
               }
-            }
+            });
           });
         };
 
@@ -2739,7 +2812,7 @@
             ) {
               var option = document.createElement("option");
               option.value = currentVal;
-              option.textContent = currentVal;
+              option.textContent = "#" + currentVal;
               option.setAttribute(
                 "data-purchase-price",
                 currentEditableCar["Trade Value"] || 0,
