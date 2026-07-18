@@ -2616,11 +2616,8 @@
       const updateTradeVisibility = () => {
         const isTradeStatus =
           tradeStatusSelect && tradeStatusSelect.value === "Trade";
-        const isTradeSource =
-          sourceTypeSelect && sourceTypeSelect.value === "Trade";
         if (tradeSection) {
-          tradeSection.style.display =
-            isTradeStatus || isTradeSource ? "block" : "none";
+          tradeSection.style.display = isTradeStatus ? "block" : "none";
         }
       };
 
@@ -2673,17 +2670,12 @@
         // Update visibility
         toggleFields(iaaiFields, sourceType === "IAAI");
         toggleFields(privateFields, sourceType === "Private/Partner");
-        toggleFields(
-          tradeFields,
-          sourceType === "Trade" || tradeStatus === "Trade",
-        );
+        toggleFields(tradeFields, tradeStatus === "Trade");
 
         const linkDpContainer = document.getElementById("tradeLinkDpContainer");
         if (linkDpContainer) {
           linkDpContainer.style.display =
-            sourceType === "Trade" || tradeStatus === "Trade"
-              ? "inline-flex"
-              : "none";
+            tradeStatus === "Trade" ? "inline-flex" : "none";
         }
 
         // Also update the trade category section visibility
