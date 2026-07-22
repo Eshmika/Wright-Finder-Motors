@@ -1898,67 +1898,165 @@
       btnCancelEdit.onclick = () => setEditMode(false);
     }
 
-    window.redirectToDataInputWithPrivatePartner = function () {
-      if (currentEditableCar) {
-        window.lastEditingCar = currentEditableCar;
-        const backBtn = document.getElementById("dataInputBackBtn");
-        if (backBtn) backBtn.style.display = "flex";
-      }
-
-      // Hide details view or modal if open
-      const viewCarDetails = document.getElementById("view-car-details");
-      if (viewCarDetails) {
-        viewCarDetails.classList.remove("active");
-      }
-
-      // Switch to data-input view
-      document
-        .querySelectorAll(".view")
-        .forEach((v) => v.classList.remove("active"));
-
-      const dataInputView = document.getElementById("view-data-input");
-      if (dataInputView) {
-        dataInputView.classList.add("active");
-      }
-
-      // Update topbar title
-      const topBarTitle = document.querySelector(".topbar h2");
-      if (topBarTitle) {
-        topBarTitle.textContent = "Data Input";
-      }
-
-      // Update active state in sidebar
-      document
-        .querySelectorAll(".nav-link")
-        .forEach((l) => l.classList.remove("active"));
-      document
-        .querySelectorAll(".sidebar li")
-        .forEach((li) => li.classList.remove("active"));
-      const dataInputLink = document.querySelector(
-        '.nav-link[data-view="data-input"]',
-      );
-      if (dataInputLink) {
-        dataInputLink.classList.add("active");
-        if (dataInputLink.closest(".submenu")) {
-          dataInputLink.closest(".has-submenu").classList.add("active");
+    window.toggleInlineTitleCustom = function (select) {
+      const customInput = document.getElementById("inlineTitleCustom");
+      if (customInput) {
+        if (select.value === "Other") {
+          customInput.style.display = "block";
+          customInput.required = true;
         } else {
-          dataInputLink.parentElement.classList.add("active");
+          customInput.style.display = "none";
+          customInput.required = false;
+          customInput.value = "";
         }
       }
+    };
 
-      // Set select option in data-input to Private/Partner
-      const selectEl = document.getElementById("dataInputSourceType");
-      if (selectEl) {
-        selectEl.value = "Private/Partner";
-        if (typeof window.toggleSourceFields === "function") {
-          window.toggleSourceFields();
-        }
+    window.toggleInlineDataInputForm = function () {
+      const container = document.getElementById("inlineDataInputContainer");
+      if (!container) return;
+      if (container.style.display === "none") {
+        container.style.display = "block";
+        // Initialize cascading dropdowns for the inline form
+        window.initCascadingDropdowns({
+          makeSelect: document.getElementById("inlineCarNameSelect"),
+          modelSelect: document.getElementById("inlineModelSelect"),
+          trimSelect: document.getElementById("inlineTrimSelect"),
+          yearSelect: document.getElementById("inlineYearSelect"),
+          fuelSelect: document.getElementById("inlineFuelTypeSelect"),
+          bodyStyleSelect: document.getElementById("inlineBodyStyleSelect"),
+        });
+      } else {
+        container.style.display = "none";
+      }
+    };
+
+    window.saveInlineDataInput = function () {
+      const make = document.getElementById("inlineCarNameSelect").value;
+      const model = document.getElementById("inlineModelSelect").value;
+      const trim = document.getElementById("inlineTrimSelect").value;
+      const year = document.getElementById("inlineYearSelect").value;
+      const fuelType = document.getElementById("inlineFuelTypeSelect").value;
+      const bodyStyle = document.getElementById("inlineBodyStyleSelect").value;
+      const mileage = document.getElementById("inlineMileage").value;
+      const titleSelect = document.getElementById("inlineTitleSelect").value;
+      let title = titleSelect;
+      if (titleSelect === "Other") {
+        const customTitle = document.getElementById("inlineTitleCustom").value;
+        if (customTitle) title = customTitle;
+      }
+      const vin = document.getElementById("inlineVin").value;
+      const purchaseDate = document.getElementById("inlinePurchaseDate").value;
+      const sellerName = document.getElementById("inlineSellerName").value;
+      const acquisitionDate = document.getElementById(
+        "inlineAcquisitionDate",
+      ).value;
+      const purchasePrice = document.getElementById(
+        "inlinePurchasePrice",
+      ).value;
+      const privateNotes = document.getElementById("inlinePrivateNotes").value;
+
+      if (!make || !model || !year) {
+        alert("Please fill in the required fields (Make, Model, Year).");
+        return;
       }
 
-      // Initialize data input view
-      if (typeof window.initDataInputView === "function") {
-        window.initDataInputView();
-      }
+      const btn = document.getElementById("btnSubmitInlineDataInput");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      const data = {
+        carName: make,
+        model: model,
+        trim: trim,
+        year: year,
+        fuelType: fuelType,
+        bodyStyle: bodyStyle,
+        mileage: mileage,
+        title: title,
+        vin: vin,
+        purchaseDate: purchaseDate,
+        sourceType: "Private/Partner",
+        sellerName: sellerName,
+        acquisitionDate: acquisitionDate,
+        purchasePrice: purchasePrice,
+        privateNotes: privateNotes,
+        tradeStatus: "",
+        tradeValue: "",
+        tradeIn: "",
+        tradeComment: "",
+      };
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          if (response && response.indexOf("Error") === -1) {
+            if (typeof showCreativeSuccessModal === "function") {
+              showCreativeSuccessModal(
+                "New Inventory Record saved successfully!",
+              );
+            } else {
+              alert("New Inventory Record saved successfully!");
+            }
+
+            // Close the inline form and reset values
+            document.getElementById("inlineDataInputContainer").style.display =
+              "none";
+            document.getElementById("inlineCarNameSelect").value = "";
+            document.getElementById("inlineModelSelect").value = "";
+            document.getElementById("inlineTrimSelect").value = "";
+            document.getElementById("inlineYearSelect").value = "";
+            document.getElementById("inlineFuelTypeSelect").value = "";
+            document.getElementById("inlineBodyStyleSelect").value = "";
+            document.getElementById("inlineMileage").value = "";
+            document.getElementById("inlineTitleSelect").value = "";
+            document.getElementById("inlineTitleCustom").style.display = "none";
+            document.getElementById("inlineTitleCustom").value = "";
+            document.getElementById("inlineVin").value = "";
+            document.getElementById("inlinePurchaseDate").value = "";
+            document.getElementById("inlineSellerName").value = "";
+            document.getElementById("inlineAcquisitionDate").value = "";
+            document.getElementById("inlinePurchasePrice").value = "";
+            document.getElementById("inlinePrivateNotes").value = "";
+
+            // Refresh the available vehicles dropdown in Edit Car Information
+            if (typeof updateEditFormCalculations === "function") {
+              var purchasedCarSelect = document.getElementById(
+                "editPurchasedCarName",
+              );
+              if (purchasedCarSelect && currentEditableCar) {
+                google.script.run
+                  .withSuccessHandler(function (cars) {
+                    var currentVal =
+                      currentEditableCar["Purchased Car Name"] || "";
+                    purchasedCarSelect.carsData = cars || [];
+
+                    // Trigger renderOptions if search element exists
+                    var searchInput = document.getElementById(
+                      "editPurchasedCarSearch",
+                    );
+                    if (
+                      searchInput &&
+                      typeof searchInput.oninput === "function"
+                    ) {
+                      searchInput.oninput();
+                    }
+                  })
+                  .getAvailableCarsForTrade(currentEditableCar["Car ID"] || "");
+              }
+            }
+          } else {
+            alert("Error: " + response);
+          }
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .withFailureHandler(function (error) {
+          alert("Error: " + error.message);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        })
+        .saveDataInput(data);
     };
 
     window.goBackToCarEditForm = function () {
@@ -2362,31 +2460,137 @@
             inputHtml = `<select name="${key}" id="editFuelTypeSelect" class="form-control"><option value="">Select Fuel...</option></select>`;
           } else if (key === "Purchased Car Name") {
             inputHtml = `
-              <div class="purchase-inventory-selector-group" style="display: flex; flex-direction: row; gap: 15px; width: 100%;">
-                <!-- Data Input Button Group (First) -->
-                <div>
-                  <span style="display: block; font-size: 0.8rem; font-weight: 700; color: #858796; margin-bottom: 8px; text-transform: uppercase;">
-                    <i class="fas fa-plus-circle"></i> Create New Inventory Record
-                  </span>
-                  <button type="button" id="editPurchasedCarDataInputBtn" class="btn" onclick="window.redirectToDataInputWithPrivatePartner()" style="width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; font-weight: 700; border-radius: 6px; background-color: #6c757d; color: #ffffff; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                    <i class="fas fa-keyboard"></i> Go to Data Input Form
-                  </button>
+              <div style="width: 100%;">
+                <div class="purchase-inventory-selector-group" style="display: flex; flex-direction: row; gap: 15px; width: 100%; margin-bottom: 10px;">
+                  <!-- Data Input Button Group (First) -->
+                  <div>
+                    <span style="display: block; font-size: 0.8rem; font-weight: 700; color: #858796; margin-bottom: 8px; text-transform: uppercase;">
+                      <i class="fas fa-plus-circle"></i> Create New Inventory Record
+                    </span>
+                    <button type="button" id="editPurchasedCarDataInputBtn" class="btn" onclick="window.toggleInlineDataInputForm()" style="width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; font-weight: 700; border-radius: 6px; background-color: #6c757d; color: #ffffff; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                      <i class="fas fa-keyboard"></i> Create Record
+                    </button>
+                  </div>
+
+                  <!-- Search dropdown group (Second) -->
+                  <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
+                    <span style="display: block; font-size: 0.8rem; font-weight: 700; color: #858796; text-transform: uppercase;">
+                      <i class="fas fa-search"></i> Select from Existing Inventory
+                    </span>
+                    <div class="search-input-wrapper" style="position: relative;">
+                      <input type="text" id="editPurchasedCarSearch" class="form-control" placeholder="Search ID, Name, Model, Year..." style="width: 100%; padding-left: 30px; height: 34px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.85rem; margin-bottom: 5px;">
+                      <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #b7b9cc; font-size: 0.85rem; pointer-events: none;"></i>
+                    </div>
+                    <div class="modern-input-wrapper" style="position: relative;">
+                      <select name="${key}" id="editPurchasedCarName" class="form-control" style="width: 100%; padding-left: 45px !important; height: 44px; border-radius: 6px; border: 1px solid #3a1f62; background: #f8f9fc;">
+                        <option value="">Select Available Vehicle...</option>
+                      </select>
+                      <i class="fas fa-car" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #b7b9cc; font-size: 1.1rem; pointer-events: none; z-index: 10;"></i>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Search dropdown group (Second) -->
-                <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
-                  <span style="display: block; font-size: 0.8rem; font-weight: 700; color: #858796; text-transform: uppercase;">
-                    <i class="fas fa-search"></i> Select from Existing Inventory
-                  </span>
-                  <div class="search-input-wrapper" style="position: relative;">
-                    <input type="text" id="editPurchasedCarSearch" class="form-control" placeholder="Search ID, Name, Model, Year..." style="width: 100%; padding-left: 30px; height: 34px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.85rem; margin-bottom: 5px;">
-                    <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #b7b9cc; font-size: 0.85rem; pointer-events: none;"></i>
+                <!-- Collapsible Inline Data Input Form Container -->
+                <div id="inlineDataInputContainer" style="display: none; border: 1px solid #d1d3e2; border-radius: 8px; background-color: #f8f9fc; padding: 20px; margin-top: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s ease;">
+                  <h5 style="margin-top: 0; color: #4e73df; font-weight: 700; border-bottom: 1px solid #e3e6f0; padding-bottom: 8px; margin-bottom: 15px;">
+                    <i class="fas fa-clipboard-list"></i> Create New Inventory Record
+                  </h5>
+                  
+                  <!-- Vehicle Information section -->
+                  <div class="form-section shadow-sm" style="background: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e3e6f0;">
+                    <h6 class="section-title" style="color: #4e73df; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                      <span class="icon-wrap" style="background: rgba(78, 115, 223, 0.1); padding: 6px; border-radius: 4px; display: inline-flex;"><i class="fas fa-car"></i></span>
+                      Vehicle Information
+                    </h6>
+                    <div class="grid-responsive" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Make *</label>
+                        <select id="inlineCarNameSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></select>
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Model *</label>
+                        <select id="inlineModelSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></select>
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Trim</label>
+                        <select id="inlineTrimSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></select>
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Year *</label>
+                        <select id="inlineYearSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></select>
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Fuel Type</label>
+                        <select id="inlineFuelTypeSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></select>
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Body Style</label>
+                        <select id="inlineBodyStyleSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></select>
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Mileage</label>
+                        <input type="text" id="inlineMileage" class="form-control" placeholder="e.g. 120,000" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Title</label>
+                        <select id="inlineTitleSelect" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;" onchange="window.toggleInlineTitleCustom(this)">
+                          <option value="">Select Title...</option>
+                          <option>Clean</option>
+                          <option>Rebuilt</option>
+                          <option>Lien</option>
+                          <option>Salvage</option>
+                          <option>None</option>
+                          <option>Other</option>
+                        </select>
+                        <input type="text" id="inlineTitleCustom" class="form-control mt-2" placeholder="Enter custom title" style="display: none; height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">VIN</label>
+                        <input type="text" id="inlineVin" class="form-control" maxlength="17" placeholder="17 Characters" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Purchase Date</label>
+                        <input type="date" id="inlinePurchaseDate" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                    </div>
                   </div>
-                  <div class="modern-input-wrapper" style="position: relative;">
-                    <select name="${key}" id="editPurchasedCarName" class="form-control" style="width: 100%; padding-left: 45px !important; height: 44px; border-radius: 6px; border: 1px solid #3a1f62; background: #f8f9fc;">
-                      <option value="">Select Available Vehicle...</option>
-                    </select>
-                    <i class="fas fa-car" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #b7b9cc; font-size: 1.1rem; pointer-events: none; z-index: 10;"></i>
+
+                  <!-- Pricing & Purchase Information section -->
+                  <div class="form-section shadow-sm" style="background: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e3e6f0;">
+                    <h6 class="section-title" style="color: #4e73df; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                      <span class="icon-wrap" style="background: rgba(78, 115, 223, 0.1); padding: 6px; border-radius: 4px; display: inline-flex;"><i class="fas fa-dollar-sign"></i></span>
+                      Pricing & Purchase Information
+                    </h6>
+                    
+                    <!-- Hidden source type field defaulted to Private/Partner -->
+                    <input type="hidden" id="inlineSourceType" value="Private/Partner">
+
+                    <div class="grid-responsive" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Seller Name</label>
+                        <input type="text" id="inlineSellerName" class="form-control" placeholder="e.g. John Doe, Partner Co." style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Acquisition Date</label>
+                        <input type="date" id="inlineAcquisitionDate" class="form-control" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                      <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Purchase Price ($)</label>
+                        <input type="number" id="inlinePurchasePrice" class="form-control" step="0.01" placeholder="0.00" style="height: 38px; border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;">
+                      </div>
+                      <div class="input-group" style="grid-column: 1 / -1;">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4e75e5;">Notes</label>
+                        <textarea id="inlinePrivateNotes" class="form-control" rows="2" placeholder="Private purchase details or agreements..." style="border-radius: 4px; border: 1px solid #d1d3e2; width: 100%;"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Save Button Group -->
+                  <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="window.toggleInlineDataInputForm()" style="height: 38px; font-weight: 700; border-radius: 4px; border: none; padding: 0 15px;">Cancel</button>
+                    <button type="button" id="btnSubmitInlineDataInput" class="btn btn-primary" onclick="window.saveInlineDataInput()" style="background-color: #4e73df; color: #ffffff; height: 38px; font-weight: 700; border-radius: 4px; border: none; padding: 0 20px; display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-save"></i> Save Record
+                    </button>
                   </div>
                 </div>
               </div>
