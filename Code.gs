@@ -308,16 +308,35 @@ function updateVehicleData(updatedData) {
         }
       }
 
-      // Handle Trade: Mark selected inventory vehicle as Sold
+      // Handle Trade: Mark selected inventory vehicle as Sold and set its Trade status to Trading
       var purchasedCarName = updatedData["Purchased Car Name"] || "";
       if (purchasedCarName) {
         markCarAsSold(purchasedCarName);
+        setCarTradeStatusToTrading(purchasedCarName);
       }
 
       return "Success";
     }
   }
   return "Error: Car ID not found";
+}
+
+function setCarTradeStatusToTrading(carId) {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return;
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return;
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  var tradeStatusIndex = headers.indexOf("Trade status");
+  if (carIdIndex === -1 || tradeStatusIndex === -1) return;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][carIdIndex]).trim() === String(carId).trim()) {
+      sheet.getRange(i + 1, tradeStatusIndex + 1).setValue("Trading");
+      break;
+    }
+  }
 }
 
 function getVehicles() {

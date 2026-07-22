@@ -2653,6 +2653,8 @@
                   ${options}
                 </select>
               `;
+            } else if (key === "Trade status" && val === "Trading") {
+              inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed; font-weight: bold; color: #7F1D1D !important;">`;
             } else {
               let options = `<option value="">Select ${key}...</option>`;
               dropdownOptions[key].forEach((opt) => {
