@@ -903,7 +903,7 @@ function saveDataInput(data) {
     markCarAsSold(data.tradeCarName);
   }
 
-  return "Success";
+  return "Success:" + carId;
 }
 
 function applyTradeDownPayment(purchasedCarId, tradeValue) {

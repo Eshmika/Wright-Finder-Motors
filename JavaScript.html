@@ -2025,11 +2025,19 @@
                 "editPurchasedCarName",
               );
               if (purchasedCarSelect && currentEditableCar) {
+                var newCarId = "";
+                if (response && response.indexOf("Success:") === 0) {
+                  newCarId = response.split(":")[1];
+                  currentEditableCar["Purchased Car Name"] = newCarId;
+                }
                 google.script.run
                   .withSuccessHandler(function (cars) {
                     var currentVal =
-                      currentEditableCar["Purchased Car Name"] || "";
+                      newCarId ||
+                      currentEditableCar["Purchased Car Name"] ||
+                      "";
                     purchasedCarSelect.carsData = cars || [];
+                    purchasedCarSelect.currentVal = currentVal;
 
                     // Trigger renderOptions if search element exists
                     var searchInput = document.getElementById(
@@ -2041,6 +2049,12 @@
                     ) {
                       searchInput.oninput();
                     }
+
+                    // Set select element value
+                    purchasedCarSelect.value = currentVal;
+
+                    // Trigger calculation update
+                    updateEditFormCalculations();
                   })
                   .getAvailableCarsForTrade(currentEditableCar["Car ID"] || "");
               }
@@ -3046,25 +3060,28 @@
                   "data-purchase-price",
                   car.purchasePrice || 0,
                 );
-                if (car.carId === currentVal) option.selected = true;
+                if (car.carId === purchasedCarSelect.currentVal)
+                  option.selected = true;
                 purchasedCarSelect.appendChild(option);
               });
 
               // Add current car's Purchased Car Name if it exists but not in available/filtered list
               if (
-                currentVal &&
+                purchasedCarSelect.currentVal &&
                 !purchasedCarSelect.querySelector(
-                  'option[value="' + currentVal + '"]',
+                  'option[value="' + purchasedCarSelect.currentVal + '"]',
                 )
               ) {
-                var displayVal = "#" + currentVal;
+                var displayVal = "#" + purchasedCarSelect.currentVal;
                 var isMatched =
                   query === "" ||
-                  String(currentVal).toLowerCase().indexOf(query) !== -1 ||
+                  String(purchasedCarSelect.currentVal)
+                    .toLowerCase()
+                    .indexOf(query) !== -1 ||
                   displayVal.toLowerCase().indexOf(query) !== -1;
                 if (isMatched) {
                   var option = document.createElement("option");
-                  option.value = currentVal;
+                  option.value = purchasedCarSelect.currentVal;
                   option.textContent = displayVal;
                   option.setAttribute(
                     "data-purchase-price",

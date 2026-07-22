@@ -606,7 +606,7 @@
 
     google.script.run
       .withSuccessHandler(function (response) {
-        if (response === "Success") {
+        if (response && response.indexOf("Success") === 0) {
           if (typeof showCreativeSuccessModal === "function") {
             showCreativeSuccessModal("Data Input saved successfully!");
           } else {
