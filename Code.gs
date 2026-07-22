@@ -308,11 +308,19 @@ function updateVehicleData(updatedData) {
         }
       }
 
-      // Handle Trade: Mark selected inventory vehicle as Sold and set its Trade status to Trading
+      // Handle Trade: Set selected inventory vehicle's Trade status to Trading (keep as Available)
       var purchasedCarName = updatedData["Purchased Car Name"] || "";
       if (purchasedCarName) {
-        markCarAsSold(purchasedCarName);
         setCarTradeStatusToTrading(purchasedCarName);
+      }
+
+      // Automatically set the saved car (current vehicle) status to Sold if it's a Trade transaction
+      if (updatedData["Trade status"] === "Trade" && purchasedCarName) {
+        var statusCol = headers.indexOf("Status");
+        if (statusCol !== -1) {
+          sheet.getRange(i + 1, statusCol + 1).setValue("Sold");
+          updatedData["Status"] = "Sold"; // Sync locally
+        }
       }
 
       return "Success";
