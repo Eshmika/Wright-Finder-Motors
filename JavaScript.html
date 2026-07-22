@@ -2374,10 +2374,14 @@
                 </div>
 
                 <!-- Search dropdown group (Second) -->
-                <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
                   <span style="display: block; font-size: 0.8rem; font-weight: 700; color: #858796; text-transform: uppercase;">
                     <i class="fas fa-search"></i> Select from Existing Inventory
                   </span>
+                  <div class="search-input-wrapper" style="position: relative;">
+                    <input type="text" id="editPurchasedCarSearch" class="form-control" placeholder="Search ID, Name, Model, Year..." style="width: 100%; padding-left: 30px; height: 34px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.85rem; margin-bottom: 5px;">
+                    <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #b7b9cc; font-size: 0.85rem; pointer-events: none;"></i>
+                  </div>
                   <div class="modern-input-wrapper" style="position: relative;">
                     <select name="${key}" id="editPurchasedCarName" class="form-control" style="width: 100%; padding-left: 45px !important; height: 44px; border-radius: 6px; border: 1px solid #3a1f62; background: #f8f9fc;">
                       <option value="">Select Available Vehicle...</option>
@@ -2788,10 +2792,49 @@
         google.script.run
           .withSuccessHandler(function (cars) {
             var currentVal = currentEditableCar["Purchased Car Name"] || "";
-            purchasedCarSelect.innerHTML =
-              '<option value="">Select Available Vehicle...</option>';
-            if (cars && cars.length > 0) {
-              cars.forEach(function (car) {
+            purchasedCarSelect.carsData = cars || [];
+            purchasedCarSelect.currentVal = currentVal;
+            purchasedCarSelect.currentTradeValue =
+              currentEditableCar["Trade Value"] || 0;
+
+            function renderOptions(filterQuery) {
+              var query = (filterQuery || "").toLowerCase().trim();
+              purchasedCarSelect.innerHTML =
+                '<option value="">Select Available Vehicle...</option>';
+
+              var filteredCars = (purchasedCarSelect.carsData || []).filter(
+                function (car) {
+                  var idMatch =
+                    String(car.carId || "")
+                      .toLowerCase()
+                      .indexOf(query) !== -1;
+                  var nameMatch =
+                    String(car.carName || "")
+                      .toLowerCase()
+                      .indexOf(query) !== -1;
+                  var modelMatch =
+                    String(car.model || "")
+                      .toLowerCase()
+                      .indexOf(query) !== -1;
+                  var yearMatch =
+                    String(car.year || "")
+                      .toLowerCase()
+                      .indexOf(query) !== -1;
+                  var displayMatch =
+                    String(car.displayName || "")
+                      .toLowerCase()
+                      .indexOf(query) !== -1;
+                  return (
+                    idMatch ||
+                    nameMatch ||
+                    modelMatch ||
+                    yearMatch ||
+                    displayMatch
+                  );
+                },
+              );
+
+              filteredCars.forEach(function (car) {
                 var option = document.createElement("option");
                 option.value = car.carId;
                 option.textContent = car.displayName;
@@ -2802,24 +2845,43 @@
                 if (car.carId === currentVal) option.selected = true;
                 purchasedCarSelect.appendChild(option);
               });
+
+              // Add current car's Purchased Car Name if it exists but not in available/filtered list
+              if (
+                currentVal &&
+                !purchasedCarSelect.querySelector(
+                  'option[value="' + currentVal + '"]',
+                )
+              ) {
+                var displayVal = "#" + currentVal;
+                var isMatched =
+                  query === "" ||
+                  String(currentVal).toLowerCase().indexOf(query) !== -1 ||
+                  displayVal.toLowerCase().indexOf(query) !== -1;
+                if (isMatched) {
+                  var option = document.createElement("option");
+                  option.value = currentVal;
+                  option.textContent = displayVal;
+                  option.setAttribute(
+                    "data-purchase-price",
+                    purchasedCarSelect.currentTradeValue || 0,
+                  );
+                  option.selected = true;
+                  purchasedCarSelect.appendChild(option);
+                }
+              }
             }
-            // Add current car's Purchased Car Name if it exists but not in available list
-            if (
-              currentVal &&
-              !purchasedCarSelect.querySelector(
-                'option[value="' + currentVal + '"]',
-              )
-            ) {
-              var option = document.createElement("option");
-              option.value = currentVal;
-              option.textContent = "#" + currentVal;
-              option.setAttribute(
-                "data-purchase-price",
-                currentEditableCar["Trade Value"] || 0,
-              );
-              option.selected = true;
-              purchasedCarSelect.appendChild(option);
+
+            // Set up search bar event listener
+            var searchInput = document.getElementById("editPurchasedCarSearch");
+            if (searchInput) {
+              searchInput.value = "";
+              searchInput.oninput = function () {
+                renderOptions(searchInput.value);
+              };
             }
+
+            renderOptions("");
             // Force calculations refresh to apply lock on load
             updateEditFormCalculations();
           })
