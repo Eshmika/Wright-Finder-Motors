@@ -2475,7 +2475,7 @@
           } else if (key === "Purchased Car Name") {
             inputHtml = `
               <div style="width: 100%;">
-                <div class="purchase-inventory-selector-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin-bottom: 10px;">
+                <div class="purchase-inventory-selector-group purchase-inventory-selector-group-desktop" style="display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; margin-bottom: 10px;">
                   <!-- Data Input Button Group (First) -->
                   <div style="display: flex; flex-direction: column; justify-content: flex-end;">
                     <span style="display: block; font-size: 0.8rem; font-weight: 700; color: #858796; margin-bottom: 8px; text-transform: uppercase;">
@@ -2743,17 +2743,33 @@
             inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control">`;
           }
 
-          let gridColumnStyle =
-            key === "Interior Features" ||
-            key === "NOTES" ||
-            key === "DRIVER INFORMATION" ||
-            key === "Comment" ||
-            key === "Purchased Car Name"
-              ? "grid-column: 1 / -1;"
-              : "";
+          let gridColumnStyle = "";
+          let elementClass = "";
+          if (title === "Purchase Details") {
+            if (key === "Seller Name") {
+              elementClass = "pd-col-1-r-1";
+            } else if (key === "Acquisition Date") {
+              elementClass = "pd-col-2-r-1";
+            } else if (key === "Purchase Price") {
+              elementClass = "pd-col-3-r-1";
+            } else if (key === "Private Notes") {
+              elementClass = "pd-col-span-2-r-2";
+            } else if (key === "Purchased Car Name") {
+              elementClass = "pd-col-span-4-r-3";
+            }
+          } else {
+            gridColumnStyle =
+              key === "Interior Features" ||
+              key === "NOTES" ||
+              key === "DRIVER INFORMATION" ||
+              key === "Comment" ||
+              key === "Purchased Car Name"
+                ? "grid-column: 1 / -1;"
+                : "";
+          }
 
           itemsHtml += `
-            <div class="input-group" style="${gridColumnStyle}">
+            <div class="input-group ${elementClass}" style="${gridColumnStyle}">
                <label>${
                  key === "Status"
                    ? "Availabilities"
@@ -2782,10 +2798,15 @@
 
         if (itemsHtml.trim() === "") return "";
 
+        const isPurchaseDetails = title === "Purchase Details";
+        const gridClass = isPurchaseDetails
+          ? "grid-responsive purchase-details-grid-desktop"
+          : "grid-responsive";
+
         return `
           <div id="${title === "Trade" ? "editCategoryTrade" : ""}" class="spec-category" style="background:#fff; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,0.05); padding:25px; margin-bottom: 30px; border-top: 5px solid var(--primary); width: 100%;">
             <h5 style="color: var(--primary); padding-bottom: 15px; border-bottom: 2px solid #eef4ff; margin-bottom: 20px; font-weight:700;"><i class="fas ${icon}" style="width: 25px;"></i> ${title}</h5>
-            <div class="grid-responsive">
+            <div class="${gridClass}">
               ${itemsHtml}
             </div>
           </div>

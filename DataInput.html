@@ -237,10 +237,10 @@
         <!-- Private/Partner Fields Group -->
         <div
           id="source-private-fields"
-          class="grid-responsive"
-          style="display: none; grid-template-columns: repeat(3, 1fr)"
+          class="grid-responsive purchase-details-grid-desktop"
+          style="display: none"
         >
-          <div class="input-group">
+          <div class="input-group pd-col-1-r-1">
             <label>Seller Name</label>
             <input
               type="text"
@@ -249,11 +249,11 @@
               placeholder="e.g. John Doe, Partner Co."
             />
           </div>
-          <div class="input-group">
+          <div class="input-group pd-col-2-r-1">
             <label>Acquisition Date</label>
             <input type="date" name="acquisitionDate" class="form-control" />
           </div>
-          <div class="input-group">
+          <div class="input-group pd-col-3-r-1">
             <label>Purchase Price ($)</label>
             <input
               type="number"
@@ -263,7 +263,7 @@
               placeholder="0.00"
             />
           </div>
-          <div class="input-group" style="grid-column: span 2">
+          <div class="input-group pd-col-span-2-r-2">
             <label>Notes</label>
             <textarea
               name="privateNotes"
