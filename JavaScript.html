@@ -5719,17 +5719,203 @@
         saveTerms();
       };
 
+      // Normalize currentFrequency for backwards compatibility and dropdown default selection
+      let selectedFreq = currentFrequency || "Monthly (1st of month)";
+      const freqMap = {
+        weekly: "Weekly",
+        biweekly: "Biweekly",
+        "bi-weekly": "Biweekly",
+        monthly: "Monthly (1st of month)",
+      };
+      if (freqMap[selectedFreq.toLowerCase()]) {
+        selectedFreq = freqMap[selectedFreq.toLowerCase()];
+      }
+
       // Dropdown group
       const freqGroup = document.createElement("div");
-      freqGroup.style.cssText = "margin-bottom: 20px; text-align: left;";
+      freqGroup.style.cssText =
+        "margin-bottom: 20px; text-align: left; position: relative;";
+
+      const optionsData = [
+        {
+          value: "Weekly",
+          label: "Weekly",
+          desc: "Every 7 days",
+          icon: "fa-calendar-day",
+          color: "#36b9cc",
+        },
+        {
+          value: "Biweekly",
+          label: "Biweekly",
+          desc: "Every 14 days",
+          icon: "fa-calendar-week",
+          color: "#f6c23e",
+        },
+        {
+          value: "Monthly (1st of month)",
+          label: "Monthly (1st of month)",
+          desc: "Monthly on the 1st",
+          icon: "fa-calendar-alt",
+          color: "#4e73df",
+        },
+        {
+          value: "Monthly (15th of month)",
+          label: "Monthly (15th of month)",
+          desc: "Monthly on the 15th",
+          icon: "fa-calendar-check",
+          color: "#1cc88a",
+        },
+      ];
+
+      const currentOption =
+        optionsData.find((o) => o.value === selectedFreq) || optionsData[0];
+
       freqGroup.innerHTML = `
         <label style="display: block; font-weight: 600; font-size: 0.9rem; color: #4e73df; margin-bottom: 8px;">Installment Frequency</label>
-        <select id="modalFreq" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; outline: none;" required>
-          <option value="weekly" ${currentFrequency === "weekly" ? "selected" : ""}>Weekly</option>
-          <option value="biweekly" ${currentFrequency === "biweekly" ? "selected" : ""}>Bi-weekly</option>
-          <option value="monthly" ${currentFrequency === "monthly" ? "selected" : ""}>Monthly</option>
-        </select>
+        <input type="hidden" id="modalFreq" value="${currentOption.value}" required />
+        
+        <div id="customSelectTrigger" style="
+          display: flex; align-items: center; justify-content: space-between;
+          width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1;
+          border-radius: 10px; font-size: 0.95rem; background: #f8fafc;
+          cursor: pointer; transition: all 0.25s ease;
+          box-sizing: border-box;
+        " onmouseover="this.style.borderColor='#4e73df'; this.style.background='#fff';" onmouseout="if(!this.dataset.open) { this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'; }">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas ${currentOption.icon}" style="color: ${currentOption.color}; font-size: 1.1rem; width: 18px; text-align: center;"></i>
+            <div>
+              <span id="customSelectLabel" style="font-weight: 600; color: #2c3e50; display: block; line-height: 1.2;">${currentOption.value}</span>
+            </div>
+          </div>
+          <i class="fas fa-chevron-down" id="customSelectChevron" style="color: #858796; transition: transform 0.25s ease;"></i>
+        </div>
+
+        <div id="customSelectOptions" style="
+          display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+          background: #ffffff; border: 1px solid #e3e6f0; border-radius: 10px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          z-index: 10000; overflow: hidden; padding: 6px; opacity: 0;
+          transform: translateY(-8px); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        ">
+          ${optionsData
+            .map(
+              (opt) => `
+            <div class="custom-select-option" data-value="${opt.value}" style="
+              display: flex; align-items: center; justify-content: space-between;
+              padding: 10px 12px; border-radius: 8px; cursor: pointer;
+              transition: all 0.2s ease; margin-bottom: 2px;
+              background: ${opt.value === selectedFreq ? "#f0f4ff" : "transparent"};
+            " onmouseover="this.style.background='${opt.value === selectedFreq ? "#f0f4ff" : "#f8fafc"}'" onmouseout="this.style.background='${opt.value === selectedFreq ? "#f0f4ff" : "transparent"}'">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="
+                  width: 32px; height: 32px; border-radius: 6px;
+                  background: ${opt.color}15; display: flex;
+                  align-items: center; justify-content: center;
+                ">
+                  <i class="fas ${opt.icon}" style="color: ${opt.color}; font-size: 1rem;"></i>
+                </div>
+                <div style="display: flex; flex-direction: column; text-align: left;">
+                  <span style="font-weight: 600; color: #2c3e50; font-size: 0.9rem;">${opt.value}</span>
+                  <span style="font-size: 0.75rem; color: #858796;">${opt.desc}</span>
+                </div>
+              </div>
+              ${opt.value === selectedFreq ? `<i class="fas fa-check" style="color: #4e73df; font-size: 0.85rem;"></i>` : ""}
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
       `;
+
+      setTimeout(() => {
+        const trigger = document.getElementById("customSelectTrigger");
+        const optionsContainer = document.getElementById("customSelectOptions");
+        const chevron = document.getElementById("customSelectChevron");
+        const hiddenInput = document.getElementById("modalFreq");
+        const selectLabel = document.getElementById("customSelectLabel");
+
+        const toggleDropdown = (e) => {
+          e.stopPropagation();
+          const isOpen = optionsContainer.style.display === "block";
+          if (isOpen) {
+            closeDropdown();
+          } else {
+            openDropdown();
+          }
+        };
+
+        const openDropdown = () => {
+          trigger.dataset.open = "true";
+          trigger.style.borderColor = "#4e73df";
+          trigger.style.background = "#fff";
+          trigger.style.boxShadow = "0 0 0 3px rgba(78, 115, 223, 0.15)";
+          optionsContainer.style.display = "block";
+          chevron.style.transform = "rotate(180deg)";
+          requestAnimationFrame(() => {
+            optionsContainer.style.opacity = "1";
+            optionsContainer.style.transform = "translateY(0)";
+          });
+        };
+
+        const closeDropdown = () => {
+          delete trigger.dataset.open;
+          trigger.style.borderColor = "#cbd5e1";
+          trigger.style.background = "#f8fafc";
+          trigger.style.boxShadow = "none";
+          chevron.style.transform = "rotate(0deg)";
+          optionsContainer.style.opacity = "0";
+          optionsContainer.style.transform = "translateY(-8px)";
+          setTimeout(() => {
+            if (!trigger.dataset.open) {
+              optionsContainer.style.display = "none";
+            }
+          }, 250);
+        };
+
+        trigger.addEventListener("click", toggleDropdown);
+
+        const options = optionsContainer.querySelectorAll(
+          ".custom-select-option",
+        );
+        options.forEach((opt) => {
+          opt.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const val = opt.dataset.value;
+            const itemData = optionsData.find((o) => o.value === val);
+
+            hiddenInput.value = val;
+
+            trigger.querySelector("i.fas:first-child").className =
+              `fas ${itemData.icon}`;
+            trigger.querySelector("i.fas:first-child").style.color =
+              itemData.color;
+            selectLabel.innerText = itemData.value;
+
+            options.forEach((o) => {
+              const isSelected = o.dataset.value === val;
+              o.style.background = isSelected ? "#f0f4ff" : "transparent";
+
+              const check = o.querySelector(".fa-check");
+              if (check) check.remove();
+
+              if (isSelected) {
+                const checkIcon = document.createElement("i");
+                checkIcon.className = "fas fa-check";
+                checkIcon.style.cssText = "color: #4e73df; font-size: 0.85rem;";
+                o.appendChild(checkIcon);
+              }
+            });
+
+            closeDropdown();
+          });
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!freqGroup.contains(e.target)) {
+            closeDropdown();
+          }
+        });
+      }, 50);
 
       // Date group
       const dateGroup = document.createElement("div");
