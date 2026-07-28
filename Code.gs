@@ -2189,3 +2189,163 @@ function uploadClientDocument(requestId, filesData) {
     };
   }
 }
+
+/**
+ * Sends a reminder email to all clients who have active loans.
+ * Runs on a 2-minute time-driven trigger.
+ */
+function sendActiveLoanPaymentReminders() {
+  try {
+    // Workaround for Google Apps Script not allowing everyMinutes(2)
+    // Run every minute but execute logic only on even minutes (every 2 minutes)
+    var currentMinute = new Date().getMinutes();
+    if (currentMinute % 2 !== 0) {
+      Logger.log(
+        "Skipping this minute to maintain 2-minute interval: " + currentMinute,
+      );
+      return;
+    }
+
+    var vehicles = getVehicles();
+    if (!vehicles || vehicles.length === 0) return;
+
+    for (var i = 0; i < vehicles.length; i++) {
+      var car = vehicles[i];
+      var finStatus = (car["Financing status"] || "")
+        .toString()
+        .trim()
+        .toLowerCase();
+      var status = (car["Status"] || "").toString().trim().toLowerCase();
+      var clientEmail = car["Client Email"]
+        ? car["Client Email"].toString().trim()
+        : "";
+      var clientName =
+        car["CLIENT NAME"] || car["Buyer Name"] || "Valued Customer";
+
+      var spRaw = car["SOLD PRICE"] ? car["SOLD PRICE"].toString().trim() : "";
+      var spNum = parseFloat(spRaw.replace(/[^0-9.-]+/g, "")) || 0;
+      var dpRaw = car["DOWN PAYMENT"]
+        ? car["DOWN PAYMENT"].toString().trim()
+        : "";
+      var dpNum = parseFloat(dpRaw.replace(/[^0-9.-]+/g, "")) || 0;
+      var isSold = status.includes("sold");
+      var isForceActiveLoan = isSold && spNum > 0 && dpNum === 0;
+
+      if ((finStatus === "loan active" || isForceActiveLoan) && clientEmail) {
+        var remainLoanVal = spNum - dpNum;
+
+        var formatMoney = function (num) {
+          return (
+            "$" +
+            num.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          );
+        };
+
+        // Creative, premium HTML Email Template
+        var htmlBody =
+          "<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: none; border-radius: 16px; background-color: #fafbfc; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden;\">" +
+          // Header
+          '<div style="background: linear-gradient(135deg, #e056fd 0%, #6c5ce7 100%); padding: 35px 20px; text-align: center; color: #ffffff;">' +
+          '<h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">WRIGHT FINDER MOTORS</h1>' +
+          '<p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Loan &amp; Financing Division</p>' +
+          "</div>" +
+          // Content Card
+          '<div style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 16px 16px;">' +
+          '<h2 style="color: #2d3436; margin-top: 0; font-size: 20px; font-weight: 700;">Outstanding Loan Balance Notice</h2>' +
+          '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">Dear ' +
+          clientName +
+          ",</p>" +
+          '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is an automated notification regarding the active financing agreement for your vehicle. Please review your loan balance details below and proceed with your regular installment payments.</p>' +
+          // Highlight Alert Card
+          '<div style="background: #fff5f5; border-left: 4px solid #ff7675; padding: 20px; margin: 25px 0; border-radius: 8px;">' +
+          '<h3 style="margin: 0 0 10px 0; color: #d63031; font-size: 16px; font-weight: 700;">🚨 Outstanding Action Required</h3>' +
+          '<p style="margin: 0; color: #c0392b; font-size: 14px; line-height: 1.5; font-weight: 500;">' +
+          "Your vehicle's financing status is currently marked as <strong>Active Loan</strong>. Please pay your loan balance of <strong>" +
+          formatMoney(remainLoanVal) +
+          "</strong> to clear this amount." +
+          "</p>" +
+          "</div>" +
+          // Details Grid
+          '<div style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; margin: 25px 0; border-radius: 12px;">' +
+          '<h4 style="margin: 0 0 15px 0; color: #2d3436; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Vehicle &amp; Balance Summary</h4>' +
+          '<table style="width: 100%; font-size: 14px; border-collapse: collapse; color: #2d3436;">' +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Vehicle:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+          (car["Year"] || "") +
+          " " +
+          (car["Car Name"] || "") +
+          " " +
+          (car["Model"] || "") +
+          "</td></tr>" +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Stock ID:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+          car["Car ID"] +
+          "</td></tr>" +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Original Sold Price:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+          formatMoney(spNum) +
+          "</td></tr>" +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
+          formatMoney(dpNum) +
+          "</td></tr>" +
+          '<tr><td style="padding: 10px 0 0 0; color: #d63031; font-weight: bold; font-size: 15px;">Remaining Loan Balance:</td><td style="padding: 10px 0 0 0; font-weight: bold; text-align: right; color: #d63031; font-size: 16px;">' +
+          formatMoney(remainLoanVal) +
+          "</td></tr>" +
+          "</table>" +
+          "</div>" +
+          '<p style="color: #636e72; font-size: 14px; line-height: 1.6;">Payments can be made in person, or via bank transfer/wire. Once your final installment is processed, your financing status will automatically update to <strong>Paid Off</strong>.</p>' +
+          // Divider
+          '<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">' +
+          // Footer
+          '<p style="color: #b2bec3; font-size: 11px; line-height: 1.5; text-align: center; margin: 0;">' +
+          "You are receiving this automated update because an active vehicle financing agreement was registered with Wright Finder Motors under this email address. Please ignore if this loan has recently been paid off." +
+          "</p>" +
+          '<p style="color: #b2bec3; font-size: 11px; text-align: center; margin: 8px 0 0 0;">' +
+          "&copy; " +
+          new Date().getFullYear() +
+          " Wright Finder Motors. All rights reserved." +
+          "</p>" +
+          "</div>" +
+          "</div>";
+
+        MailApp.sendEmail({
+          to: clientEmail,
+          subject:
+            "⚠️ Action Required: Pay Your Active Loan Balance - Wright Finder Motors",
+          htmlBody: htmlBody,
+        });
+
+        Logger.log(
+          "Active Loan email notification sent to client " +
+            clientEmail +
+            " for car " +
+            car["Car ID"],
+        );
+      }
+    }
+  } catch (e) {
+    Logger.log("Error in sendActiveLoanPaymentReminders: " + e.toString());
+  }
+}
+
+/**
+ * Helper to initialize or verify the 2-minute time trigger for sending reminders.
+ */
+function setupActiveLoanPaymentTrigger() {
+  var triggerName = "sendActiveLoanPaymentReminders";
+
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === triggerName) {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+
+  ScriptApp.newTrigger(triggerName).timeBased().everyMinutes(1).create();
+
+  Logger.log(
+    "Trigger for '" +
+      triggerName +
+      "' created successfully (runs every 1 minute, sending emails on even minutes to achieve a 2-minute interval).",
+  );
+}
