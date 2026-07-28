@@ -2232,7 +2232,9 @@ function sendActiveLoanPaymentReminders() {
       var isForceActiveLoan = isSold && spNum > 0 && dpNum === 0;
 
       if ((finStatus === "loan active" || isForceActiveLoan) && clientEmail) {
-        var remainLoanVal = spNum - dpNum;
+        var loanAmountRaw = car["LOAN AMOUNT"]
+          ? car["LOAN AMOUNT"].toString().trim()
+          : "";
 
         var formatMoney = function (num) {
           return (
@@ -2244,6 +2246,23 @@ function sendActiveLoanPaymentReminders() {
           );
         };
 
+        // Fetch total payments to calculate REMAIN LOAN like in Key Specifications
+        var totalPayments = getTotalPaymentForCar(car["Car ID"]) || 0;
+
+        var loanAmountVal = spNum > 0 && dpNum > 0 ? spNum - dpNum : 0;
+        if (loanAmountRaw) {
+          var parsedLA = parseFloat(loanAmountRaw.replace(/[^0-9.-]+/g, ""));
+          if (!isNaN(parsedLA) && parsedLA > 0) {
+            loanAmountVal = parsedLA;
+          }
+        }
+
+        var remainLoanVal =
+          loanAmountVal > 0 ? loanAmountVal - totalPayments : 0;
+
+        var formattedLoanAmount = formatMoney(loanAmountVal);
+        var formattedRemainLoan = formatMoney(remainLoanVal);
+
         // Creative, premium HTML Email Template
         var htmlBody =
           "<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: none; border-radius: 16px; background-color: #fafbfc; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden;\">" +
@@ -2254,23 +2273,32 @@ function sendActiveLoanPaymentReminders() {
           "</div>" +
           // Content Card
           '<div style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 16px 16px;">' +
-          '<h2 style="color: #2d3436; margin-top: 0; font-size: 20px; font-weight: 700;">Outstanding Loan Balance Notice</h2>' +
+          '<h2 style="color: #2d3436; margin-top: 0; font-size: 20px; font-weight: 700;">Loan Balance Notice</h2>' +
           '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">Dear ' +
           clientName +
           ",</p>" +
-          '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is an automated notification regarding the active financing agreement for your vehicle. Please review your loan balance details below and proceed with your regular installment payments.</p>' +
-          // Highlight Alert Card
-          '<div style="background: #fff5f5; border-left: 4px solid #ff7675; padding: 20px; margin: 25px 0; border-radius: 8px;">' +
-          '<h3 style="margin: 0 0 10px 0; color: #d63031; font-size: 16px; font-weight: 700;">🚨 Outstanding Action Required</h3>' +
-          '<p style="margin: 0; color: #c0392b; font-size: 14px; line-height: 1.5; font-weight: 500;">' +
-          "Your vehicle's financing status is currently marked as <strong>Active Loan</strong>. Please pay your loan balance of <strong>" +
-          formatMoney(remainLoanVal) +
-          "</strong> to clear this amount." +
-          "</p>" +
-          "</div>" +
+          '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is an automated notification regarding the active financing agreement for your vehicle. Please review your loan status below:</p>' +
+          // Side-by-Side Highlighted Badges (Bulletproof Table Layout)
+          '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 25px 0;">' +
+          "<tr>" +
+          '<td width="48%" valign="top" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;">' +
+          '<span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; display: block; margin-bottom: 6px;">Loan Amount</span>' +
+          '<strong style="font-size: 22px; color: #334155; font-weight: 800; display: block;">' +
+          formattedLoanAmount +
+          "</strong>" +
+          "</td>" +
+          '<td width="4%">&nbsp;</td>' +
+          '<td width="48%" valign="top" style="background-color: #fef2f2; border: 2px solid #ef4444; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);">' +
+          '<span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: #b91c1c; font-weight: 700; display: block; margin-bottom: 6px;">🚨 Remain Loan</span>' +
+          '<strong style="font-size: 26px; color: #b91c1c; font-weight: 900; display: block;">' +
+          formattedRemainLoan +
+          "</strong>" +
+          "</td>" +
+          "</tr>" +
+          "</table>" +
           // Details Grid
           '<div style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; margin: 25px 0; border-radius: 12px;">' +
-          '<h4 style="margin: 0 0 15px 0; color: #2d3436; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Vehicle &amp; Balance Summary</h4>' +
+          '<h4 style="margin: 0 0 15px 0; color: #2d3436; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Vehicle Details</h4>' +
           '<table style="width: 100%; font-size: 14px; border-collapse: collapse; color: #2d3436;">' +
           '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Vehicle:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
           (car["Year"] || "") +
@@ -2285,11 +2313,8 @@ function sendActiveLoanPaymentReminders() {
           '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Original Sold Price:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
           formatMoney(spNum) +
           "</td></tr>" +
-          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
+          '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
           formatMoney(dpNum) +
-          "</td></tr>" +
-          '<tr><td style="padding: 10px 0 0 0; color: #d63031; font-weight: bold; font-size: 15px;">Remaining Loan Balance:</td><td style="padding: 10px 0 0 0; font-weight: bold; text-align: right; color: #d63031; font-size: 16px;">' +
-          formatMoney(remainLoanVal) +
           "</td></tr>" +
           "</table>" +
           "</div>" +
