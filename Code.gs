@@ -2401,6 +2401,72 @@ function sendActiveLoanPaymentReminders() {
         var formattedLoanAmount = formatMoney(loanAmountVal);
         var formattedRemainLoan = formatMoney(remainLoanVal);
 
+        // Fetch total payments history and generate the PDF invoice
+        var paymentsHistory = getPaymentsForCar(car["Car ID"]) || [];
+        var pdfResult = generateInvoicePdf(
+          car,
+          clientName,
+          clientEmail,
+          formatMoney(spNum),
+          formatMoney(dpNum),
+          formattedLoanAmount,
+          formattedRemainLoan,
+          paymentsHistory,
+        );
+
+        // Build premium, creative HTML table for vehicle payments history in the email
+        var paymentsHtml =
+          '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse; font-size: 14px; margin: 20px 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">' +
+          '<tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">' +
+          '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Date</th>' +
+          '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Amount</th>' +
+          '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Method</th>' +
+          '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Notes</th>' +
+          "</tr>";
+
+        if (paymentsHistory.length > 0) {
+          paymentsHistory.forEach(function (pay) {
+            var pDate = pay["PAYMENT DATE"] || pay["Payment Date"] || "";
+            var pAmount = pay["AMOUNT"] || "";
+            if (pAmount) {
+              var pAmtNum =
+                parseFloat(String(pAmount).replace(/[^0-9.-]+/g, "")) || 0;
+              pAmount =
+                "$" +
+                pAmtNum.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                });
+            }
+            var pOption =
+              pay["PAYMENT OPTION / NOTES"] ||
+              pay["Payment Option"] ||
+              pay["PAYMENT OPTION"] ||
+              "-";
+            var pNotes = pay["NOTES"] || pay["Notes"] || "-";
+
+            paymentsHtml +=
+              '<tr style="border-bottom: 1px solid #f1f5f9;">' +
+              '<td style="padding: 10px 12px; color: #334155;">' +
+              pDate +
+              "</td>" +
+              '<td style="padding: 10px 12px; color: #10b981; font-weight: 600;">' +
+              pAmount +
+              "</td>" +
+              '<td style="padding: 10px 12px; color: #334155;">' +
+              pOption +
+              "</td>" +
+              '<td style="padding: 10px 12px; color: #64748b; font-size: 13px;">' +
+              pNotes +
+              "</td>" +
+              "</tr>";
+          });
+        } else {
+          paymentsHtml +=
+            '<tr><td colspan="4" style="padding: 15px; text-align: center; color: #94a3b8; font-style: italic;">No payments recorded yet.</td></tr>';
+        }
+        paymentsHtml += "</table>";
+
         // Creative, premium HTML Email Template
         var htmlBody =
           "<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: none; border-radius: 16px; background-color: #fafbfc; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden;\">" +
@@ -2411,11 +2477,18 @@ function sendActiveLoanPaymentReminders() {
           "</div>" +
           // Content Card
           '<div style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 16px 16px;">' +
-          '<h2 style="color: #2d3436; margin-top: 0; font-size: 20px; font-weight: 700;">Loan Balance Notice</h2>' +
+          '<div style="margin-bottom: 20px; display: table; width: 100%;">' +
+          '<div style="display: table-cell; vertical-align: middle;"><h2 style="color: #2d3436; margin: 0; font-size: 20px; font-weight: 700;">Loan Balance Notice</h2></div>' +
+          '<div style="display: table-cell; text-align: right; vertical-align: middle;"><span style="background-color: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1;">Invoice #' +
+          pdfResult.invoiceNumber +
+          "</span></div>" +
+          "</div>" +
           '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">Dear ' +
           clientName +
           ",</p>" +
-          '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is an automated notification regarding the active financing agreement for your vehicle. Please review your loan status below:</p>' +
+          '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is an automated notification regarding the active financing agreement for your vehicle. We have attached the official PDF invoice (Invoice #' +
+          pdfResult.invoiceNumber +
+          ") to this email for your records. Please find your loan status summary and payment history below:</p>" +
           // Side-by-Side Highlighted Badges (Bulletproof Table Layout)
           '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 25px 0;">' +
           "<tr>" +
@@ -2456,6 +2529,9 @@ function sendActiveLoanPaymentReminders() {
           "</td></tr>" +
           "</table>" +
           "</div>" +
+          // Payments history section
+          '<h3 style="color: #2d3436; font-size: 16px; font-weight: 700; margin-top: 30px; margin-bottom: 5px;">Vehicle Payments History</h3>' +
+          paymentsHtml +
           '<p style="color: #636e72; font-size: 14px; line-height: 1.6;">Payments can be made in person, or via bank transfer/wire. Once your final installment is processed, your financing status will automatically update to <strong>Paid Off</strong>.</p>' +
           // Divider
           '<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">' +
@@ -2476,13 +2552,15 @@ function sendActiveLoanPaymentReminders() {
           subject:
             "⚠️ Action Required: Pay Your Active Loan Balance - Wright Finder Motors",
           htmlBody: htmlBody,
+          attachments: [pdfResult.blob],
         });
 
         Logger.log(
           "Active Loan email notification sent to client " +
             clientEmail +
             " for car " +
-            car["Car ID"],
+            car["Car ID"] +
+            " with invoice PDF",
         );
       }
     }
@@ -2511,4 +2589,336 @@ function setupActiveLoanPaymentTrigger() {
       triggerName +
       "' created successfully (runs every 1 minute, sending emails on even minutes to achieve a 2-minute interval).",
   );
+}
+
+function generateInvoicePdf(
+  car,
+  clientName,
+  clientEmail,
+  soldPrice,
+  downPayment,
+  loanAmount,
+  remainLoan,
+  paymentsHistory,
+) {
+  var templateId = "1WhvW1WdQOtrbXZyA11RZUq1US3PvWFFnrC6tiielLjk";
+
+  // Increment and format 5-digit invoice number using script properties
+  var scriptProperties = PropertiesService.getScriptProperties();
+  var invoiceCounter =
+    parseInt(scriptProperties.getProperty("INVOICE_COUNTER") || "0") + 1;
+  scriptProperties.setProperty("INVOICE_COUNTER", invoiceCounter.toString());
+  var invoiceNumber = String(invoiceCounter).padStart(5, "0");
+
+  // Copy template
+  var tempFile = DriveApp.getFileById(templateId).makeCopy(
+    "Invoice_" + invoiceNumber + "_" + car["Car ID"],
+  );
+  var doc = DocumentApp.openById(tempFile.getId());
+  var body = doc.getBody();
+
+  // Replace standard placeholders
+  body.replaceText("{{INVOICE_NUMBER}}", invoiceNumber);
+  body.replaceText("{{CLIENT_NAME}}", clientName);
+  body.replaceText("{{CLIENT_EMAIL}}", clientEmail);
+  body.replaceText("{{SOLD_PRICE}}", soldPrice);
+  body.replaceText("{{DOWN_PAYMENT}}", downPayment);
+  body.replaceText("{{LOAN_AMOUNT}}", loanAmount);
+  body.replaceText("{{REMAIN_LOAN}}", remainLoan);
+
+  // Replace vehicle spec placeholders
+  body.replaceText("{{CAR_YEAR}}", car["Year"] || "N/A");
+  body.replaceText("{{CAR_NAME}}", car["Car Name"] || "N/A");
+  body.replaceText("{{CAR_MODEL}}", car["Model"] || "N/A");
+  body.replaceText("{{CAR_VIN}}", car["VIN"] || "N/A");
+  body.replaceText("{{CAR_MILEAGE}}", car["Mileage"] || "N/A");
+  body.replaceText("{{CAR_ENGINE}}", car["Engine"] || "N/A");
+  body.replaceText("{{CAR_TRANSMISSION}}", car["Transmission"] || "N/A");
+  body.replaceText("{{CAR_EXT_COLOR}}", car["Exterior Color"] || "N/A");
+  body.replaceText("{{CAR_INT_COLOR}}", car["Interior Color"] || "N/A");
+
+  // Replace payments table if placeholder exists
+  var searchPattern = "{{PAYMENTS_TABLE}}";
+  var element = body.findText(searchPattern);
+  if (element) {
+    var textElement = element.getElement();
+    var parent = textElement.getParent();
+
+    var tableData = [["Date", "Amount", "Method", "Notes"]];
+
+    if (paymentsHistory && paymentsHistory.length > 0) {
+      paymentsHistory.forEach(function (pay) {
+        var pDate = pay["PAYMENT DATE"] || pay["Payment Date"] || "";
+        var pAmount = pay["AMOUNT"] || "";
+        if (pAmount) {
+          var pAmtNum =
+            parseFloat(String(pAmount).replace(/[^0-9.-]+/g, "")) || 0;
+          pAmount =
+            "$" +
+            pAmtNum.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+        }
+        var pOption =
+          pay["PAYMENT OPTION / NOTES"] ||
+          pay["Payment Option"] ||
+          pay["PAYMENT OPTION"] ||
+          "";
+        var pNotes = pay["NOTES"] || pay["Notes"] || "";
+        tableData.push([pDate, pAmount, pOption, pNotes]);
+      });
+    } else {
+      tableData.push(["-", "-", "-", "No payments recorded."]);
+    }
+
+    var index = parent.getParent().getChildIndex(parent);
+    var table = parent.getParent().insertTable(index + 1, tableData);
+
+    table.setBorderWidth(1);
+    table.setBorderColor("#cbd5e1");
+
+    var headerRow = table.getRow(0);
+    for (var col = 0; col < headerRow.getNumCells(); col++) {
+      var cell = headerRow.getCell(col);
+      cell.setBackgroundColor("#f1f5f9");
+      var cellText = cell.getChild(0).asParagraph().editAsText();
+      cellText.setBold(true);
+      cellText.setFontSize(10);
+      cellText.setForegroundColor("#334155");
+    }
+
+    for (var r = 1; r < table.getNumRows(); r++) {
+      var row = table.getRow(r);
+      for (var col = 0; col < row.getNumCells(); col++) {
+        var cell = row.getCell(col);
+        var cellText = cell.getChild(0).asParagraph().editAsText();
+        cellText.setFontSize(9);
+        cellText.setForegroundColor("#475569");
+      }
+    }
+
+    parent.removeFromParent();
+  }
+
+  doc.saveAndClose();
+
+  var pdfBlob = tempFile
+    .getAs(MimeType.PDF)
+    .setName("Invoice_" + invoiceNumber + "_" + car["Car ID"] + ".pdf");
+  DriveApp.getFileById(tempFile.getId()).setTrashed(true);
+
+  return {
+    blob: pdfBlob,
+    invoiceNumber: invoiceNumber,
+  };
+}
+
+function testSendActiveLoanPaymentReminder() {
+  var testEmail = "YOUR_TEST_EMAIL@gmail.com"; // Replace with your email, or leave default (uses your Google account email)
+  var testCarId = ""; // Optional: Specify a Stock # to test a specific vehicle
+
+  // Find a vehicle with active loan status
+  var vehicles = getVehicles();
+  var car = null;
+
+  if (testCarId) {
+    car = vehicles.find(function (c) {
+      return String(c["Car ID"]) === String(testCarId);
+    });
+  } else {
+    // Look for the first car with active loan status
+    car = vehicles.find(function (c) {
+      var finStatus = (c["Financing status"] || "")
+        .toString()
+        .trim()
+        .toLowerCase();
+      var status = (c["Status"] || "").toString().trim().toLowerCase();
+      var spRaw = c["SOLD PRICE"] ? c["SOLD PRICE"].toString().trim() : "";
+      var spNum = parseFloat(spRaw.replace(/[^0-9.-]+/g, "")) || 0;
+      var dpRaw = c["DOWN PAYMENT"] ? c["DOWN PAYMENT"].toString().trim() : "";
+      var dpNum = parseFloat(dpRaw.replace(/[^0-9.-]+/g, "")) || 0;
+      var isSold = status.includes("sold");
+      var isForceActiveLoan = isSold && spNum > 0 && dpNum === 0;
+      return finStatus === "loan active" || isForceActiveLoan;
+    });
+  }
+
+  if (!car) {
+    Logger.log(
+      "No vehicle with active loan status found to test. Please ensure at least one vehicle has 'Financing status' set to 'Loan Active' or status sold with SOLD PRICE > 0.",
+    );
+    return;
+  }
+
+  Logger.log("Running test for Car ID: " + car["Car ID"]);
+
+  // Determine destination email
+  var clientEmail =
+    testEmail && testEmail !== "YOUR_TEST_EMAIL@gmail.com"
+      ? testEmail
+      : Session.getActiveUser().getEmail();
+  var clientName = "Test Buyer (Wright Finder)";
+
+  var spRaw = car["SOLD PRICE"] ? car["SOLD PRICE"].toString().trim() : "";
+  var spNum = parseFloat(spRaw.replace(/[^0-9.-]+/g, "")) || 0;
+  var dpRaw = car["DOWN PAYMENT"] ? car["DOWN PAYMENT"].toString().trim() : "";
+  var dpNum = parseFloat(dpRaw.replace(/[^0-9.-]+/g, "")) || 0;
+
+  var loanAmountRaw = car["LOAN AMOUNT"]
+    ? car["LOAN AMOUNT"].toString().trim()
+    : "";
+
+  var formatMoney = function (num) {
+    return (
+      "$" +
+      num.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
+  };
+
+  var totalPayments = getTotalPaymentForCar(car["Car ID"]) || 0;
+  var loanAmountVal = spNum > 0 && dpNum > 0 ? spNum - dpNum : 0;
+  if (loanAmountRaw) {
+    var parsedLA = parseFloat(loanAmountRaw.replace(/[^0-9.-]+/g, ""));
+    if (!isNaN(parsedLA) && parsedLA > 0) {
+      loanAmountVal = parsedLA;
+    }
+  }
+
+  var remainLoanVal = loanAmountVal > 0 ? loanAmountVal - totalPayments : 0;
+  var formattedLoanAmount = formatMoney(loanAmountVal);
+  var formattedRemainLoan = formatMoney(remainLoanVal);
+  var paymentsHistory = getPaymentsForCar(car["Car ID"]) || [];
+
+  // Generate invoice PDF
+  var pdfResult = generateInvoicePdf(
+    car,
+    clientName,
+    clientEmail,
+    formatMoney(spNum),
+    formatMoney(dpNum),
+    formattedLoanAmount,
+    formattedRemainLoan,
+    paymentsHistory,
+  );
+
+  // Build table
+  var paymentsHtml =
+    '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse; font-size: 14px; margin: 20px 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">' +
+    '<tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">' +
+    '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Date</th>' +
+    '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Amount</th>' +
+    '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Method</th>' +
+    '<th style="padding: 10px 12px; text-align: left; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase;">Notes</th>' +
+    "</tr>";
+
+  if (paymentsHistory.length > 0) {
+    paymentsHistory.forEach(function (pay) {
+      var pDate = pay["PAYMENT DATE"] || pay["Payment Date"] || "";
+      var pAmount = pay["AMOUNT"] || "";
+      if (pAmount) {
+        var pAmtNum =
+          parseFloat(String(pAmount).replace(/[^0-9.-]+/g, "")) || 0;
+        pAmount =
+          "$" +
+          pAmtNum.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+      }
+      var pOption =
+        pay["PAYMENT OPTION / NOTES"] ||
+        pay["Payment Option"] ||
+        pay["PAYMENT OPTION"] ||
+        "-";
+      var pNotes = pay["NOTES"] || pay["Notes"] || "-";
+
+      paymentsHtml +=
+        '<tr style="border-bottom: 1px solid #f1f5f9;">' +
+        '<td style="padding: 10px 12px; color: #334155;">' +
+        pDate +
+        "</td>" +
+        '<td style="padding: 10px 12px; color: #10b981; font-weight: 600;">' +
+        pAmount +
+        "</td>" +
+        '<td style="padding: 10px 12px; color: #334155;">' +
+        pOption +
+        "</td>" +
+        '<td style="padding: 10px 12px; color: #64748b; font-size: 13px;">' +
+        pNotes +
+        "</td>" +
+        "</tr>";
+    });
+  } else {
+    paymentsHtml +=
+      '<tr><td colspan="4" style="padding: 15px; text-align: center; color: #94a3b8; font-style: italic;">No payments recorded yet.</td></tr>';
+  }
+  paymentsHtml += "</table>";
+
+  var htmlBody =
+    "<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; border: none; border-radius: 16px; background-color: #fafbfc; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden;\">" +
+    '<div style="background: linear-gradient(135deg, #e056fd 0%, #6c5ce7 100%); padding: 35px 20px; text-align: center; color: #ffffff;">' +
+    '<h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">WRIGHT FINDER MOTORS</h1>' +
+    '<p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Loan &amp; Financing Division</p>' +
+    "</div>" +
+    '<div style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 16px 16px;">' +
+    '<div style="margin-bottom: 20px; display: table; width: 100%;">' +
+    '<div style="display: table-cell; vertical-align: middle;"><h2 style="color: #2d3436; margin: 0; font-size: 20px; font-weight: 700;">[TEST] Loan Balance Notice</h2></div>' +
+    '<div style="display: table-cell; text-align: right; vertical-align: middle;"><span style="background-color: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1;">Invoice #' +
+    pdfResult.invoiceNumber +
+    "</span></div>" +
+    "</div>" +
+    '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">Dear ' +
+    clientName +
+    ",</p>" +
+    '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is a test notification. We have attached the test invoice PDF for your records:</p>' +
+    '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 25px 0;">' +
+    "<tr>" +
+    '<td width="48%" valign="top" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;">' +
+    '<span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; display: block; margin-bottom: 6px;">Loan Amount</span>' +
+    '<strong style="font-size: 22px; color: #334155; font-weight: 800; display: block;">' +
+    formattedLoanAmount +
+    "</strong>" +
+    "</td>" +
+    '<td width="4%">&nbsp;</td>' +
+    '<td width="48%" valign="top" style="background-color: #fef2f2; border: 2px solid #ef4444; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);">' +
+    '<span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: #b91c1c; font-weight: 700; display: block; margin-bottom: 6px;">🚨 Remain Loan</span>' +
+    '<strong style="font-size: 26px; color: #b91c1c; font-weight: 900; display: block;">' +
+    formattedRemainLoan +
+    "</strong>" +
+    "</td>" +
+    "</tr>" +
+    "</table>" +
+    '<div style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; margin: 25px 0; border-radius: 12px;">' +
+    '<h4 style="margin: 0 0 15px 0; color: #2d3436; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Vehicle Details</h4>' +
+    '<table style="width: 100%; font-size: 14px; border-collapse: collapse; color: #2d3436;">' +
+    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Vehicle:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+    (car["Year"] || "") +
+    " " +
+    (car["Car Name"] || "") +
+    " " +
+    (car["Model"] || "") +
+    "</td></tr>" +
+    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Stock ID:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+    car["Car ID"] +
+    "</td></tr>" +
+    "</table>" +
+    "</div>" +
+    '<h3 style="color: #2d3436; font-size: 16px; font-weight: 700; margin-top: 30px; margin-bottom: 5px;">Vehicle Payments History</h3>' +
+    paymentsHtml +
+    "</div>" +
+    "</div>";
+
+  MailApp.sendEmail({
+    to: clientEmail,
+    subject:
+      "🧪 [TEST INVOICE] Pay Your Active Loan Balance - Wright Finder Motors",
+    htmlBody: htmlBody,
+    attachments: [pdfResult.blob],
+  });
+
+  Logger.log("Test email sent successfully to: " + clientEmail);
 }
