@@ -619,6 +619,117 @@ function getTotalPaymentForCar(carId) {
   return total;
 }
 
+function updateFinancingStatusOnPayment(carId) {
+  if (!carId) return;
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return;
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  var financingStatusIndex = headers.indexOf("Financing status");
+
+  if (carIdIndex === -1 || financingStatusIndex === -1) return;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][carIdIndex]).trim() === String(carId).trim()) {
+      var car = {};
+      for (var j = 0; j < headers.length; j++) {
+        car[headers[j]] = data[i][j];
+      }
+
+      var spRaw = car["SOLD PRICE"] ? car["SOLD PRICE"].toString().trim() : "";
+      var spNum = parseFloat(spRaw.replace(/[^0-9.-]+/g, "")) || 0;
+
+      var dpRaw = car["DOWN PAYMENT"]
+        ? car["DOWN PAYMENT"].toString().trim()
+        : "";
+      var dpNum = parseFloat(dpRaw.replace(/[^0-9.-]+/g, "")) || 0;
+
+      var loanAmount = spNum > 0 && dpNum > 0 ? spNum - dpNum : 0;
+      if (loanAmount <= 0) return;
+
+      var totalPayments = getTotalPaymentForCar(carId) || 0;
+      var remainLoan = loanAmount - totalPayments;
+
+      var currentFinStatus = (car["Financing status"] || "").toString().trim();
+      var newFinStatus = currentFinStatus;
+
+      if (remainLoan <= 0) {
+        newFinStatus = "Paid off";
+      } else {
+        newFinStatus = "Loan Active";
+      }
+
+      if (currentFinStatus !== newFinStatus) {
+        sheet.getRange(i + 1, financingStatusIndex + 1).setValue(newFinStatus);
+      }
+      break;
+    }
+  }
+}
+
+function syncAllFinancingStatuses() {
+  var sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vehicle details");
+  if (!sheet) return "Error: Vehicle details sheet not found";
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return "No data to sync";
+
+  var headers = data[0];
+  var carIdIndex = headers.indexOf("Car ID");
+  var financingStatusIndex = headers.indexOf("Financing status");
+
+  if (carIdIndex === -1 || financingStatusIndex === -1)
+    return "Error: Required columns not found";
+
+  var updatedCount = 0;
+
+  for (var i = 1; i < data.length; i++) {
+    var carId = data[i][carIdIndex];
+    if (!carId) continue;
+
+    var car = {};
+    for (var j = 0; j < headers.length; j++) {
+      car[headers[j]] = data[i][j];
+    }
+
+    var spRaw = car["SOLD PRICE"] ? car["SOLD PRICE"].toString().trim() : "";
+    var spNum = parseFloat(spRaw.replace(/[^0-9.-]+/g, "")) || 0;
+
+    var dpRaw = car["DOWN PAYMENT"]
+      ? car["DOWN PAYMENT"].toString().trim()
+      : "";
+    var dpNum = parseFloat(dpRaw.replace(/[^0-9.-]+/g, "")) || 0;
+
+    var loanAmount = spNum > 0 && dpNum > 0 ? spNum - dpNum : 0;
+    if (loanAmount <= 0) continue;
+
+    var totalPayments = getTotalPaymentForCar(carId) || 0;
+    var remainLoan = loanAmount - totalPayments;
+
+    var currentFinStatus = (car["Financing status"] || "").toString().trim();
+    var newFinStatus = currentFinStatus;
+
+    if (remainLoan <= 0) {
+      newFinStatus = "Paid off";
+    } else {
+      newFinStatus = "Loan Active";
+    }
+
+    if (currentFinStatus !== newFinStatus) {
+      sheet.getRange(i + 1, financingStatusIndex + 1).setValue(newFinStatus);
+      updatedCount++;
+    }
+  }
+
+  return "Success: Synced " + updatedCount + " vehicles.";
+}
+
 function savePayment(data) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Payment");
 
@@ -672,6 +783,9 @@ function savePayment(data) {
   }
 
   sheet.appendRow(rowValues);
+  if (data.carId) {
+    updateFinancingStatusOnPayment(data.carId);
+  }
   return "Success";
 }
 
@@ -705,7 +819,21 @@ function deletePayment(rowNumber) {
   var row = parseInt(rowNumber);
   if (isNaN(row) || row <= 1) return "Error: Invalid row number";
 
+  var headers = sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getDisplayValues()[0];
+  var carIdIndex = headers.indexOf("CAR ID");
+  var carId = "";
+  if (carIdIndex !== -1) {
+    carId = sheet.getRange(row, carIdIndex + 1).getValue();
+  }
+
   sheet.deleteRow(row);
+
+  if (carId) {
+    updateFinancingStatusOnPayment(carId);
+  }
+
   return "Success";
 }
 
@@ -747,6 +875,16 @@ function updatePayment(rowNumber, data) {
   }
 
   sheet.getRange(row, 1, 1, headers.length).setValues([rowValues]);
+  var carId = data.carId;
+  if (!carId) {
+    var carIdIndex = headers.indexOf("CAR ID");
+    if (carIdIndex !== -1) {
+      carId = existingRow[carIdIndex];
+    }
+  }
+  if (carId) {
+    updateFinancingStatusOnPayment(carId);
+  }
   return "Success";
 }
 
