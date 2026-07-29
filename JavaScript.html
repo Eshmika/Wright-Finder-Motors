@@ -355,52 +355,67 @@
 
     function populateExpenseDropdowns() {
       const carIdSelect = document.getElementById("expenseCarId");
-      const modelSelect = document.getElementById("expenseCarModel");
+      if (!carIdSelect) return;
 
       carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
-      modelSelect.innerHTML = '<option value="">Select Model...</option>';
-
-      // Use Sets to keep unique values for model
-      let uniqueModels = new Set();
 
       allCars.forEach((car) => {
         if (car["Car ID"]) {
           carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
         }
-        if (car["Model"]) uniqueModels.add(car["Model"]);
       });
+    }
 
-      uniqueModels.forEach((model) => {
-        modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
+    function populatePaymentDropdowns() {
+      const carIdSelect = document.getElementById("pay-car-id");
+      if (!carIdSelect) return;
+
+      carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
+
+      if (!allCars) return;
+
+      allCars.forEach((car) => {
+        if (car["Car ID"]) {
+          carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
+        }
       });
     }
 
     window.syncExpenseDropdowns = function (changedField) {
       const carIdInput = document.getElementById("expenseCarId").value;
-      const modelInput = document.getElementById("expenseCarModel").value;
       const clientInput = document.getElementById("expenseClientName").value;
 
       let matchedCar = null;
 
-      if (changedField === "carId" && carIdInput) {
-        matchedCar = allCars.find((c) => c["Car ID"] === carIdInput);
-      } else if (changedField === "carModel" && modelInput) {
-        matchedCar = allCars.find((c) => c["Model"] === modelInput);
-      } else if (changedField === "clientName" && clientInput) {
-        matchedCar = allCars.find((c) => c["CLIENT NAME"] === clientInput);
+      if (changedField === "carId") {
+        if (carIdInput) {
+          matchedCar = allCars.find((c) => c["Car ID"] === carIdInput);
+        }
+      } else if (changedField === "clientName") {
+        if (clientInput) {
+          matchedCar = allCars.find((c) => c["CLIENT NAME"] === clientInput);
+        }
       }
 
       if (matchedCar) {
         if (changedField !== "carId" && matchedCar["Car ID"]) {
           document.getElementById("expenseCarId").value = matchedCar["Car ID"];
         }
-        if (changedField !== "carModel" && matchedCar["Model"]) {
-          document.getElementById("expenseCarModel").value =
-            matchedCar["Model"];
-        }
+        document.getElementById("expenseCarName").value =
+          matchedCar["Car Name"] || "";
+        document.getElementById("expenseCarModel").value =
+          matchedCar["Model"] || "";
+        document.getElementById("expenseCarYear").value =
+          matchedCar["Year"] || "";
         if (changedField !== "clientName" && matchedCar["CLIENT NAME"]) {
           document.getElementById("expenseClientName").value =
             matchedCar["CLIENT NAME"];
+        }
+      } else {
+        if (changedField === "carId" && !carIdInput) {
+          document.getElementById("expenseCarName").value = "";
+          document.getElementById("expenseCarModel").value = "";
+          document.getElementById("expenseCarYear").value = "";
         }
       }
     };
@@ -977,7 +992,6 @@
         ? google.script.run.withSuccessHandler(function (response) {
             showCreativeSuccessModal("Other Expense updated successfully!");
             window.cancelOtherExpenseEdit();
-            btn.innerHTML = originalText;
             btn.disabled = false;
             window.loadOtherExpenses();
           })
@@ -4787,13 +4801,7 @@
           syncPaymentDropdowns("carId"),
         );
       }
-      if (modelSelect) {
-        const newModelSelect = modelSelect.cloneNode(true);
-        modelSelect.parentNode.replaceChild(newModelSelect, modelSelect);
-        newModelSelect.addEventListener("change", () =>
-          syncPaymentDropdowns("carModel"),
-        );
-      }
+      // modelSelect is now a readonly input, no change listener needed
       if (clientInput) {
         const newClientInput = clientInput.cloneNode(true);
         clientInput.parentNode.replaceChild(newClientInput, clientInput);
@@ -4805,45 +4813,29 @@
 
     function populatePaymentDropdowns() {
       const carIdSelect = document.getElementById("pay-car-id");
-      const modelSelect = document.getElementById("pay-car-model");
-
-      if (!carIdSelect || !modelSelect) return;
+      if (!carIdSelect) return;
 
       carIdSelect.innerHTML = '<option value="">Select Stock #...</option>';
-      modelSelect.innerHTML = '<option value="">Select Model...</option>';
 
       if (!allCars) return;
-
-      // Use Sets to keep unique values for model
-      let uniqueModels = new Set();
 
       allCars.forEach((car) => {
         if (car["Car ID"]) {
           carIdSelect.innerHTML += `<option value="${car["Car ID"]}">${car["Car ID"]}</option>`;
         }
-        if (car["Model"]) uniqueModels.add(car["Model"]);
       });
-
-      Array.from(uniqueModels)
-        .sort()
-        .forEach((model) => {
-          modelSelect.innerHTML += `<option value="${model}">${model}</option>`;
-        });
     }
 
     function syncPaymentDropdowns(changedField) {
       const carIdSelect = document.getElementById("pay-car-id");
-      const modelSelect = document.getElementById("pay-car-model");
       const clientInput = document.getElementById("pay-client-name");
 
-      if (!allCars || !carIdSelect || !modelSelect || !clientInput) return;
+      if (!allCars || !carIdSelect || !clientInput) return;
 
       let matchedCar = null;
 
       if (changedField === "carId" && carIdSelect.value) {
         matchedCar = allCars.find((c) => c["Car ID"] === carIdSelect.value);
-      } else if (changedField === "carModel" && modelSelect.value) {
-        matchedCar = allCars.find((c) => c["Model"] === modelSelect.value);
       } else if (changedField === "clientName" && clientInput.value) {
         matchedCar = allCars.find(
           (c) => c["CLIENT NAME"] === clientInput.value,
@@ -4854,11 +4846,24 @@
         if (changedField !== "carId" && matchedCar["Car ID"]) {
           carIdSelect.value = matchedCar["Car ID"];
         }
-        if (changedField !== "carModel" && matchedCar["Model"]) {
-          modelSelect.value = matchedCar["Model"];
-        }
+        const nameInput = document.getElementById("pay-car-name");
+        const modelInput = document.getElementById("pay-car-model");
+        const yearInput = document.getElementById("pay-car-year");
+        if (nameInput) nameInput.value = matchedCar["Car Name"] || "";
+        if (modelInput) modelInput.value = matchedCar["Model"] || "";
+        if (yearInput) yearInput.value = matchedCar["Year"] || "";
+
         if (changedField !== "clientName" && matchedCar["CLIENT NAME"]) {
           clientInput.value = matchedCar["CLIENT NAME"];
+        }
+      } else {
+        if (changedField === "carId" && !carIdSelect.value) {
+          const nameInput = document.getElementById("pay-car-name");
+          const modelInput = document.getElementById("pay-car-model");
+          const yearInput = document.getElementById("pay-car-year");
+          if (nameInput) nameInput.value = "";
+          if (modelInput) modelInput.value = "";
+          if (yearInput) yearInput.value = "";
         }
       }
     }
@@ -6993,12 +6998,16 @@
         }
         carIdSelect.value = carId;
       }
+
+      const matchedCar = allCars.find((c) => c["Car ID"] === carId);
+      if (matchedCar) {
+        const nameInput = document.getElementById("expenseCarName");
+        const yearInput = document.getElementById("expenseCarYear");
+        if (nameInput) nameInput.value = matchedCar["Car Name"] || "";
+        if (yearInput) yearInput.value = matchedCar["Year"] || "";
+      }
+
       if (modelSelect && carModel) {
-        if (
-          !Array.from(modelSelect.options).some((opt) => opt.value === carModel)
-        ) {
-          modelSelect.innerHTML += `<option value="${carModel}">${carModel}</option>`;
-        }
         modelSelect.value = carModel;
       }
       if (clientSelect) {
@@ -7158,12 +7167,16 @@
         }
         carIdSelect.value = carId;
       }
+
+      const matchedCar = allCars.find((c) => c["Car ID"] === carId);
+      if (matchedCar) {
+        const nameInput = document.getElementById("pay-car-name");
+        const yearInput = document.getElementById("pay-car-year");
+        if (nameInput) nameInput.value = matchedCar["Car Name"] || "";
+        if (yearInput) yearInput.value = matchedCar["Year"] || "";
+      }
+
       if (modelSelect && carModel) {
-        if (
-          !Array.from(modelSelect.options).some((opt) => opt.value === carModel)
-        ) {
-          modelSelect.innerHTML += `<option value="${carModel}">${carModel}</option>`;
-        }
         modelSelect.value = carModel;
       }
       if (clientSelect) {
