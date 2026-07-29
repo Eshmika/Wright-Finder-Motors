@@ -2347,6 +2347,7 @@
             "TRANSPORT FEES",
             "Trade Value",
             "Trade In",
+            "Purchase Price",
           ],
         },
         {
@@ -2420,6 +2421,10 @@
           "TRANSPORT FEES": {
             color: "#6B7280",
             bg: "rgba(107, 114, 128, 0.08)",
+          },
+          "Purchase Price": {
+            color: "#1cc88a",
+            bg: "rgba(28, 200, 138, 0.08)",
           },
         };
 
@@ -2662,6 +2667,32 @@
               `;
             } else if (key === "Trade status" && val === "Trading") {
               inputHtml = `<input type="text" name="${key}" value="${val}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed; font-weight: bold; color: #7F1D1D !important;">`;
+
+              const connectedCar = allCars.find(
+                (c) =>
+                  (c["Trade status"] || "").toString().trim() === "Trade" &&
+                  (c["Purchased Car Name"] || "").toString().trim() ===
+                    currentEditableCar["Car ID"],
+              );
+              let connectedCarStr = "No connected trade vehicle found";
+              let viewLinkHtml = "";
+              if (connectedCar) {
+                connectedCarStr =
+                  `${connectedCar["Car ID"]} - ${connectedCar["Car Name"] || ""} ${connectedCar["Model"] || ""}`.trim();
+                viewLinkHtml = `
+                  <button type="button" class="btn btn-sm btn-link" onclick="window.viewCarDetailsById('${connectedCar["Car ID"]}')" style="padding: 0; font-size: 0.8rem; margin-top: 4px; text-decoration: underline; color: #3a1f62; font-weight: 600; text-align: left; display: block; border: none; background: transparent; cursor: pointer;">
+                    <i class="fas fa-external-link-alt"></i> View Connected Car (${connectedCar["Car ID"]})
+                  </button>
+                `;
+              }
+
+              inputHtml += `
+                </div>
+                <div class="input-group" style="grid-column: span 1;">
+                  <label>Connected Car for Trade</label>
+                  <input type="text" value="${connectedCarStr}" class="form-control readonly-field" readonly style="background:#e9ecef; cursor:not-allowed;">
+                  ${viewLinkHtml}
+              `;
             } else {
               let options = `<option value="">Select ${key}...</option>`;
               dropdownOptions[key].forEach((opt) => {
@@ -2914,10 +2945,10 @@
 
       renderEditFeatures();
 
-      // Sync duplicated fields (Dispatcher Price and TRANSPORT FEES)
+      // Sync duplicated fields (Dispatcher Price, TRANSPORT FEES, and Purchase Price)
       grid
         .querySelectorAll(
-          'input[name="Dispatcher Price"], input[name="TRANSPORT FEES"]',
+          'input[name="Dispatcher Price"], input[name="TRANSPORT FEES"], input[name="Purchase Price"]',
         )
         .forEach((input) => {
           input.addEventListener("input", (e) => {
@@ -2926,6 +2957,7 @@
             grid.querySelectorAll(`input[name="${name}"]`).forEach((dupe) => {
               if (dupe !== e.target) dupe.value = value;
             });
+            updateEditFormCalculations();
           });
         });
 
@@ -3550,6 +3582,17 @@
           .updateVehicleData(formDataObj);
       };
     }
+
+    window.viewCarDetailsById = function (carId) {
+      const car = allCars.find(
+        (c) => String(c["Car ID"]).trim() === String(carId).trim(),
+      );
+      if (car) {
+        openCarModal(car);
+      } else {
+        alert("Car not found in inventory: " + carId);
+      }
+    };
 
     function openCarModal(car) {
       // Calculate Discount on the fly: Discount = Price (Selling Price) - SOLD PRICE
