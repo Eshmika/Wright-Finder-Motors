@@ -2651,7 +2651,7 @@ function generateInvoicePdf(
     var textElement = element.getElement();
     var parent = textElement.getParent();
     var tableData = [
-      ["VEHICLE PAYMENTS HISTORY", "", "", ""],
+      ["PAYMENTS HISTORY", "", "", ""],
       ["Date", "Amount", "Method", "Notes"],
     ];
 
@@ -2688,20 +2688,18 @@ function generateInvoicePdf(
 
     // Row 0 styling (VEHICLE PAYMENTS HISTORY)
     var row0 = table.getRow(0);
-    for (var col = row0.getNumCells() - 1; col > 0; col--) {
-      row0.getCell(col).merge();
+    for (var col = 0; col < row0.getNumCells(); col++) {
+      var cell = row0.getCell(col);
+      cell.setBackgroundColor("#1c0f45");
+      var p = cell.getChild(0).asParagraph();
+      p.setSpacingBefore(0);
+      p.setSpacingAfter(0);
+      var text = p.editAsText();
+      text.setFontFamily("Poppins");
+      text.setFontSize(9);
+      text.setBold(false);
+      text.setForegroundColor("#ffffff");
     }
-    var cell0 = row0.getCell(0);
-    cell0.setBackgroundColor("#1c0f45");
-    var p0 = cell0.getChild(0).asParagraph();
-    p0.setSpacingBefore(0);
-    p0.setSpacingAfter(0);
-    p0.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    var text0 = p0.editAsText();
-    text0.setFontFamily("Poppins");
-    text0.setFontSize(9);
-    text0.setBold(true);
-    text0.setForegroundColor("#ffffff");
 
     // Row 1 styling (Column Headings Row: Date, Amount, Method, Notes)
     var row1 = table.getRow(1);
