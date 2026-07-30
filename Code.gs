@@ -2650,11 +2650,7 @@ function generateInvoicePdf(
   if (element) {
     var textElement = element.getElement();
     var parent = textElement.getParent();
-
-    var tableData = [
-      ["VEHICLE PAYMENTS HISTORY", "", "", ""],
-      ["Date", "Amount", "Method", "Notes"],
-    ];
+    var tableData = [["Date", "Amount", "Method", "Notes"]];
 
     if (paymentsHistory && paymentsHistory.length > 0) {
       paymentsHistory.forEach(function (pay) {
@@ -2684,49 +2680,54 @@ function generateInvoicePdf(
 
     var index = parent.getParent().getChildIndex(parent);
     var table = parent.getParent().insertTable(index + 1, tableData);
-
-    // Merge cells in first row and remove borders
-    var row0 = table.getRow(0);
-    for (var colIndex = row0.getNumCells() - 1; colIndex > 0; colIndex--) {
-      row0.getCell(colIndex).merge();
-    }
     table.setBorderWidth(0);
 
-    // Row 0 styling (Header Row)
-    var row0 = table.getRow(0);
-    var cell0 = row0.getCell(0);
-    cell0.setBackgroundColor("#1c0f45");
-    var text0 = cell0.getChild(0).asParagraph().editAsText();
-    text0.setFontFamily("Poppins");
-    text0.setFontSize(9);
-    text0.setBold(false);
-    text0.setForegroundColor("#ffffff");
+    // Apply explicit widths to columns (Date, Amount, Method, Notes) to make it full width
+    var colWidths = [100, 100, 120, 148]; // Sum = 468 pt
+    for (var col = 0; col < colWidths.length; col++) {
+      table.setColumnWidth(col, colWidths[col]);
+    }
 
-    // Row 1 styling (Column Headings Row)
-    var row1 = table.getRow(1);
-    for (var col = 0; col < row1.getNumCells(); col++) {
-      var cell = row1.getCell(col);
+    // Row 0 styling (Column Headings Row)
+    var row0 = table.getRow(0);
+    for (var col = 0; col < row0.getNumCells(); col++) {
+      var cell = row0.getCell(col);
       cell.setBackgroundColor("#ff0804");
-      var text = cell.getChild(0).asParagraph().editAsText();
+      var p = cell.getChild(0).asParagraph();
+      p.setSpacingBefore(0);
+      p.setSpacingAfter(0);
+      var text = p.editAsText();
       text.setFontFamily("Poppins");
       text.setFontSize(9);
       text.setBold(false);
       text.setForegroundColor("#ffffff");
     }
 
-    // Alternating rows styling (Rows 2+)
-    for (var r = 2; r < table.getNumRows(); r++) {
+    // Alternating rows styling (Rows 1+)
+    for (var r = 1; r < table.getNumRows(); r++) {
       var row = table.getRow(r);
-      var bgColor = r % 2 === 0 ? "#ab90ff" : "#ffffff";
+      var bgColor = r % 2 === 1 ? "#ab90ff" : "#ffffff";
       for (var col = 0; col < row.getNumCells(); col++) {
         var cell = row.getCell(col);
         cell.setBackgroundColor(bgColor);
-        var text = cell.getChild(0).asParagraph().editAsText();
+        var p = cell.getChild(0).asParagraph();
+        p.setSpacingBefore(0);
+        p.setSpacingAfter(0);
+        var text = p.editAsText();
         text.setFontFamily("Poppins");
         text.setFontSize(9);
         text.setBold(false);
         text.setForegroundColor("#000000");
       }
+    }
+
+    // Remove any space directly preceding the table
+    var prevSibling = table.getPreviousSibling();
+    if (
+      prevSibling &&
+      prevSibling.getType() === DocumentApp.ElementType.PARAGRAPH
+    ) {
+      prevSibling.asParagraph().setSpacingAfter(0);
     }
 
     parent.removeFromParent();
