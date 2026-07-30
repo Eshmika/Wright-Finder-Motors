@@ -2716,7 +2716,7 @@ function generateInvoicePdf(
 
 function testSendActiveLoanPaymentReminder() {
   var testEmail = "YOUR_TEST_EMAIL@gmail.com"; // Replace with your email, or leave default (uses your Google account email)
-  var testCarId = ""; // Optional: Specify a Stock # to test a specific vehicle
+  var testCarId = "TR25-68"; // Optional: Specify a Stock # to test a specific vehicle
 
   // Find a vehicle with active loan status
   var vehicles = getVehicles();
@@ -2758,7 +2758,7 @@ function testSendActiveLoanPaymentReminder() {
     testEmail && testEmail !== "YOUR_TEST_EMAIL@gmail.com"
       ? testEmail
       : Session.getActiveUser().getEmail();
-  var clientName = "Test Buyer (Wright Finder)";
+  var clientName = car["CLIENT NAME"] || car["Buyer Name"] || "Valued Customer";
 
   var spRaw = car["SOLD PRICE"] ? car["SOLD PRICE"].toString().trim() : "";
   var spNum = parseFloat(spRaw.replace(/[^0-9.-]+/g, "")) || 0;
@@ -2866,7 +2866,7 @@ function testSendActiveLoanPaymentReminder() {
     "</div>" +
     '<div style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 16px 16px;">' +
     '<div style="margin-bottom: 20px; display: table; width: 100%;">' +
-    '<div style="display: table-cell; vertical-align: middle;"><h2 style="color: #2d3436; margin: 0; font-size: 20px; font-weight: 700;">[TEST] Loan Balance Notice</h2></div>' +
+    '<div style="display: table-cell; vertical-align: middle;"><h2 style="color: #2d3436; margin: 0; font-size: 20px; font-weight: 700;">Loan Balance Notice</h2></div>' +
     '<div style="display: table-cell; text-align: right; vertical-align: middle;"><span style="background-color: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1;">Invoice #' +
     pdfResult.invoiceNumber +
     "</span></div>" +
@@ -2874,7 +2874,9 @@ function testSendActiveLoanPaymentReminder() {
     '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">Dear ' +
     clientName +
     ",</p>" +
-    '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is a test notification. We have attached the test invoice PDF for your records:</p>' +
+    '<p style="color: #636e72; font-size: 15px; line-height: 1.6;">This is an automated notification regarding the active financing agreement for your vehicle. We have attached the official PDF invoice (Invoice #' +
+    pdfResult.invoiceNumber +
+    ") to this email for your records. Please find your loan status summary and payment history below:</p>" +
     '<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 25px 0;">' +
     "<tr>" +
     '<td width="48%" valign="top" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;">' +
@@ -2915,7 +2917,7 @@ function testSendActiveLoanPaymentReminder() {
   MailApp.sendEmail({
     to: clientEmail,
     subject:
-      "🧪 [TEST INVOICE] Pay Your Active Loan Balance - Wright Finder Motors",
+      "⚠️ Action Required: Pay Your Active Loan Balance - Wright Finder Motors",
     htmlBody: htmlBody,
     attachments: [pdfResult.blob],
   });
