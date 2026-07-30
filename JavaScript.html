@@ -1,4 +1,5 @@
 <script>
+  var allCars = [];
   function formatPhoneNumber(input) {
     // Strip all characters from the input except digits
     let val = input.value.replace(/\D/g, "");
@@ -1712,8 +1713,7 @@
     window.updateDataInputModelDropdown = function () {};
     window.updateEditModelDropdown = function () {};
 
-    // View Cars Logic
-    let allCars = [];
+    // allCars is declared globally
 
     function getDirectImageUrl(url) {
       if (!url) return "";
@@ -6999,7 +6999,15 @@
         carIdSelect.value = carId;
       }
 
-      const matchedCar = allCars.find((c) => c["Car ID"] === carId);
+      const cleanCarId = String(carId || "")
+        .trim()
+        .toLowerCase();
+      const matchedCar = allCars.find(
+        (c) =>
+          String(c["Car ID"] || "")
+            .trim()
+            .toLowerCase() === cleanCarId,
+      );
       if (matchedCar) {
         const nameInput = document.getElementById("expenseCarName");
         const yearInput = document.getElementById("expenseCarYear");
@@ -7007,11 +7015,13 @@
         if (yearInput) yearInput.value = matchedCar["Year"] || "";
       }
 
-      if (modelSelect && carModel) {
-        modelSelect.value = carModel;
+      if (modelSelect) {
+        modelSelect.value =
+          carModel || (matchedCar ? matchedCar["Model"] : "") || "";
       }
       if (clientSelect) {
-        clientSelect.value = clientName || "";
+        clientSelect.value =
+          clientName || (matchedCar ? matchedCar["CLIENT NAME"] : "") || "";
       }
 
       if (dateStr) {
@@ -7034,7 +7044,7 @@
       const paidBySelect = document.getElementById("expensePaidBy");
       const assocNameInput = document.getElementById("expense-associate-name");
       if (paidBySelect) {
-        if (paidBy.startsWith("Associate:")) {
+        if (paidBy && paidBy.startsWith("Associate:")) {
           paidBySelect.value = "Associate";
           if (assocNameInput) {
             assocNameInput.value = paidBy.replace("Associate:", "").trim();
@@ -7045,7 +7055,8 @@
         }
         window.toggleExpenseAssociateNameInput();
       }
-      form.querySelector('[name="amount"]').value = amount || "";
+      const cleanAmt = String(amount || "").replace(/[^0-9.]/g, "");
+      form.querySelector('[name="amount"]').value = cleanAmt;
     }
 
     const card = document
@@ -7168,7 +7179,15 @@
         carIdSelect.value = carId;
       }
 
-      const matchedCar = allCars.find((c) => c["Car ID"] === carId);
+      const cleanCarId = String(carId || "")
+        .trim()
+        .toLowerCase();
+      const matchedCar = allCars.find(
+        (c) =>
+          String(c["Car ID"] || "")
+            .trim()
+            .toLowerCase() === cleanCarId,
+      );
       if (matchedCar) {
         const nameInput = document.getElementById("pay-car-name");
         const yearInput = document.getElementById("pay-car-year");
@@ -7176,11 +7195,13 @@
         if (yearInput) yearInput.value = matchedCar["Year"] || "";
       }
 
-      if (modelSelect && carModel) {
-        modelSelect.value = carModel;
+      if (modelSelect) {
+        modelSelect.value =
+          carModel || (matchedCar ? matchedCar["Model"] : "") || "";
       }
       if (clientSelect) {
-        clientSelect.value = clientName || "";
+        clientSelect.value =
+          clientName || (matchedCar ? matchedCar["CLIENT NAME"] : "") || "";
       }
 
       if (dateStr) {
@@ -7211,7 +7232,8 @@
         payOptionSelect.value = paymentOption;
       }
 
-      document.getElementById("pay-amount").value = amount || "";
+      const cleanAmt = String(amount || "").replace(/[^0-9.]/g, "");
+      document.getElementById("pay-amount").value = cleanAmt;
       document.getElementById("pay-notes").value = notes || "";
     }
 
