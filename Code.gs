@@ -2627,6 +2627,7 @@ function generateInvoicePdf(
   body.replaceText("{{INVOICE_NUMBER}}", invoiceNumber);
   body.replaceText("{{CLIENT_NAME}}", clientName);
   body.replaceText("{{CLIENT_EMAIL}}", clientEmail);
+  body.replaceText("{{CLIENT_PHONE}}", car["Client Phone"] || "");
   body.replaceText("{{SOLD_PRICE}}", soldPrice);
   body.replaceText("{{DOWN_PAYMENT}}", downPayment);
   body.replaceText("{{LOAN_AMOUNT}}", loanAmount);
@@ -2760,7 +2761,6 @@ function generateInvoicePdf(
 }
 
 function testSendActiveLoanPaymentReminder() {
-  var testEmail = "YOUR_TEST_EMAIL@gmail.com"; // Replace with your email, or leave default (uses your Google account email)
   var testCarId = "TR25-68"; // Optional: Specify a Stock # to test a specific vehicle
 
   // Find a vehicle with active loan status
@@ -2798,11 +2798,7 @@ function testSendActiveLoanPaymentReminder() {
 
   Logger.log("Running test for Car ID: " + car["Car ID"]);
 
-  // Determine destination email
-  var clientEmail =
-    testEmail && testEmail !== "YOUR_TEST_EMAIL@gmail.com"
-      ? testEmail
-      : Session.getActiveUser().getEmail();
+  var clientEmail = Session.getActiveUser().getEmail();
   var clientName = car["CLIENT NAME"] || car["Buyer Name"] || "Valued Customer";
 
   var spRaw = car["SOLD PRICE"] ? car["SOLD PRICE"].toString().trim() : "";
@@ -2842,7 +2838,7 @@ function testSendActiveLoanPaymentReminder() {
   var pdfResult = generateInvoicePdf(
     car,
     clientName,
-    clientEmail,
+    car["Client Email"] || "",
     formatMoney(spNum),
     formatMoney(dpNum),
     formattedLoanAmount,
