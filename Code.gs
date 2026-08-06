@@ -2601,7 +2601,7 @@ function generateInvoicePdf(
   remainLoan,
   paymentsHistory,
 ) {
-  var templateId = "1WhvW1WdQOtrbXZyA11RZUq1US3PvWFFnrC6tiielLjk";
+  var templateId = "1re1qoOr6GjN2p-43NFm-eEMFZFUEOO7I6gpC0ZOqLKE";
 
   // Increment and format 5-digit invoice number using script properties
   var scriptProperties = PropertiesService.getScriptProperties();
