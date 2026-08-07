@@ -2694,7 +2694,7 @@ function generateInvoicePdf(
           pay["Payment Option"] ||
           pay["PAYMENT OPTION"] ||
           "";
-        tableData.push([pDate, pAmount, pOption, "☑ Paid   ☐ Due"]);
+        tableData.push([pDate, pAmount, pOption, "STATUS_PAID"]);
       });
     }
 
@@ -2703,7 +2703,7 @@ function generateInvoicePdf(
       "Remaining Balance",
       remainLoan,
       "Financing / Due",
-      "☐ Paid   ☑ Due",
+      "STATUS_DUE",
     ]);
 
     var index = parent.getParent().getChildIndex(parent);
@@ -2758,35 +2758,19 @@ function generateInvoicePdf(
         text.setForegroundColor("#000000");
 
         if (col === 3) {
-          var textStr = text.getText();
-          // Color Paid checkbox green
-          var paidIndex = textStr.indexOf("☑ Paid");
-          if (paidIndex !== -1) {
-            text.setForegroundColor(paidIndex, paidIndex + 5, "#10b981");
-            text.setBold(paidIndex, paidIndex + 5, true);
-          }
-          var unpaidPaidIndex = textStr.indexOf("☐ Paid");
-          if (unpaidPaidIndex !== -1) {
-            text.setForegroundColor(
-              unpaidPaidIndex,
-              unpaidPaidIndex + 5,
-              "#000000",
-            );
-          }
-
-          // Color Due checkbox red
-          var dueIndex = textStr.indexOf("☑ Due");
-          if (dueIndex !== -1) {
-            text.setForegroundColor(dueIndex, dueIndex + 4, "#ef4444");
-            text.setBold(dueIndex, dueIndex + 4, true);
-          }
-          var unpaidDueIndex = textStr.indexOf("☐ Due");
-          if (unpaidDueIndex !== -1) {
-            text.setForegroundColor(
-              unpaidDueIndex,
-              unpaidDueIndex + 4,
-              "#000000",
-            );
+          var statusVal = text.getText();
+          if (statusVal === "STATUS_PAID") {
+            text.setText("■ Paid   ■ Due");
+            text.setForegroundColor(0, 13, "#000000"); // Paid/Due text black
+            text.setForegroundColor(0, 0, "#10b981"); // Paid square green
+            text.setBold(0, 0, true);
+            text.setForegroundColor(9, 9, "#cbd5e1"); // Due square gray
+          } else if (statusVal === "STATUS_DUE") {
+            text.setText("■ Paid   ■ Due");
+            text.setForegroundColor(0, 13, "#000000"); // Paid/Due text black
+            text.setForegroundColor(0, 0, "#cbd5e1"); // Paid square gray
+            text.setForegroundColor(9, 9, "#ef4444"); // Due square red
+            text.setBold(9, 9, true);
           }
         }
       }
