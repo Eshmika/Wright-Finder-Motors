@@ -2532,10 +2532,10 @@ function sendActiveLoanPaymentReminders() {
           '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
           formatMoney(dpNum) +
           "</td></tr>" +
-          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Sold Date:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Start on:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
           (formatDateString(car["SOLD DATE"]) || "N/A") +
           "</td></tr>" +
-          '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">Installment End Date:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right;">' +
+          '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">End on:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right;">' +
           (formatDateString(car["Installment End Date"]) || "N/A") +
           "</td></tr>" +
           "</table>" +
@@ -2980,10 +2980,10 @@ function testSendActiveLoanPaymentReminder() {
     '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
     formatMoney(dpNum) +
     "</td></tr>" +
-    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Sold Date:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Start on:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
     (formatDateString(car["SOLD DATE"]) || "N/A") +
     "</td></tr>" +
-    '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">Installment End Date:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right;">' +
+    '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">End on:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right;">' +
     (formatDateString(car["Installment End Date"]) || "N/A") +
     "</td></tr>" +
     "</table>" +
