@@ -2672,7 +2672,7 @@ function generateInvoicePdf(
     var parent = textElement.getParent();
     var tableData = [
       ["PAYMENTS HISTORY", "", "", ""],
-      ["Date", "Amount", "Method", "Notes"],
+      ["Date", "Amount", "Method", "Status"],
     ];
 
     if (paymentsHistory && paymentsHistory.length > 0) {
@@ -2694,12 +2694,17 @@ function generateInvoicePdf(
           pay["Payment Option"] ||
           pay["PAYMENT OPTION"] ||
           "";
-        var pNotes = pay["NOTES"] || pay["Notes"] || "";
-        tableData.push([pDate, pAmount, pOption, pNotes]);
+        tableData.push([pDate, pAmount, pOption, "☑ Paid   ☐ Due"]);
       });
-    } else {
-      tableData.push(["-", "-", "-", "No payments recorded."]);
     }
+
+    // Always append the Remaining Loan Amount row at the end (Due status)
+    tableData.push([
+      "Remaining Balance",
+      remainLoan,
+      "Financing / Due",
+      "☐ Paid   ☑ Due",
+    ]);
 
     var index = parent.getParent().getChildIndex(parent);
     var table = parent.getParent().insertTable(index, tableData);
@@ -2721,7 +2726,7 @@ function generateInvoicePdf(
       text.setForegroundColor("#ffffff");
     }
 
-    // Row 1 styling (Column Headings Row: Date, Amount, Method, Notes)
+    // Row 1 styling (Column Headings Row: Date, Amount, Method, Status)
     var row1 = table.getRow(1);
     for (var col = 0; col < row1.getNumCells(); col++) {
       var cell = row1.getCell(col);
@@ -2751,6 +2756,39 @@ function generateInvoicePdf(
         text.setFontSize(9);
         text.setBold(false);
         text.setForegroundColor("#000000");
+
+        if (col === 3) {
+          var textStr = text.getText();
+          // Color Paid checkbox green
+          var paidIndex = textStr.indexOf("☑ Paid");
+          if (paidIndex !== -1) {
+            text.setForegroundColor(paidIndex, paidIndex + 5, "#10b981");
+            text.setBold(paidIndex, paidIndex + 5, true);
+          }
+          var unpaidPaidIndex = textStr.indexOf("☐ Paid");
+          if (unpaidPaidIndex !== -1) {
+            text.setForegroundColor(
+              unpaidPaidIndex,
+              unpaidPaidIndex + 5,
+              "#000000",
+            );
+          }
+
+          // Color Due checkbox red
+          var dueIndex = textStr.indexOf("☑ Due");
+          if (dueIndex !== -1) {
+            text.setForegroundColor(dueIndex, dueIndex + 4, "#ef4444");
+            text.setBold(dueIndex, dueIndex + 4, true);
+          }
+          var unpaidDueIndex = textStr.indexOf("☐ Due");
+          if (unpaidDueIndex !== -1) {
+            text.setForegroundColor(
+              unpaidDueIndex,
+              unpaidDueIndex + 4,
+              "#000000",
+            );
+          }
+        }
       }
     }
 
