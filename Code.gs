@@ -2369,7 +2369,12 @@ function sendActiveLoanPaymentReminders() {
       var isSold = status.includes("sold");
       var isForceActiveLoan = isSold && spNum > 0 && dpNum === 0;
 
-      if ((finStatus === "loan active" || isForceActiveLoan) && clientEmail) {
+      var agreementStatus = (car["Agreement Status"] || "").toString().trim();
+      if (
+        (finStatus === "loan active" || isForceActiveLoan) &&
+        clientEmail &&
+        agreementStatus === "Signed"
+      ) {
         var loanAmountRaw = car["LOAN AMOUNT"]
           ? car["LOAN AMOUNT"].toString().trim()
           : "";
@@ -2524,8 +2529,14 @@ function sendActiveLoanPaymentReminders() {
           '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Original Sold Price:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
           formatMoney(spNum) +
           "</td></tr>" +
-          '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
           formatMoney(dpNum) +
+          "</td></tr>" +
+          '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Sold Date:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+          (formatDateString(car["SOLD DATE"]) || "N/A") +
+          "</td></tr>" +
+          '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">Installment End Date:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right;">' +
+          (formatDateString(car["Installment End Date"]) || "N/A") +
           "</td></tr>" +
           "</table>" +
           "</div>" +
@@ -2633,6 +2644,14 @@ function generateInvoicePdf(
   body.replaceText("{{LOAN_AMOUNT}}", loanAmount);
   body.replaceText("{{REMAIN_LOAN}}", remainLoan);
   body.replaceText("{{TODAY_DATE}}", todayDateStr);
+  body.replaceText(
+    "{{INSTALLMENT_END_DATE}}",
+    formatDateString(car["Installment End Date"]) || "N/A",
+  );
+  body.replaceText(
+    "{{SOLD_DATE}}",
+    formatDateString(car["SOLD DATE"]) || "N/A",
+  );
 
   // Replace vehicle spec placeholders
   body.replaceText("{{CAR_YEAR}}", car["Year"] || "N/A");
@@ -2763,17 +2782,24 @@ function generateInvoicePdf(
 function testSendActiveLoanPaymentReminder() {
   var testCarId = "TR25-68"; // Optional: Specify a Stock # to test a specific vehicle
 
-  // Find a vehicle with active loan status
+  // Find a vehicle with active loan status and agreement status Signed
   var vehicles = getVehicles();
   var car = null;
 
   if (testCarId) {
     car = vehicles.find(function (c) {
-      return String(c["Car ID"]) === String(testCarId);
+      var agreementStatus = (c["Agreement Status"] || "").toString().trim();
+      return (
+        String(c["Car ID"]) === String(testCarId) &&
+        agreementStatus === "Signed"
+      );
     });
   } else {
-    // Look for the first car with active loan status
+    // Look for the first car with active loan status and agreement status Signed
     car = vehicles.find(function (c) {
+      var agreementStatus = (c["Agreement Status"] || "").toString().trim();
+      if (agreementStatus !== "Signed") return false;
+
       var finStatus = (c["Financing status"] || "")
         .toString()
         .trim()
@@ -2791,7 +2817,7 @@ function testSendActiveLoanPaymentReminder() {
 
   if (!car) {
     Logger.log(
-      "No vehicle with active loan status found to test. Please ensure at least one vehicle has 'Financing status' set to 'Loan Active' or status sold with SOLD PRICE > 0.",
+      "No vehicle with active loan status and Agreement Status 'Signed' found to test. Please ensure at least one vehicle has 'Financing status' set to 'Loan Active' and Agreement Status 'Signed'.",
     );
     return;
   }
@@ -2947,6 +2973,18 @@ function testSendActiveLoanPaymentReminder() {
     "</td></tr>" +
     '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Stock ID:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
     car["Car ID"] +
+    "</td></tr>" +
+    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Original Sold Price:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+    formatMoney(spNum) +
+    "</td></tr>" +
+    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Down Payment Received:</td><td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2ecc71;">' +
+    formatMoney(dpNum) +
+    "</td></tr>" +
+    '<tr style="border-bottom: 1px solid #e9ecef;"><td style="padding: 8px 0; color: #636e72; font-weight: 500;">Sold Date:</td><td style="padding: 8px 0; font-weight: 600; text-align: right;">' +
+    (formatDateString(car["SOLD DATE"]) || "N/A") +
+    "</td></tr>" +
+    '<tr><td style="padding: 8px 0 0 0; color: #636e72; font-weight: 500;">Installment End Date:</td><td style="padding: 8px 0 0 0; font-weight: 600; text-align: right;">' +
+    (formatDateString(car["Installment End Date"]) || "N/A") +
     "</td></tr>" +
     "</table>" +
     "</div>" +
