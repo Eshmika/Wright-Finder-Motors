@@ -2682,10 +2682,17 @@ function generateInvoicePdf(
       return isNaN(d.getTime()) ? null : d;
     };
 
+    var formatToMMDDYYYY = function (dateInput) {
+      if (!dateInput) return "";
+      var d = parseDate(dateInput);
+      if (!d) return String(dateInput);
+      return Utilities.formatDate(d, timezone, "MM/dd/yyyy");
+    };
+
     var soldDate = parseDate(car["SOLD DATE"]);
     var endDate = parseDate(car["Installment End Date"]);
 
-    // Gather sorted actual payments
+    // Gather sorted actual payments with option and format dates
     var actualPayments = [];
     if (paymentsHistory && paymentsHistory.length > 0) {
       paymentsHistory.forEach(function (pay) {
@@ -2693,11 +2700,17 @@ function generateInvoicePdf(
         var pAmount = pay["AMOUNT"] || "";
         var pAmtNum =
           parseFloat(String(pAmount).replace(/[^0-9.-]+/g, "")) || 0;
+        var pOption =
+          pay["PAYMENT OPTION / NOTES"] ||
+          pay["Payment Option"] ||
+          pay["PAYMENT OPTION"] ||
+          "-";
         if (pAmtNum > 0 && pDateStr) {
           actualPayments.push({
             dateStr: pDateStr,
-            dateObj: new Date(pDateStr),
+            dateObj: parseDate(pDateStr),
             amount: pAmtNum,
+            option: pOption,
           });
         }
       });
@@ -2732,63 +2745,75 @@ function generateInvoicePdf(
             soldDate.getMonth() + mIndex,
             1,
           );
-          return Utilities.formatDate(d, timezone, "MM/dd/yyyy");
+          return formatToMMDDYYYY(d);
         };
 
-        // Finds the date of the payment that cleared the target threshold
-        var getClearingDateForThreshold = function (threshold) {
-          var tempCumulative = 0;
-          for (var i = 0; i < actualPayments.length; i++) {
-            tempCumulative += actualPayments[i].amount;
-            if (tempCumulative >= threshold - 0.01) {
-              return actualPayments[i].dateStr;
-            }
-          }
-          return null;
+        // Track allocations of payment amounts/options for each month's threshold
+        var paymentAllocations = actualPayments.map(function (p) {
+          return {
+            dateStr: p.dateStr,
+            dateObj: p.dateObj,
+            amount: p.amount,
+            remaining: p.amount,
+            option: p.option,
+          };
+        });
+
+        var formatMoneyVal = function (num) {
+          return num.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
         };
 
         for (var m = 1; m <= totalMonths; m++) {
-          var targetCumulative = m * monthlyInstallment;
-          var clearingDate = getClearingDateForThreshold(targetCumulative);
+          var needed = monthlyInstallment;
+          var allocatedOptions = [];
+          var allocatedAmount = 0;
+          var latestPaymentDate = null;
+
+          for (var i = 0; i < paymentAllocations.length; i++) {
+            var alloc = paymentAllocations[i];
+            if (alloc.remaining > 0) {
+              var take = Math.min(needed, alloc.remaining);
+              alloc.remaining -= take;
+              needed -= take;
+              allocatedAmount += take;
+              if (allocatedOptions.indexOf(alloc.option) === -1) {
+                allocatedOptions.push(alloc.option);
+              }
+              latestPaymentDate = alloc.dateStr; // The date of the last payment contributing to this month
+              if (needed <= 0.005) {
+                break;
+              }
+            }
+          }
 
           var status = "STATUS_DUE";
-          var method = "Monthly Installment";
+          var method = "-";
           var dateToShow = "";
 
-          if (clearingDate !== null) {
+          if (allocatedAmount >= monthlyInstallment - 0.01) {
             status = "STATUS_PAID";
-            method = "Paid (Installment " + m + ")";
-            dateToShow = clearingDate;
+            method = allocatedOptions.join(", ");
+            dateToShow = formatToMMDDYYYY(latestPaymentDate);
           } else {
             status = "STATUS_DUE";
             dateToShow = getInstallmentDefaultDate(m);
-            var totalPaid = actualPayments.reduce(function (sum, p) {
-              return sum + p.amount;
-            }, 0);
-            var amountPaidForThisMonth = Math.max(
-              0,
-              totalPaid - (m - 1) * monthlyInstallment,
-            );
-            if (amountPaidForThisMonth > 0) {
+            if (allocatedAmount > 0) {
               method =
-                "Partially Paid ($" +
-                amountPaidForThisMonth.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }) +
+                allocatedOptions.join(", ") +
+                " (Partially Paid: $" +
+                formatMoneyVal(allocatedAmount) +
                 ")";
             } else {
-              method = "Unpaid";
+              method = "-";
             }
           }
 
           scheduleRows.push([
             dateToShow,
-            "$" +
-              monthlyInstallment.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }),
+            "$" + formatMoneyVal(monthlyInstallment),
             method,
             status,
           ]);
